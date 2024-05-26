@@ -2,7 +2,7 @@ from datetime import date
 from uuid import UUID, uuid4
 import os
 
-from aws_lambda_powertools.event_handler import APIGatewayHttpResolver, Response
+from aws_lambda_powertools.event_handler import APIGatewayRestResolver, Response
 from aws_lambda_powertools.utilities.typing import LambdaContext
 from aws_lambda_powertools import Logger
 import boto3
@@ -11,7 +11,7 @@ from pydantic import BaseModel, Field
 
 dynamodb = boto3.resource('dynamodb')
 table = dynamodb.Table(os.environ['TABLE_NAME'])
-app = APIGatewayHttpResolver(enable_validation=True)
+app = APIGatewayRestResolver(enable_validation=True)
 logger = Logger()
 
 GIG_PREFIX = "GIG#"
@@ -27,7 +27,7 @@ class Gig(BaseModel):
     spotifyArtistId: str
 
 
-@app.get("/users/<id>")
+@app.get("/users/<user_id>")
 def get_user_by_id(user_id: str):
     results = table.query(KeyConditionExpression=Key("id").eq(USER_PREFIX + user_id))
     if results["Count"] == 0:
@@ -40,7 +40,7 @@ def get_user_by_id(user_id: str):
         return results
 
 
-@app.get("/users/<id>/gigs")
+@app.get("/users/<user_id>/gigs")
 def get_gigs_for_user(user_id: str):
     results = table.query(
         IndexName="userId-id-index",
@@ -52,7 +52,7 @@ def get_gigs_for_user(user_id: str):
     return results
 
 
-@app.get("/gigs/<id>")
+@app.get("/gigs/<gig_id>")
 def get_gig_by_id(gig_id: str):
     results = table.query(KeyConditionExpression=Key("id").eq(GIG_PREFIX + gig_id))
     if results["Count"] == 0:
