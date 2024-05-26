@@ -1,0 +1,128 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: SAM Template for gig-playlists
+
+Globals:
+  Function:
+    Timeout: 60
+    MemorySize: 128
+    Runtime: python3.10
+    Handler: app.lambda_handler
+    Layers:
+      - >-
+        arn:aws:lambda:eu-north-1:017000801446:layer:AWSLambdaPowertoolsPythonV2:69
+
+Resources:
+  Gigs:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/gigs/
+      Description: API Gateway CRUD for DynamoDB gigs table
+      Architectures:
+        - x86_64
+      Environment:
+        Variables:
+          TABLE_NAME: gigs
+      Policies:
+        - Statement:
+            - Sid: DynamoDBReadWritePolicy
+              Effect: Allow
+              Action:
+                - dynamodb:DeleteItem
+                - dynamodb:GetItem
+                - dynamodb:PutItem
+                - dynamodb:Scan
+                - dynamodb:UpdateItem
+                - dynamodb:Query
+                - dynamodb:GetRecords
+              Resource: arn:aws:dynamodb:eu-north-1:891376983144:table/*
+            - Sid: CloudWatchCreateLogsPolicy
+              Effect: Allow
+              Action:
+                - logs:CreateLogGroup
+              Resource: arn:aws:logs:eu-north-1:891376983144:*
+            - Sid: CloudWatchWriteLogsPolicy
+              Effect: Allow
+              Action:
+                - logs:CreateLogStream
+                - logs:PutLogEvents
+              Resource:
+                - >-
+                  arn:aws:logs:eu-north-1:891376983144:log-group:/aws/lambda/gigs:*
+      Events:
+        CreateGig:
+          Type: Api
+          Properties:
+            Path: /gigs
+            Method: POST
+        GetGigById:
+          Type: Api
+          Properties:
+            Path: /gigs/{id}
+            Method: GET
+        GetUserById:
+          Type: Api
+          Properties:
+            Path: /users/{id}
+            Method: GET
+        GetGigsForUser:
+          Type: Api
+          Properties:
+            Path: /users/{id}/gigs
+            Method: GET
+      EventInvokeConfig:
+        MaximumEventAgeInSeconds: 21600
+        MaximumRetryAttempts: 2
+#  UpcomingPlaylist:
+#    Type: AWS::Serverless::Function
+#    Properties:
+#      CodeUri: functions/upcoming_playlist/
+#      Description: Updates upcoming gigs playlist in response to gigs table updates
+#      Architectures:
+#        - x86_64
+#      Environment:
+#        Variables:
+#          PLAYLIST_ID: 4oDqbIVmOGD1wqT3Kh7lbQ
+#      Policies:
+#      - Statement:
+#        - Sid: DynamoDBStreamsPolicy
+#          Effect: Allow
+#          Action:
+#            - dynamodb:ListStreams
+#            - dynamodb:DescribeStream
+#            - dynamodb:GetShardIterator
+#          Resource: arn:aws:dynamodb:eu-north-1:891376983144:table/*
+#        - Sid: CloudWatchCreateLogsPolicy
+#          Effect: Allow
+#          Action:
+#            - logs:CreateLogGroup
+#          Resource: arn:aws:logs:eu-north-1:891376983144:*
+#        - Sid: CloudWatchWriteLogsPolicy
+#          Effect: Allow
+#          Action:
+#            - logs:CreateLogStream
+#            - logs:PutLogEvents
+#          Resource:
+#            - >-
+#              arn:aws:logs:eu-north-1:891376983144:log-group:/aws/lambda/upcoming_playlist:*
+#        - Sid: SSMWriteParameterPolicy
+#          Effect: Allow
+#          Action:
+#          - ssm:GetParameters
+#          - ssm:GetParameter
+#          - ssm:DescribeParameters
+#          - ssm:PutParameter
+#          Resource: '*' # FIXME: wildcard resource
+#      Events:
+#        Gigs:
+#          Type: DynamoDB
+#          Properties:
+#            Stream:
+#              Fn::GetAtt:
+#                - Table1
+#                - StreamArn
+#            StartingPosition: LATEST
+#            BatchSize: 100
+#      EventInvokeConfig:
+#        MaximumEventAgeInSeconds: 21600
+#        MaximumRetryAttempts: 2
