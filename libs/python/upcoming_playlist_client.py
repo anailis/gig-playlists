@@ -24,10 +24,10 @@ class UpcomingPlaylistClient:
         self.spotify_client = spotify_client
         self.target_arn = target_arn
         self.role_arn = role_arn
-        self.user_details = {}
-        self.gigs_by_user = {}
 
     def process_gigs(self, gigs: list[Gig]) -> None:
+        user_details = {}
+        gigs_by_user = {}
         for gig in gigs:
             # TODO: songs not guaranteed to be removed at latest date if multiple for one artist
             logger.info(f"Received gig {gig.id}")
@@ -36,13 +36,13 @@ class UpcomingPlaylistClient:
                 logger.info(f"Gig {gig.id} occurred in the past; skipping")
                 return
 
-            if gig.userId not in self.user_details.keys():
-                self.user_details[gig.userId] = self._get_user_details(gig.userId)
-                self.gigs_by_user[gig.userId] = []
+            if gig.userId not in user_details.keys():
+                user_details[gig.userId] = self._get_user_details(gig.userId)
+                gigs_by_user[gig.userId] = []
 
-            if gig.spotifyArtistId not in self.gigs_by_user[gig.userId]:
-                self.gigs_by_user[gig.userId].append(gig.spotifyArtistId)
-                playlist_id = self.user_details[gig.userId].upcomingPlaylistId
+            if gig.spotifyArtistId not in gigs_by_user[gig.userId]:
+                gigs_by_user[gig.userId].append(gig.spotifyArtistId)
+                playlist_id = user_details[gig.userId].upcomingPlaylistId
                 try:
                     artist_added = self.spotify_client.add_artist(
                         gig.spotifyArtistId,
