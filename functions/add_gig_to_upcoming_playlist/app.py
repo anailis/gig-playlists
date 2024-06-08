@@ -7,6 +7,7 @@ import spotipy
 from aws_lambda_powertools.utilities.parser import event_parser, envelopes
 from spotipy import SpotifyOAuth
 
+from spotify_playlist_client import SpotifyPlaylistClient
 from upcoming_playlist_client import UpcomingPlaylistClient
 from gig import Gig
 from spotipy_ssm_credentials_cache import SSMCacheHandler
@@ -18,7 +19,7 @@ table = dynamodb.Table(os.environ["TABLE_NAME"])
 logger = logging.getLogger()
 logger.setLevel("INFO")
 
-auth = SpotifyOAuth(
+spotify = spotipy.Spotify(auth_manager=SpotifyOAuth(
     client_id=ssm_client.get_parameter(Name="/spotify/client_id")[
         "Parameter"
     ]["Value"],
@@ -33,9 +34,9 @@ auth = SpotifyOAuth(
         "playlist-read-private",
     ],
     cache_handler=SSMCacheHandler("/spotify/credcache"),
-)
+))
 client = UpcomingPlaylistClient(
-    sp=spotipy.Spotify(auth_manager=auth),
+    spotify_client=SpotifyPlaylistClient(spotify),
     table=table
 )
 # target_arn=os.environ["REMOVE_LAMBDA_ARN"],
@@ -45,6 +46,5 @@ client = UpcomingPlaylistClient(
 @event_parser(model=Gig, envelope=envelopes.DynamoDBStreamEnvelope)
 def lambda_handler(event: list[dict[str, Optional[Gig]]], context) -> str:
     gigs = [e["NewImage"] for e in event]
-    print(gigs)
     client.process_gigs(gigs)
     return ""

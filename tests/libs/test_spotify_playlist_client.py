@@ -54,25 +54,9 @@ def tracks_in_playlist(artist_id):
 
 
 @pytest.mark.parametrize("artist_id", [ARTIST_NOT_IN_PLAYLIST, ARTIST_WITH_ONE_SONG])
-def test_tracks_added_to_new_playlist(artist_id, sp_top_tracks, top_track_uris):
-    client = SpotifyPlaylistClient(sp_top_tracks)
-    client.add_artist(artist_id)
-    sp_top_tracks.user_playlist_create.assert_called_with(
-        USER_ID,
-        "upcoming gigs",
-        public=False,
-        collaborative=False
-    )
-    sp_top_tracks.playlist_add_items.assert_called_with(
-        playlist_id=PLAYLIST_ID,
-        items=top_track_uris
-    )
-
-
-@pytest.mark.parametrize("artist_id", [ARTIST_NOT_IN_PLAYLIST, ARTIST_WITH_ONE_SONG])
 def test_tracks_added_to_existing_playlist(artist_id, sp_top_tracks, top_track_uris):
-    client = SpotifyPlaylistClient(sp_top_tracks, PLAYLIST_ID)
-    client.add_artist(artist_id)
+    client = SpotifyPlaylistClient(sp_top_tracks)
+    client.add_artist(artist_id, PLAYLIST_ID)
     sp_top_tracks.playlist_add_items.assert_called_with(
         playlist_id=PLAYLIST_ID,
         items=top_track_uris
@@ -81,28 +65,22 @@ def test_tracks_added_to_existing_playlist(artist_id, sp_top_tracks, top_track_u
 
 
 def test_artist_has_songs_in_playlist_above_threshold(sp):
-    client = SpotifyPlaylistClient(sp, PLAYLIST_ID)
-    client.add_artist(ARTIST_WITH_TEN_SONGS)
+    client = SpotifyPlaylistClient(sp)
+    client.add_artist(ARTIST_WITH_TEN_SONGS, PLAYLIST_ID)
     sp.user_playlist_create.assert_not_called()
     sp.playlist_add_items.assert_not_called()
 
 
-def test_playlist_not_created(sp):
-    client = SpotifyPlaylistClient(sp)
-    client.remove_artist(ARTIST_WITH_TEN_SONGS)
-    sp.playlist_remove_all_occurrences_of_items.assert_not_called()
-
-
 def test_artist_not_in_playlist(sp):
-    client = SpotifyPlaylistClient(sp, PLAYLIST_ID)
-    client.remove_artist(ARTIST_NOT_IN_PLAYLIST)
+    client = SpotifyPlaylistClient(sp)
+    client.remove_artist(ARTIST_NOT_IN_PLAYLIST, PLAYLIST_ID)
     sp.playlist_remove_all_occurrences_of_items.assert_not_called()
 
 
 @pytest.mark.parametrize("artist_id", [ARTIST_WITH_TEN_SONGS, ARTIST_WITH_ONE_SONG])
 def test_artist_in_playlist(artist_id, sp, tracks_in_playlist):
-    client = SpotifyPlaylistClient(sp, PLAYLIST_ID)
-    client.remove_artist(artist_id)
+    client = SpotifyPlaylistClient(sp)
+    client.remove_artist(artist_id, PLAYLIST_ID)
     sp.playlist_remove_all_occurrences_of_items.assert_called_with(
         playlist_id=PLAYLIST_ID,
         items=tracks_in_playlist

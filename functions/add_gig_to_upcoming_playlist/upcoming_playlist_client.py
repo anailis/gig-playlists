@@ -12,10 +12,10 @@ logger = logging.getLogger()
 
 
 class UpcomingPlaylistClient:
-    def __init__(self, table, sp):
+    def __init__(self, table, spotify_client: SpotifyPlaylistClient):
         self.table = table
-        self.dummy_auth = sp
-        self.clients = {}
+        self.dummy_client = spotify_client
+        self.user_details = {}
         self.gigs_by_user = {}
 
     def process_gigs(self, gigs: list[Gig]) -> None:
@@ -27,17 +27,16 @@ class UpcomingPlaylistClient:
                 logger.info(f"Gig {gig.id} occurred in the past; skipping")
                 return
 
-            if gig.userId not in self.clients.keys():
-                self.clients[gig.userId] = self._get_playlist_client(gig.userId)
+            if gig.userId not in self.user_details.keys():
+                self.user_details[gig.userId] = self._get_user_details(gig.userId)
                 self.gigs_by_user[gig.userId] = []
 
             if gig.spotifyArtistId not in self.gigs_by_user[gig.userId]:
-                self.clients[gig.userId].add_artist(gig.spotifyArtistId)
+                self.dummy_client.add_artist(
+                    gig.spotifyArtistId,
+                    self.user_details[gig.userId].upcomingPlaylistId
+                )
                 # TODO: schedule deletion
-
-    def _get_playlist_client(self, user_id: str) -> SpotifyPlaylistClient:
-        user = self._get_user_details(user_id)
-        return SpotifyPlaylistClient(self.dummy_auth, user.upcomingPlaylistId)
 
     def _get_user_details(self, user_id: str) -> User:
         results = self.table.query(KeyConditionExpression=Key("id").eq(user_id))
