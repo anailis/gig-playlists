@@ -3,6 +3,7 @@ import json
 import pytest
 
 import spotipy
+from spotipy import SpotifyException
 
 from spotify_playlist_client import SpotifyPlaylistClient
 
@@ -86,11 +87,6 @@ def test_artist_has_songs_in_playlist_above_threshold(sp):
     sp.playlist_add_items.assert_not_called()
 
 
-def test_tracks_not_found_for_artist():
-    # TODO: add test for artist/tracks not found
-    pass
-
-
 def test_playlist_not_created(sp):
     client = SpotifyPlaylistClient(sp)
     client.remove_artist(ARTIST_WITH_TEN_SONGS)
@@ -110,4 +106,12 @@ def test_artist_in_playlist(artist_id, sp, tracks_in_playlist):
     sp.playlist_remove_all_occurrences_of_items.assert_called_with(
         playlist_id=PLAYLIST_ID,
         items=tracks_in_playlist
+    )
+
+
+def raise_spotify_exception(artist):
+    raise SpotifyException(
+        "404",
+        "NOT FOUND",
+        f"{artist} not found"
     )
