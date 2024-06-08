@@ -9,8 +9,8 @@ import boto3
 from boto3.dynamodb.conditions import Key
 from pydantic import BaseModel, Field
 
-dynamodb = boto3.resource('dynamodb')
-table = dynamodb.Table(os.environ['TABLE_NAME'])
+dynamodb = boto3.resource("dynamodb")
+table = dynamodb.Table(os.environ["TABLE_NAME"])
 app = APIGatewayRestResolver(enable_validation=True)
 logger = Logger()
 
