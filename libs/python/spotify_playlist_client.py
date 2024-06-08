@@ -72,6 +72,7 @@ class SpotifyPlaylistClient:
 
         Attributes:
             artist_id (str): The artist's Spotify ID.
+            playlist_id (str): The Spotify playlist ID.
 
         Returns:
             bool: Indicates whether the playlist was modified in this call.
@@ -92,6 +93,23 @@ class SpotifyPlaylistClient:
         )
         return True
 
+    def get_artists_in_playlist(self, playlist_id: str) -> set[str]:
+        """
+        Identifies artists contained within Spotify playlist.
+
+        Attributes:
+            playlist_id (str): The Spotify playlist ID.
+
+        Returns:
+            set[str]: Set of Spotify artist IDs.
+        """
+        items = self.sp.playlist_items(playlist_id)["items"]
+        artists = chain.from_iterable([
+                self._extract_artist_ids_for_track(item["track"])
+                for item in items
+            ])
+        return set(artists)
+
     def remove_artist(self, artist_id: str, playlist_id: str) -> bool:
         """
         Removes an artist's tracks from a Spotify playlist
@@ -99,6 +117,7 @@ class SpotifyPlaylistClient:
 
         Attributes:
             artist_id (str): The artist's Spotify ID.
+            playlist_id (str): The Spotify playlist ID.
 
         Returns:
             bool: Indicates whether the playlist was modified in this call.

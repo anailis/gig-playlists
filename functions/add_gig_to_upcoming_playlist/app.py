@@ -19,7 +19,7 @@ table = dynamodb.Table(os.environ["TABLE_NAME"])
 logger = logging.getLogger()
 logger.setLevel("INFO")
 
-spotify = spotipy.Spotify(auth_manager=SpotifyOAuth(
+auth = SpotifyOAuth(
     client_id=ssm_client.get_parameter(Name="/spotify/client_id")[
         "Parameter"
     ]["Value"],
@@ -34,7 +34,8 @@ spotify = spotipy.Spotify(auth_manager=SpotifyOAuth(
         "playlist-read-private",
     ],
     cache_handler=SSMCacheHandler("/spotify/credcache"),
-))
+)
+spotify = spotipy.Spotify(auth_manager=auth)
 client = UpcomingPlaylistClient(
     table=table,
     scheduler=scheduler_client,
