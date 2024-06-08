@@ -84,14 +84,16 @@ Resources:
         Variables:
           REMOVE_LAMBDA_ARN: !GetAtt RemoveGigFromUpcomingPlaylist.Arn
           SCHEDULER_ROLE_ARN: !GetAtt SchedulerRole.Arn
+          TABLE_NAME: gigs
       Policies:
       - Statement:
-        - Sid: DynamoDBStreamsPolicy
+        - Sid: DynamoDBReadPolicy
           Effect: Allow
           Action:
             - dynamodb:ListStreams
             - dynamodb:DescribeStream
             - dynamodb:GetShardIterator
+            - dynamodb:Query
           Resource: arn:aws:dynamodb:eu-north-1:891376983144:table/gigs
         - Sid: CloudWatchCreateLogsPolicy
           Effect: Allow
