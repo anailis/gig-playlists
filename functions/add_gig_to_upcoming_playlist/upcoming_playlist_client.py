@@ -15,10 +15,10 @@ class UpcomingPlaylistClient:
     def __init__(self, table, sp):
         self.table = table
         self.dummy_auth = sp
+        self.clients = {}
+        self.gigs_by_user = {}
 
     def process_gigs(self, gigs: list[Gig]) -> None:
-        clients = {}
-        gigs_by_user = {}
         for gig in gigs:
             # TODO: songs not guaranteed to be removed at latest date if multiple for one artist
             logger.info(f"Received gig {gig.id}")
@@ -27,17 +27,16 @@ class UpcomingPlaylistClient:
                 logger.info(f"Gig {gig.id} occurred in the past; skipping")
                 return
 
-            if gig.userId not in clients.keys():
-                clients[gig.userId] = self._get_playlist_client(gig.userId)
-                gigs_by_user[gig.userId] = []
+            if gig.userId not in self.clients.keys():
+                self.clients[gig.userId] = self._get_playlist_client(gig.userId)
+                self.gigs_by_user[gig.userId] = []
 
-            if gig.spotifyArtistId not in gigs_by_user[gig.userId]:
-                clients[gig.userId].add_artist(gig.spotifyArtistId)
+            if gig.spotifyArtistId not in self.gigs_by_user[gig.userId]:
+                self.clients[gig.userId].add_artist(gig.spotifyArtistId)
                 # TODO: schedule deletion
 
     def _get_playlist_client(self, user_id: str) -> SpotifyPlaylistClient:
         user = self._get_user_details(user_id)
-        print(user)
         return SpotifyPlaylistClient(self.dummy_auth, user.upcomingPlaylistId)
 
     def _get_user_details(self, user_id: str) -> User:
