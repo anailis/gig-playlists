@@ -26,9 +26,12 @@ class UpcomingPlaylistClient:
         self.role_arn = role_arn
 
     def process_gigs(self, gigs: list[Gig], user_details: dict[str, User] = None) -> None:
+        gigs_by_user = {}
         if user_details is None:
             user_details = {}
-        gigs_by_user = {}
+        else:
+            for user in user_details.keys():
+                gigs_by_user[user] = []
 
         for gig in gigs:
             # TODO: songs not guaranteed to be removed at latest date if multiple for one artist

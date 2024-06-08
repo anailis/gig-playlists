@@ -52,6 +52,7 @@ class UpcomingPlaylistReconService:
 
         for artist in artists_to_remove:
             self.spotify_client.remove_artist(artist, user_details.upcomingPlaylistId)
+        logger.info(f"Removed {len(artists_to_remove)} artists from playlist")
 
         self.upcoming_playlist_client.process_gigs(
             gigs=gigs_to_add,
