@@ -8,6 +8,7 @@ from pydantic import validator
 
 class Gig(BaseModel):
     id: str
+    artist: str
     userId: str
     date: date
     spotifyArtistId: str

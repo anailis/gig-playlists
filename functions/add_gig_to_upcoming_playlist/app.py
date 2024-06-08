@@ -36,11 +36,12 @@ spotify = spotipy.Spotify(auth_manager=SpotifyOAuth(
     cache_handler=SSMCacheHandler("/spotify/credcache"),
 ))
 client = UpcomingPlaylistClient(
+    table=table,
+    scheduler=scheduler_client,
     spotify_client=SpotifyPlaylistClient(spotify),
-    table=table
+    target_arn=os.environ["REMOVE_LAMBDA_ARN"],
+    role_arn=os.environ["SCHEDULER_ROLE_ARN"],
 )
-# target_arn=os.environ["REMOVE_LAMBDA_ARN"],
-# role_arn=os.environ["SCHEDULER_ROLE_ARN"],
 
 
 @event_parser(model=Gig, envelope=envelopes.DynamoDBStreamEnvelope)
