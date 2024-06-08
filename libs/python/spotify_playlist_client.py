@@ -12,24 +12,21 @@ logger.setLevel("INFO")
 
 class SpotifyPlaylistClient:
     MIN_TRACKS_PER_ARTIST = 10
-    MAX_TRACKS_PER_ARTIST = 30
+    MAX_TRACKS_PER_ARTIST = 10
 
     def __init__(
             self,
-            spotify: spotipy.Spotify,
-            playlist: Optional[str] = None
+            spotify: spotipy.Spotify
     ):
         self.sp = spotify
         self.user_id = spotify.me()["id"]
-        self.playlist_id = playlist
 
     @staticmethod
     def _extract_artist_ids_for_track(track):
         return [artist["id"] for artist in track["artists"]]
 
-    def _artist_is_in_playlist(self, artist_id: str) -> bool:
-        items = self.sp.playlist_items(self.playlist_id)["items"]
-        print(items)
+    def _artist_is_in_playlist(self, artist_id: str, playlist_id: str) -> bool:
+        items = self.sp.playlist_items(playlist_id)["items"]
         artists_in_playlist = Counter(
             chain.from_iterable([
                 self._extract_artist_ids_for_track(item["track"])
@@ -62,28 +59,38 @@ class SpotifyPlaylistClient:
         logger.info(f"Tracks not found: {tracks_not_found}")
         return track_uris
 
-    def _find_all_tracks_by_artist_in_playlist(self, artist_id: str) -> list[str]:
-        items = self.sp.playlist_items(self.playlist_id)["items"]
+    def _find_all_tracks_by_artist_in_playlist(self, artist_id: str, playlist_id: str) -> list[str]:
+        items = self.sp.playlist_items(playlist_id)["items"]
         return [
             item["track"]["uri"]
             for item in items
             if artist_id in self._extract_artist_ids_for_track(item["track"])
         ]
 
-    def add_artist(self, artist_id: str) -> None:
-        if self.playlist_id is None:
+    def add_artist(self, artist_id: str, playlist_id: Optional[str] = None) -> bool:
+        """
+        Adds an artist's top 10 tracks to a Spotify playlist
+        if the artist is not already present in the playlist.
+
+        Attributes:
+            artist_id (str): The artist's Spotify ID.
+
+        Returns:
+            bool: Indicates whether the playlist was modified in this call.
+        """
+        if playlist_id is None:
             playlist = self.sp.user_playlist_create(
                 self.user_id,
-                "upcoming gigs_db_crud",
+                "upcoming gigs",
                 public=False,
                 collaborative=False,
             )["id"]
             logger.info(f"Created playlist with ID {playlist}")
         else:
-            playlist = self.playlist_id
-            if self._artist_is_in_playlist(artist_id):
+            playlist = playlist_id
+            if self._artist_is_in_playlist(artist_id, playlist_id):
                 logger.info(f"Playlist already contains artist {artist_id}")
-                return
+                return False
 
         tracks = self.sp.artist_top_tracks(artist_id)["tracks"]
         self.sp.playlist_add_items(
@@ -95,28 +102,38 @@ class SpotifyPlaylistClient:
             f"by artist {artist_id} "
             f"to playlist {playlist}"
         )
+        return True
 
-    def remove_artist(self, artist_id: str) -> None:
-        if self.playlist_id is None:
-            return
+    def remove_artist(self, artist_id: str, playlist_id: str) -> bool:
+        """
+        Removes an artist's tracks from a Spotify playlist
+        if the artist is present in the playlist.
 
-        tracks_to_remove = self._find_all_tracks_by_artist_in_playlist(artist_id)
+        Attributes:
+            artist_id (str): The artist's Spotify ID.
+
+        Returns:
+            bool: Indicates whether the playlist was modified in this call.
+        """
+        tracks_to_remove = self._find_all_tracks_by_artist_in_playlist(artist_id, playlist_id)
         if len(tracks_to_remove) > 0:
             logger.info(f"Removed {len(tracks_to_remove)} songs by artist {artist_id}")
             self.sp.playlist_remove_all_occurrences_of_items(
-                playlist_id=self.playlist_id,
+                playlist_id=playlist_id,
                 items=tracks_to_remove
             )
+            return True
         else:
             logger.info(f"Artist {artist_id} not in playlist")
+            return False
 
-    def add_tracks(self, artist_name: str, track_names: set[str]) -> None:
+    def add_tracks(self, artist_name: str, playlist_id: str, track_names: set[str]) -> None:
         track_uris = self._find_track_uris_from_names(
             artist_name=artist_name,
             track_names=track_names,
         )
 
         self.sp.playlist_add_items(
-            playlist_id=self.playlist_id,
+            playlist_id=playlist_id,
             items=track_uris
         )
