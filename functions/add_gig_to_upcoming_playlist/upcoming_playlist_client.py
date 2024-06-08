@@ -2,6 +2,7 @@ import logging
 from datetime import date
 
 from boto3.dynamodb.conditions import Key
+from spotipy import SpotifyException
 
 from spotify_playlist_client import SpotifyPlaylistClient
 
@@ -32,10 +33,14 @@ class UpcomingPlaylistClient:
                 self.gigs_by_user[gig.userId] = []
 
             if gig.spotifyArtistId not in self.gigs_by_user[gig.userId]:
-                self.dummy_client.add_artist(
-                    gig.spotifyArtistId,
-                    self.user_details[gig.userId].upcomingPlaylistId
-                )
+                try:
+                    self.dummy_client.add_artist(
+                        gig.spotifyArtistId,
+                        self.user_details[gig.userId].upcomingPlaylistId
+                    )
+                except SpotifyException as err:
+                    logger.warning(f"Unable to add artist {gig.spotifyArtistId} to playlist: {err}")
+                    continue
                 # TODO: schedule deletion
 
     def _get_user_details(self, user_id: str) -> User:
