@@ -13,7 +13,7 @@ class Gig(BaseModel):
     date: date
     spotifyArtistId: str
 
-    @validator("id", "userId", "date", "spotifyArtistId",
+    @validator("id", "artist", "userId", "date", "spotifyArtistId",
                pre=True, allow_reuse=True)
     def decode(cls, values):
         return TypeDeserializer().deserialize(values)
