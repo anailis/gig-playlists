@@ -31,7 +31,7 @@ class UpcomingPlaylistReconService:
         """
         Reconciles a user's upcoming gigs playlist against the gigs database.
         Artists in the playlist without upcoming gigs in the db are removed.
-        Artists with upcoming gigs not in the playlist are added.
+        Upcoming gigs are processed by UpcomingPlaylistClient.
 
         Attributes:
             user_id (str): The user's Spotify ID.
@@ -71,6 +71,6 @@ class UpcomingPlaylistReconService:
                     & Key("date").gt(date.today().strftime("%Y-%m-%d"))
             )
         )["Items"]
-        logger.info(f"Found {len(results)} upcoming gigs")
-        return [Gig.construct(**gig) for gig in results]
 
+        logger.info(f"Found {len(results)} upcoming gigs")
+        return [Gig.parse_obj(gig) for gig in results]

@@ -26,6 +26,15 @@ class UpcomingPlaylistClient:
         self.role_arn = role_arn
 
     def process_gigs(self, gigs: list[Gig], user_details: dict[str, User] = None) -> None:
+        """
+            Adds artists to an upcoming playlist based on a list of gigs.
+            Schedules removal of artists from the playlist after the gig.
+            Handles duplicates and irrelevant gigs (e.g. in the past).
+
+            Attributes:
+                gigs (list[Gig]): A list of Gigs to be added to the playlist.
+                user_details (dict[str, User]): Dictionary relating user IDs to User objects.
+        """
         gigs_by_user = {}
         if user_details is None:
             user_details = {}

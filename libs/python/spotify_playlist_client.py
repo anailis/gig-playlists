@@ -5,8 +5,6 @@ import logging
 import spotipy
 
 logger = logging.getLogger()
-logger.addHandler(logging.StreamHandler())
-logger.setLevel("INFO")
 
 
 class SpotifyPlaylistClient:
