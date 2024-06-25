@@ -1,4 +1,6 @@
 aws-lambda-powertools[all]
 boto3
+botocore
 spotipy
+pydantic
 pytest
