@@ -1,9 +1,7 @@
 from datetime import date
-import json
 
-from aws_lambda_powertools.utilities.data_classes.dynamo_db_stream_event import TypeDeserializer
-from aws_lambda_powertools.utilities.parser import BaseModel
-from pydantic import validator
+from aws_lambda_powertools.utilities.parser import BaseModel, validator
+from boto3.dynamodb.types import TypeDeserializer
 
 
 class Gig(BaseModel):
@@ -13,10 +11,8 @@ class Gig(BaseModel):
     date: date
     spotifyArtistId: str
 
+    @classmethod
     @validator("id", "artist", "userId", "date", "spotifyArtistId",
                pre=True, allow_reuse=True)
     def decode(cls, values):
         return TypeDeserializer().deserialize(values)
-
-    def to_string(self) -> str:
-        return json.dumps(self.__dict__, indent=4)

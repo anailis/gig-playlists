@@ -4,8 +4,14 @@ from typing import Optional
 
 import boto3
 import spotipy
-from aws_lambda_powertools.utilities.parser import event_parser, envelopes
+from aws_lambda_powertools.utilities.parser import event_parser, envelopes, parser
+from aws_lambda_powertools.logging import Logger
 from spotipy import SpotifyOAuth
+
+
+from aws_lambda_powertools.utilities.data_classes import event_source, DynamoDBStreamEvent
+from aws_lambda_powertools.utilities.typing import LambdaContext
+
 
 from spotify_playlist_client import SpotifyPlaylistClient
 from upcoming_playlist_client import UpcomingPlaylistClient
@@ -16,8 +22,7 @@ ssm_client = boto3.client("ssm")
 scheduler_client = boto3.client("scheduler")
 dynamodb = boto3.resource("dynamodb")
 table = dynamodb.Table(os.environ["TABLE_NAME"])
-logger = logging.getLogger()
-logger.setLevel("INFO")
+logger = Logger()
 
 auth = SpotifyOAuth(
     client_id=ssm_client.get_parameter(Name="/spotify/client_id")[
@@ -45,8 +50,13 @@ client = UpcomingPlaylistClient(
 )
 
 
-@event_parser(model=Gig, envelope=envelopes.DynamoDBStreamEnvelope)
-def lambda_handler(event: list[dict[str, Optional[Gig]]], context) -> str:
-    gigs = [e["NewImage"] for e in event]
+@logger.inject_lambda_context(log_event=True)
+@event_source(data_class=DynamoDBStreamEvent)
+def lambda_handler(event: DynamoDBStreamEvent, context: LambdaContext):
+    gigs = [
+        Gig(**record.dynamodb.new_image)
+        for record in event.records
+    ]
+    logger.info("Parsed gigs", gigs=gigs)
     client.process_gigs(gigs)
     return ""
