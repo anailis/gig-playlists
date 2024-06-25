@@ -6,11 +6,11 @@ Globals:
   Function:
     Timeout: 60
     MemorySize: 128
-    Runtime: python3.10
+    Runtime: python3.12
     Handler: app.lambda_handler
     Layers:
       - >-
-        arn:aws:lambda:eu-north-1:017000801446:layer:AWSLambdaPowertoolsPythonV2:69
+        arn:aws:lambda:eu-north-1:017000801446:layer:AWSLambdaPowertoolsPythonV2:73
 
 Resources:
   GigsDbCRUD:
@@ -25,7 +25,7 @@ Resources:
           TABLE_NAME: gigs
       Policies:
         - Statement:
-            - Sid: DynamoDBReadWritePolicy
+            - Sid: DynamoDBGigsReadWritePolicy
               Effect: Allow
               Action:
                 - dynamodb:DeleteItem
@@ -36,6 +36,11 @@ Resources:
                 - dynamodb:Query
                 - dynamodb:GetRecords
               Resource: arn:aws:dynamodb:eu-north-1:891376983144:table/gigs
+            - Sid: DynamoDBIndexQueryPolicy
+              Effect: Allow
+              Action:
+                - dynamodb:Query
+              Resource: arn:aws:dynamodb:eu-north-1:891376983144:table/gigs/index/userId-id-index
             - Sid: CloudWatchCreateLogsPolicy
               Effect: Allow
               Action:
