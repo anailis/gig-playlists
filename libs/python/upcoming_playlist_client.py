@@ -1,9 +1,9 @@
 import json
-import logging
 from datetime import date, datetime, timedelta
 
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
+from aws_lambda_powertools.logging import Logger
 from spotipy import SpotifyException
 
 from spotify_playlist_client import SpotifyPlaylistClient
@@ -11,7 +11,7 @@ from spotify_playlist_client import SpotifyPlaylistClient
 from gig import Gig
 from user import User
 
-logger = logging.getLogger()
+logger = Logger()
 
 
 class UpcomingPlaylistClient:
@@ -74,6 +74,8 @@ class UpcomingPlaylistClient:
                         logger.warning(f"Unable to schedule delete for gig {gig.id}: {err}")
 
     def _get_user_details(self, user_id: str) -> User:
+        logger.info("Searching for user", user_id=user_id)
+        # FIXME: error handling
         results = self.table.query(KeyConditionExpression=Key("id").eq(user_id))
         return User.construct(**results["Items"][0])
 
@@ -82,7 +84,7 @@ class UpcomingPlaylistClient:
             gig.date + timedelta(days=1),
             "%Y-%m-%dT%H:%M:%S"
         )
-        schedule_name = f"delete_{gig.spotifyArtistId}"
+        schedule_name = f"delete_{gig.spotifyArtistId}_from_{playlist_id}"
         self.scheduler.create_schedule(
             Name=schedule_name,
             Description=f"Delete {gig.artist} from playlist {playlist_id}",

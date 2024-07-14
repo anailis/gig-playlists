@@ -81,7 +81,7 @@ def test_gig_is_in_future(table, spotify_client, scheduler, gig):
     spotify_client.add_artist.assert_called_with(ARTIST_ID, PLAYLIST_ID)
     scheduler.create_schedule.assert_called_once()
     scheduler.create_schedule.assert_called_with(
-        Name=f"delete_{ARTIST_ID}",
+        Name=f"delete_{ARTIST_ID}_from_{PLAYLIST_ID}",
         Description=f"Delete artist from playlist {PLAYLIST_ID}",
         ActionAfterCompletion="DELETE",
         ScheduleExpression="at(2024-03-13T00:00:00)",
@@ -141,7 +141,7 @@ def test_user_has_multiple_gigs_for_same_artist(table, scheduler, spotify_client
     spotify_client.add_artist.assert_called_with(ARTIST_ID, PLAYLIST_ID)
     scheduler.create_schedule.assert_called_once()
     scheduler.create_schedule.assert_called_with(
-        Name=f"delete_{ARTIST_ID}",
+        Name=f"delete_{ARTIST_ID}_from_{PLAYLIST_ID}",
         Description=f"Delete artist from playlist {PLAYLIST_ID}",
         ActionAfterCompletion="DELETE",
         ScheduleExpression="at(2024-03-13T00:00:00)",
@@ -189,7 +189,7 @@ def test_tracks_cannot_be_retrieved(table, scheduler, gig):
     ])
     scheduler.create_schedule.assert_called_once()
     scheduler.create_schedule.assert_called_with(
-        Name=f"delete_{ARTIST_ID}",
+        Name=f"delete_{ARTIST_ID}_from_{PLAYLIST_ID}",
         Description=f"Delete artist from playlist {PLAYLIST_ID}",
         ActionAfterCompletion="DELETE",
         ScheduleExpression="at(2024-03-13T00:00:00)",
@@ -241,7 +241,7 @@ def test_schedule_cannot_be_made(table, spotify_client, gig):
     ])
     scheduler.create_schedule.assert_has_calls([
         call(
-            Name=f"delete_{ARTIST_ID}",
+            Name=f"delete_{ARTIST_ID}_from_{PLAYLIST_ID}",
             Description=f"Delete problem with schedule from playlist {PLAYLIST_ID}",
             ActionAfterCompletion="DELETE",
             ScheduleExpression="at(2024-12-13T00:00:00)",
@@ -256,7 +256,7 @@ def test_schedule_cannot_be_made(table, spotify_client, gig):
             }
         ),
         call(
-            Name=f"delete_{ARTIST_ID}",
+            Name=f"delete_{ARTIST_ID}_from_{PLAYLIST_ID}",
             Description=f"Delete artist from playlist {PLAYLIST_ID}",
             ActionAfterCompletion="DELETE",
             ScheduleExpression="at(2024-03-13T00:00:00)",
