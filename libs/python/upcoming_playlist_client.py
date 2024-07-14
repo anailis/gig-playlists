@@ -25,7 +25,7 @@ class UpcomingPlaylistClient:
         self.target_arn = target_arn
         self.role_arn = role_arn
 
-    def process_gigs(self, gigs: list[Gig], user_details: dict[str, User] = None) -> None:
+    def process_gigs(self, gigs: list[Gig], user_details: dict[str, User] = None) -> dict[str: list[str]]:
         """
             Adds artists to an upcoming playlist based on a list of gigs.
             Schedules removal of artists from the playlist after the gig.
@@ -34,6 +34,10 @@ class UpcomingPlaylistClient:
             Attributes:
                 gigs (list[Gig]): A list of Gigs to be added to the playlist.
                 user_details (dict[str, User]): Dictionary relating user IDs to User objects.
+
+            Returns:
+                added (dict[str: list[str]): Dictionary mapping user IDs to
+                  Spotify artist IDs added to upcoming playlist.
         """
         gigs_by_user = {}
         if user_details is None:
@@ -46,16 +50,15 @@ class UpcomingPlaylistClient:
             # TODO: songs not guaranteed to be removed at latest date if multiple for one artist
             logger.info(f"Received gig {gig.id}")
 
-            if gig.date <= date.today():
-                logger.info(f"Gig {gig.id} occurred in the past; skipping")
-                return
-
             if gig.userId not in user_details.keys():
                 user_details[gig.userId] = self._get_user_details(gig.userId)
                 gigs_by_user[gig.userId] = []
 
+            if gig.date <= date.today():
+                logger.info(f"Gig {gig.id} occurred in the past; skipping")
+                continue
+
             if gig.spotifyArtistId not in gigs_by_user[gig.userId]:
-                gigs_by_user[gig.userId].append(gig.spotifyArtistId)
                 playlist_id = user_details[gig.userId].upcomingPlaylistId
                 try:
                     artist_added = self.spotify_client.add_artist(
@@ -69,9 +72,20 @@ class UpcomingPlaylistClient:
                 if artist_added:
                     try:
                         schedule = self._schedule_removal_of_artist(gig, playlist_id)
+                        gigs_by_user[gig.userId].append(gig.spotifyArtistId)
                         logger.info(f"Created schedule {schedule}")
                     except ClientError as err:
                         logger.warning(f"Unable to schedule delete for gig {gig.id}: {err}")
+                        try:
+                            self.spotify_client.remove_artist(
+                                gig.spotifyArtistId,
+                                playlist_id
+                            )
+                        except SpotifyException as err:
+                            logger.warning(f"Unable to remove artist {gig.spotifyArtistId} from playlist: {err}")
+                            continue
+
+        return gigs_by_user
 
     def _get_user_details(self, user_id: str) -> User:
         logger.info("Searching for user", user_id=user_id)

@@ -8,6 +8,7 @@ from botocore.exceptions import ClientError
 
 logger = logging.getLogger()
 EVENT_DIR = "resources/test_data/dynamodb_stream_events"
+TEST_USER = "USER#ed9af2a7-60e5-448f-8081-9c49966d7f15"
 
 
 class TestApiGateway:
@@ -43,5 +44,10 @@ class TestApiGateway:
             raise
 
         assert response["StatusCode"] == 200
-        # no change to playlist
+        payload = json.load(response["Payload"])
+        print(payload)
+        print(type(payload))
+        assert len(payload) == 1
+        assert TEST_USER in payload.keys()
+        assert len(payload[TEST_USER]) == 0
         # no deletion scheduled

@@ -12,6 +12,7 @@ from gig import Gig
 
 CURRENT_DATE = date(2024, 1, 1)
 PLAYLIST_ID = "PLAYLIST12345"
+USER_ID = "USER#1234"
 NONEXISTENT_ARTIST_ID = "UNKNOWN"
 ARTIST_ID = "ARTIST"
 TARGET_ARN = "arn:target"
@@ -35,8 +36,8 @@ def fixed_date(monkeypatch):
 def table():
     table = Mock()
     table.query.return_value = {"Items": [{
-        "id": "USER#1234",
-        "userId": "USER#1234",
+        "id": USER_ID,
+        "userId": USER_ID,
         "displayName": "user",
         "upcomingPlaylistId": PLAYLIST_ID
     }]}
@@ -60,7 +61,7 @@ def spotify_client():
 def gig():
     return Gig.construct(**{
         "id": "GIG#1",
-        "userId": "USER#1234",
+        "userId": USER_ID,
         "date": date(2024, 3, 12),
         "spotifyArtistId": ARTIST_ID,
         "artist": "artist"
@@ -75,7 +76,7 @@ def test_gig_is_in_future(table, spotify_client, scheduler, gig):
         TARGET_ARN,
         ROLE_ARN
     )
-    upcoming_client.process_gigs([gig])
+    gigs_by_user = upcoming_client.process_gigs([gig])
 
     spotify_client.add_artist.assert_called_once()
     spotify_client.add_artist.assert_called_with(ARTIST_ID, PLAYLIST_ID)
@@ -96,11 +97,16 @@ def test_gig_is_in_future(table, spotify_client, scheduler, gig):
         },
     )
 
+    assert len(gigs_by_user) == 1
+    assert USER_ID in gigs_by_user.keys()
+    assert len(gigs_by_user[USER_ID]) == 1
+    assert ARTIST_ID == gigs_by_user[USER_ID][0]
+
 
 def test_gig_is_in_past(table, spotify_client, scheduler):
     gig = Gig.construct(**{
         "id": "GIG#1",
-        "userId": "USER#1234",
+        "userId": USER_ID,
         "date": date(2023, 12, 12),
         "spotifyArtistId": ARTIST_ID,
         "artist": "artist"
@@ -113,16 +119,20 @@ def test_gig_is_in_past(table, spotify_client, scheduler):
         TARGET_ARN,
         ROLE_ARN
     )
-    upcoming_client.process_gigs([gig])
+    gigs_by_user = upcoming_client.process_gigs([gig])
 
     spotify_client.add_artist.assert_not_called()
     scheduler.create_schedule.assert_not_called()
+
+    assert len(gigs_by_user) == 1
+    assert USER_ID in gigs_by_user.keys()
+    assert len(gigs_by_user[USER_ID]) == 0
 
 
 def test_user_has_multiple_gigs_for_same_artist(table, scheduler, spotify_client, gig):
     second_gig = Gig.construct(**{
         "id": "GIG#2",
-        "userId": "USER#1234",
+        "userId": USER_ID,
         "date": date(2024, 12, 12),
         "spotifyArtistId": ARTIST_ID,
         "artist": "artist"
@@ -135,7 +145,7 @@ def test_user_has_multiple_gigs_for_same_artist(table, scheduler, spotify_client
         TARGET_ARN,
         ROLE_ARN
     )
-    upcoming_client.process_gigs([gig, second_gig])
+    gigs_by_user = upcoming_client.process_gigs([gig, second_gig])
 
     spotify_client.add_artist.assert_called_once()
     spotify_client.add_artist.assert_called_with(ARTIST_ID, PLAYLIST_ID)
@@ -155,6 +165,11 @@ def test_user_has_multiple_gigs_for_same_artist(table, scheduler, spotify_client
             })
         },
     )
+
+    assert len(gigs_by_user) == 1
+    assert USER_ID in gigs_by_user.keys()
+    assert len(gigs_by_user[USER_ID]) == 1
+    assert ARTIST_ID == gigs_by_user[USER_ID][0]
 
 
 def test_tracks_cannot_be_retrieved(table, scheduler, gig):
@@ -168,7 +183,7 @@ def test_tracks_cannot_be_retrieved(table, scheduler, gig):
 
     invalid_gig = Gig.construct(**{
         "id": "GIG#2",
-        "userId": "USER#1234",
+        "userId": USER_ID,
         "date": date(2024, 12, 12),
         "spotifyArtistId": NONEXISTENT_ARTIST_ID,
         "artist": "artist not on spotify"
@@ -181,7 +196,7 @@ def test_tracks_cannot_be_retrieved(table, scheduler, gig):
         TARGET_ARN,
         ROLE_ARN
     )
-    upcoming_client.process_gigs([invalid_gig, gig])
+    gigs_by_user = upcoming_client.process_gigs([invalid_gig, gig])
 
     spotify_client.add_artist.assert_has_calls([
         call(NONEXISTENT_ARTIST_ID, PLAYLIST_ID),
@@ -203,6 +218,11 @@ def test_tracks_cannot_be_retrieved(table, scheduler, gig):
             })
         },
     )
+
+    assert len(gigs_by_user) == 1
+    assert USER_ID in gigs_by_user.keys()
+    assert len(gigs_by_user[USER_ID]) == 1
+    assert ARTIST_ID == gigs_by_user[USER_ID][0]
 
 
 def test_schedule_cannot_be_made(table, spotify_client, gig):
@@ -233,12 +253,13 @@ def test_schedule_cannot_be_made(table, spotify_client, gig):
         TARGET_ARN,
         ROLE_ARN
     )
-    upcoming_client.process_gigs([invalid_gig, gig])
+    gigs_by_user = upcoming_client.process_gigs([invalid_gig, gig])
 
     spotify_client.add_artist.assert_has_calls([
         call(ARTIST_ID, PLAYLIST_ID),
         call(ARTIST_ID, PLAYLIST_ID)
     ])
+    spotify_client.remove_artist.assert_called_once()
     scheduler.create_schedule.assert_has_calls([
         call(
             Name=f"delete_{ARTIST_ID}_from_{PLAYLIST_ID}",
@@ -271,3 +292,10 @@ def test_schedule_cannot_be_made(table, spotify_client, gig):
             }
         ),
     ])
+
+    assert len(gigs_by_user) == 2
+    assert USER_ID in gigs_by_user.keys()
+    assert len(gigs_by_user[USER_ID]) == 1
+    assert ARTIST_ID == gigs_by_user[USER_ID][0]
+    assert "USER#6789" in gigs_by_user.keys()
+    assert len(gigs_by_user["USER#6789"]) == 0

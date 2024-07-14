@@ -1,10 +1,8 @@
-import logging
+import json
 import os
-from typing import Optional
 
 import boto3
 import spotipy
-from aws_lambda_powertools.utilities.parser import event_parser, envelopes, parser
 from aws_lambda_powertools.logging import Logger
 from spotipy import SpotifyOAuth
 
@@ -52,11 +50,10 @@ client = UpcomingPlaylistClient(
 
 @logger.inject_lambda_context(log_event=True)
 @event_source(data_class=DynamoDBStreamEvent)
-def lambda_handler(event: DynamoDBStreamEvent, context: LambdaContext):
+def lambda_handler(event: DynamoDBStreamEvent, context: LambdaContext) -> str:
     gigs = [
         Gig(**record.dynamodb.new_image)
         for record in event.records
     ]
     logger.info("Parsed gigs", gigs=gigs)
-    client.process_gigs(gigs)
-    return ""
+    return client.process_gigs(gigs)
