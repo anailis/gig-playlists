@@ -13,7 +13,16 @@ logger = logging.getLogger()
 logger.setLevel("INFO")
 
 
-def lambda_handler(event: dict, context: LambdaContext) -> str:
+def lambda_handler(event: dict[str, str], context: LambdaContext) -> bool:
+    """
+    Removes an artist from a playlist.
+
+    Attributes:
+        event (dict[str, str]): must contain keys spotifyArtistId and playlistId
+
+    Returns:
+        artist_added (bool): True if artist was removed, False otherwise.
+    """
     try:
         artist_id = event["spotifyArtistId"]
     except KeyError:
@@ -44,12 +53,6 @@ def lambda_handler(event: dict, context: LambdaContext) -> str:
     )
     spotify_client = SpotifyPlaylistClient(
         spotify=spotipy.Spotify(auth_manager=auth),
-        playlist=playlist_id,
     )
 
-    artist_removed = spotify_client.remove_artist(artist_id)
-
-    if artist_removed:
-        return f"Artist with Spotify ID {artist_id} removed from playlist"
-    else:
-        return f"Artist with Spotify ID {artist_id} not in playlist"
+    return spotify_client.remove_artist(artist_id, playlist_id)

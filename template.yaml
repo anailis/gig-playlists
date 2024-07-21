@@ -282,3 +282,5 @@ Resources:
 Outputs:
   AddGigToUpcomingPlaylistFunctionArn:
     Value: !GetAtt AddGigToUpcomingPlaylist.Arn
+  RemoveGigFromUpcomingPlaylistFunctionArn:
+    Value: !GetAtt RemoveGigFromUpcomingPlaylist.Arn
