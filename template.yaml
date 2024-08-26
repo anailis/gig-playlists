@@ -13,11 +13,39 @@ Globals:
         arn:aws:lambda:eu-north-1:017000801446:layer:AWSLambdaPowertoolsPythonV2:73
 
 Resources:
+  GigsAPI:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      Description: API Gateway for calling GigsDbCRUD lambda function
+      Auth:
+        DefaultAuthorizer: GigsTokenAuthorizer
+        Authorizers:
+          GigsTokenAuthorizer:
+            FunctionArn: !GetAtt GigsDbAuthFunction.Arn
+
+  GigsDbAuthFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/gigs_db_auth/
+      Description: Performs authorisation for requests to GigsAPI
+      Policies:
+        - Statement:
+            - Sid: SSMReadParameterPolicy
+              Effect: Allow
+              Action:
+                - ssm:GetParameters
+                - ssm:GetParameter
+              Resource:
+                    - >-
+                      arn:aws:ssm:eu-north-1:891376983144:parameter/gigs/crud_api_token
+
+
   GigsDbCRUD:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: functions/gigs_db_crud/
-      Description: API Gateway CRUD for DynamoDB table gigs
+      Description: Performs CRUD operations on DynamoDB table gigs
       Architectures:
         - x86_64
       Environment:
@@ -58,26 +86,31 @@ Resources:
         CreateGig:
           Type: Api
           Properties:
+            RestApiId: !Ref GigsAPI
             Path: /gigs
             Method: POST
         GetGigById:
           Type: Api
           Properties:
+            RestApiId: !Ref GigsAPI
             Path: /gigs/{id}
             Method: GET
         GetUserById:
           Type: Api
           Properties:
+            RestApiId: !Ref GigsAPI
             Path: /users/{id}
             Method: GET
         GetGigsForUser:
           Type: Api
           Properties:
+            RestApiId: !Ref GigsAPI
             Path: /users/{id}/gigs
             Method: GET
       EventInvokeConfig:
         MaximumEventAgeInSeconds: 21600
         MaximumRetryAttempts: 2
+
   AddGigToUpcomingPlaylist:
     Type: AWS::Serverless::Function
     Properties:
@@ -151,6 +184,7 @@ Resources:
         MaximumRetryAttempts: 2
       Layers:
         - !Ref SharedLibs
+
   RemoveGigFromUpcomingPlaylist:
     Type: AWS::Serverless::Function
     Properties:
@@ -211,6 +245,7 @@ Resources:
               - Effect: Allow
                 Action: lambda:InvokeFunction
                 Resource: !GetAtt RemoveGigFromUpcomingPlaylist.Arn
+
   UpcomingPlaylistRecon:
     Type: AWS::Serverless::Function
     Properties:
@@ -279,6 +314,7 @@ Resources:
       CompatibleRuntimes:
         - python3.12
       RetentionPolicy: Retain
+
 Outputs:
   AddGigToUpcomingPlaylistFunctionArn:
     Value: !GetAtt AddGigToUpcomingPlaylist.Arn
