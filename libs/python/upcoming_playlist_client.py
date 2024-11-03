@@ -48,14 +48,14 @@ class UpcomingPlaylistClient:
 
         for gig in gigs:
             # TODO: songs not guaranteed to be removed at latest date if multiple for one artist
-            logger.info(f"Received gig {gig.id}")
+            logger.info("Received gig", gig_id=gig.id)
 
             if gig.userId not in user_details.keys():
                 user_details[gig.userId] = self._get_user_details(gig.userId)
                 gigs_by_user[gig.userId] = []
 
             if gig.date <= date.today():
-                logger.info(f"Gig {gig.id} occurred in the past; skipping")
+                logger.info("Gig occurred in the past; skipping", gig_id=gig.id)
                 continue
 
             if gig.spotifyArtistId not in gigs_by_user[gig.userId]:
@@ -66,14 +66,18 @@ class UpcomingPlaylistClient:
                         playlist_id
                     )
                 except SpotifyException as err:
-                    logger.warning(f"Unable to add artist {gig.spotifyArtistId} to playlist: {err}")
+                    logger.warning(
+                        f"Unable to add artist to playlist: {err}",
+                        gig_id=gig.id,
+                        artist_id=gig.spotifyArtistId
+                    )
                     continue
 
                 if artist_added:
                     try:
                         schedule = self._schedule_removal_of_artist(gig, playlist_id)
                         gigs_by_user[gig.userId].append(gig.spotifyArtistId)
-                        logger.info(f"Created schedule {schedule}")
+                        logger.info("Created schedule", schedule_id=schedule)
                     except ClientError as err:
                         logger.warning(f"Unable to schedule delete for gig {gig.id}: {err}")
                         try:
@@ -82,7 +86,12 @@ class UpcomingPlaylistClient:
                                 playlist_id
                             )
                         except SpotifyException as err:
-                            logger.warning(f"Unable to remove artist {gig.spotifyArtistId} from playlist: {err}")
+                            logger.warning(
+                                f"Unable to remove artist from playlist: {err}",
+                                gig_id=gig.id,
+                                artist_id=gig.spotifyArtistId,
+                                playlist_id=playlist_id
+                            )
                             continue
 
         return gigs_by_user

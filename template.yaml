@@ -10,14 +10,77 @@ Globals:
     Handler: app.lambda_handler
     Layers:
       - >-
-        arn:aws:lambda:eu-north-1:017000801446:layer:AWSLambdaPowertoolsPythonV2:73
+        arn:aws:lambda:eu-west-2:017000801446:layer:AWSLambdaPowertoolsPythonV2:73
 
 Resources:
+  GigsTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      TableName: gigs
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: userId
+          AttributeType: S
+        - AttributeName: date
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+        - AttributeName: userId
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: userId-date-index
+          KeySchema:
+            - AttributeName: userId
+              KeyType: HASH
+            - AttributeName: date
+              KeyType: RANGE
+          Projection:
+            NonKeyAttributes:
+              - artist
+              - venue
+              - spotifyArtistId
+            ProjectionType: INCLUDE
+      StreamSpecification:
+        StreamViewType: NEW_AND_OLD_IMAGES
+
+  GigsAPI:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      Description: API Gateway for calling GigsDbCRUD lambda function
+      Auth:
+        DefaultAuthorizer: GigsTokenAuthorizer
+        Authorizers:
+          GigsTokenAuthorizer:
+            FunctionArn: !GetAtt GigsDbAuthFunction.Arn
+
+  GigsDbAuthFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/gigs_db_auth/
+      Description: Performs authorisation for requests to GigsAPI
+      Policies:
+        - Statement:
+            - Sid: SSMReadParameterPolicy
+              Effect: Allow
+              Action:
+                - ssm:GetParameters
+                - ssm:GetParameter
+              Resource:
+                    - >-
+                      arn:aws:ssm:eu-west-2:891376983144:parameter/gigs/crud_api_token
+
+
   GigsDbCRUD:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: functions/gigs_db_crud/
-      Description: API Gateway CRUD for DynamoDB table gigs
+      Description: Performs CRUD operations on DynamoDB table gigs
       Architectures:
         - x86_64
       Environment:
@@ -35,17 +98,17 @@ Resources:
                 - dynamodb:UpdateItem
                 - dynamodb:Query
                 - dynamodb:GetRecords
-              Resource: arn:aws:dynamodb:eu-north-1:891376983144:table/gigs
+              Resource: !GetAtt GigsTable.Arn
             - Sid: DynamoDBIndexQueryPolicy
               Effect: Allow
               Action:
                 - dynamodb:Query
-              Resource: arn:aws:dynamodb:eu-north-1:891376983144:table/gigs/index/userId-id-index
+              Resource: arn:aws:dynamodb:eu-west-2:891376983144:table/gigs/index/userId-id-index
             - Sid: CloudWatchCreateLogsPolicy
               Effect: Allow
               Action:
                 - logs:CreateLogGroup
-              Resource: arn:aws:logs:eu-north-1:891376983144:*
+              Resource: arn:aws:logs:eu-west-2:891376983144:*
             - Sid: CloudWatchWriteLogsPolicy
               Effect: Allow
               Action:
@@ -53,31 +116,36 @@ Resources:
                 - logs:PutLogEvents
               Resource:
                 - >-
-                  arn:aws:logs:eu-north-1:891376983144:log-group:/aws/lambda/gigs_db_crud:*
+                  arn:aws:logs:eu-west-2:891376983144:log-group:/aws/lambda/gigs_db_crud:*
       Events:
         CreateGig:
           Type: Api
           Properties:
+            RestApiId: !Ref GigsAPI
             Path: /gigs
             Method: POST
         GetGigById:
           Type: Api
           Properties:
+            RestApiId: !Ref GigsAPI
             Path: /gigs/{id}
             Method: GET
         GetUserById:
           Type: Api
           Properties:
+            RestApiId: !Ref GigsAPI
             Path: /users/{id}
             Method: GET
         GetGigsForUser:
           Type: Api
           Properties:
+            RestApiId: !Ref GigsAPI
             Path: /users/{id}/gigs
             Method: GET
       EventInvokeConfig:
         MaximumEventAgeInSeconds: 21600
         MaximumRetryAttempts: 2
+
   AddGigToUpcomingPlaylist:
     Type: AWS::Serverless::Function
     Properties:
@@ -99,12 +167,12 @@ Resources:
             - dynamodb:DescribeStream
             - dynamodb:GetShardIterator
             - dynamodb:Query
-          Resource: arn:aws:dynamodb:eu-north-1:891376983144:table/gigs
+          Resource: !GetAtt GigsTable.Arn
         - Sid: CloudWatchCreateLogsPolicy
           Effect: Allow
           Action:
             - logs:CreateLogGroup
-          Resource: arn:aws:logs:eu-north-1:891376983144:*
+          Resource: arn:aws:logs:eu-west-2:891376983144:*
         - Sid: CloudWatchWriteLogsPolicy
           Effect: Allow
           Action:
@@ -112,7 +180,7 @@ Resources:
             - logs:PutLogEvents
           Resource:
             - >-
-              arn:aws:logs:eu-north-1:891376983144:log-group:/aws/lambda/add_gig_to_upcoming_playlist:*
+              arn:aws:logs:eu-west-2:891376983144:log-group:/aws/lambda/add_gig_to_upcoming_playlist:*
         - Sid: SSMWriteParameterPolicy
           Effect: Allow
           Action:
@@ -122,14 +190,14 @@ Resources:
           - ssm:PutParameter
           Resource:
             - >-
-              arn:aws:ssm:eu-north-1:891376983144:parameter/spotify/*
+              arn:aws:ssm:eu-west-2:891376983144:parameter/spotify/*
         - Sid: EventBridgeSchedulerCreatePolicy
           Effect: Allow
           Action:
             - scheduler:CreateSchedule
           Resource:
             - >-
-              arn:aws:scheduler:eu-north-1:891376983144:schedule/*
+              arn:aws:scheduler:eu-west-2:891376983144:schedule/*
         - Sid: EventBridgeSchedulerPassRole
           Effect: Allow
           Action:
@@ -140,7 +208,7 @@ Resources:
         Gigs:
           Type: DynamoDB
           Properties:
-            Stream: arn:aws:dynamodb:eu-north-1:891376983144:table/gigs/stream/2024-05-10T15:37:36.998
+            Stream: !GetAtt GigsTable.StreamArn
             StartingPosition: LATEST
             BatchSize: 10
             FilterCriteria:
@@ -151,6 +219,7 @@ Resources:
         MaximumRetryAttempts: 2
       Layers:
         - !Ref SharedLibs
+
   RemoveGigFromUpcomingPlaylist:
     Type: AWS::Serverless::Function
     Properties:
@@ -165,12 +234,12 @@ Resources:
               Action:
                 - dynamodb:Query
                 - dynamodb:GetItem
-              Resource: arn:aws:dynamodb:eu-north-1:891376983144:table/gigs
+              Resource: !GetAtt GigsTable.Arn
             - Sid: CloudWatchCreateLogsPolicy
               Effect: Allow
               Action:
                 - logs:CreateLogGroup
-              Resource: arn:aws:logs:eu-north-1:891376983144:*
+              Resource: arn:aws:logs:eu-west-2:891376983144:*
             - Sid: CloudWatchWriteLogsPolicy
               Effect: Allow
               Action:
@@ -178,7 +247,7 @@ Resources:
                 - logs:PutLogEvents
               Resource:
                 - >-
-                  arn:aws:logs:eu-north-1:891376983144:log-group:/aws/lambda/remove_gig_from_upcoming_playlist:*
+                  arn:aws:logs:eu-west-2:891376983144:log-group:/aws/lambda/remove_gig_from_upcoming_playlist:*
             - Sid: SSMWriteParameterPolicy
               Effect: Allow
               Action:
@@ -188,7 +257,7 @@ Resources:
                 - ssm:PutParameter
               Resource:
                 - >-
-                  arn:aws:ssm:eu-north-1:891376983144:parameter/spotify/*
+                  arn:aws:ssm:eu-west-2:891376983144:parameter/spotify/*
       Layers:
         - !Ref SharedLibs
   SchedulerRole:
@@ -211,6 +280,7 @@ Resources:
               - Effect: Allow
                 Action: lambda:InvokeFunction
                 Resource: !GetAtt RemoveGigFromUpcomingPlaylist.Arn
+
   UpcomingPlaylistRecon:
     Type: AWS::Serverless::Function
     Properties:
@@ -230,13 +300,13 @@ Resources:
           Action:
             - dynamodb:Query
           Resource:
-            - arn:aws:dynamodb:eu-north-1:891376983144:table/gigs
-            - arn:aws:dynamodb:eu-north-1:891376983144:table/gigs/index/userId-date-index
+            - !GetAtt GigsTable.Arn
+            - arn:aws:dynamodb:eu-west-2:891376983144:table/gigs/index/userId-date-index
         - Sid: CloudWatchCreateLogsPolicy
           Effect: Allow
           Action:
             - logs:CreateLogGroup
-          Resource: arn:aws:logs:eu-north-1:891376983144:*
+          Resource: arn:aws:logs:eu-west-2:891376983144:*
         - Sid: CloudWatchWriteLogsPolicy
           Effect: Allow
           Action:
@@ -244,7 +314,7 @@ Resources:
             - logs:PutLogEvents
           Resource:
             - >-
-              arn:aws:logs:eu-north-1:891376983144:log-group:/aws/lambda/upcoming_playlist_recon:*
+              arn:aws:logs:eu-west-2:891376983144:log-group:/aws/lambda/upcoming_playlist_recon:*
         - Sid: SSMWriteParameterPolicy
           Effect: Allow
           Action:
@@ -254,14 +324,14 @@ Resources:
           - ssm:PutParameter
           Resource:
             - >-
-              arn:aws:ssm:eu-north-1:891376983144:parameter/spotify/*
+              arn:aws:ssm:eu-west-2:891376983144:parameter/spotify/*
         - Sid: EventBridgeSchedulerCreatePolicy
           Effect: Allow
           Action:
             - scheduler:CreateSchedule
           Resource:
             - >-
-              arn:aws:scheduler:eu-north-1:891376983144:schedule/*
+              arn:aws:scheduler:eu-west-2:891376983144:schedule/*
         - Sid: EventBridgeSchedulerPassRole
           Effect: Allow
           Action:
@@ -279,6 +349,7 @@ Resources:
       CompatibleRuntimes:
         - python3.12
       RetentionPolicy: Retain
+
 Outputs:
   AddGigToUpcomingPlaylistFunctionArn:
     Value: !GetAtt AddGigToUpcomingPlaylist.Arn
