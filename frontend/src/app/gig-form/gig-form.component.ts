@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { FormGroup, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
+import { GigService } from '../gig.service';
 
 @Component({
   standalone: true,
@@ -8,12 +9,16 @@ import { FormGroup, FormControl, ReactiveFormsModule, Validators } from '@angula
   imports: [ReactiveFormsModule],
 })
 export class GigFormComponent {
+  gigService = inject(GigService);
   gigForm = new FormGroup({
     artist: new FormControl('', Validators.required),
     venue: new FormControl('')
   });
 
   onSubmit() {
-    console.warn(this.gigForm.value);
+    this.gigService.addGig(
+      this.gigForm.value.artist ?? '',
+      this.gigForm.value.venue ?? ''
+    );
   }
 }
