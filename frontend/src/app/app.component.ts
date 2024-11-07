@@ -1,11 +1,11 @@
 import { Component } from '@angular/core';
-import { AddGigFormComponent } from './add-gig-form/add-gig-form.component'
+import { RouterModule } from '@angular/router';
 
 @Component({
   standalone: true,
   selector: 'app-component',
   templateUrl: './app.component.html',
-  imports: [AddGigFormComponent]
+  imports: [RouterModule]
 })
 export class AppComponent {
 }

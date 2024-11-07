@@ -3,11 +3,11 @@ import { FormGroup, FormControl, ReactiveFormsModule, Validators } from '@angula
 
 @Component({
   standalone: true,
-  selector: 'add-gig-form',
-  templateUrl: './add-gig-form.component.html',
+  selector: 'gig-form',
+  templateUrl: './gig-form.component.html',
   imports: [ReactiveFormsModule],
 })
-export class AddGigFormComponent {
+export class GigFormComponent {
   gigForm = new FormGroup({
     artist: new FormControl('', Validators.required),
     venue: new FormControl('')
