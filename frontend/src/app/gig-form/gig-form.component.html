@@ -1,9 +1,16 @@
 <form [formGroup]="gigForm" (ngSubmit)="onSubmit()">
   <label for="artist">Artist: </label>
   <input id="artist" type="text" formControlName="artist">
+  <br>
   <label for="venue">Venue: </label>
   <input id="venue" type="text" formControlName="venue">
-
+  <br>
+  <label for="spotifyArtistId">Spotify Artist ID: </label>
+  <input id="spotifyArtistId" type="text" formControlName="spotifyArtistId">
+  <br>
+  <label for="date">Date: </label>
+  <input id="date" type="text" formControlName="date">
+  <br>
   <p>Complete the form to enable button.</p>
   <button type="submit" [disabled]="!gigForm.valid">Submit</button>
 </form>

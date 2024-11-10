@@ -12,13 +12,17 @@ export class GigFormComponent {
   gigService = inject(GigService);
   gigForm = new FormGroup({
     artist: new FormControl('', Validators.required),
-    venue: new FormControl('')
+    venue: new FormControl(''),
+    spotifyArtistId: new FormControl(''),
+    date: new FormControl(''),
   });
 
   onSubmit() {
     this.gigService.addGig(
       this.gigForm.value.artist ?? '',
-      this.gigForm.value.venue ?? ''
+      this.gigForm.value.venue ?? '',
+      this.gigForm.value.spotifyArtistId ?? '',
+      this.gigForm.value.date ?? '',
     );
   }
 }
