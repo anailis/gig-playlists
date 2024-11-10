@@ -3,8 +3,7 @@
   <input id="artist" type="text" formControlName="artist">
   <label for="venue">Venue: </label>
   <input id="venue" type="text" formControlName="venue">
+
+  <p>Complete the form to enable button.</p>
+  <button type="submit" [disabled]="!gigForm.valid">Submit</button>
 </form>
-
-
-<p>Complete the form to enable button.</p>
-<button type="submit" [disabled]="!gigForm.valid">Submit</button>
