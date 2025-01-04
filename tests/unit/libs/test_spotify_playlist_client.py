@@ -7,7 +7,7 @@ from spotipy import SpotifyException
 
 from spotify_playlist_client import SpotifyPlaylistClient
 
-TEST_DATA_DIR = "resources/test_data"
+TEST_DATA_DIR = "tests/resources/test_data"
 USER_ID = "12345"
 PLAYLIST_ID = "6789"
 ARTIST_NOT_IN_PLAYLIST = "1HxXNvsraqrsgfmju1yKk8"
