@@ -3,8 +3,7 @@ from unittest.mock import Mock
 
 import pytest
 
-from functions.upcoming_playlist_recon.upcoming_playlist_recon_service import UpcomingPlaylistReconService
-
+from upcoming_playlist_recon.upcoming_playlist_recon_service import UpcomingPlaylistReconService
 
 CURRENT_DATE = date(2024, 1, 1)
 PLAYLIST_ID = "PLAYLIST12345"
