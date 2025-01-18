@@ -59,7 +59,7 @@ def spotify_client():
 
 @pytest.fixture()
 def gig():
-    return Gig.construct(**{
+    return Gig.model_construct(**{
         "id": "GIG#1",
         "userId": USER_ID,
         "date": date(2024, 3, 12),
@@ -104,7 +104,7 @@ def test_gig_is_in_future(table, spotify_client, scheduler, gig):
 
 
 def test_gig_is_in_past(table, spotify_client, scheduler):
-    gig = Gig.construct(**{
+    gig = Gig.model_construct(**{
         "id": "GIG#1",
         "userId": USER_ID,
         "date": date(2023, 12, 12),
@@ -130,7 +130,7 @@ def test_gig_is_in_past(table, spotify_client, scheduler):
 
 
 def test_user_has_multiple_gigs_for_same_artist(table, scheduler, spotify_client, gig):
-    second_gig = Gig.construct(**{
+    second_gig = Gig.model_construct(**{
         "id": "GIG#2",
         "userId": USER_ID,
         "date": date(2024, 12, 12),
@@ -181,7 +181,7 @@ def test_tracks_cannot_be_retrieved(table, scheduler, gig):
     )
     spotify_client.add_artist.side_effect = [exception, lambda x: True]
 
-    invalid_gig = Gig.construct(**{
+    invalid_gig = Gig.model_construct(**{
         "id": "GIG#2",
         "userId": USER_ID,
         "date": date(2024, 12, 12),
@@ -238,7 +238,7 @@ def test_schedule_cannot_be_made(table, spotify_client, gig):
     )
     scheduler.create_schedule.side_effect = [exception, lambda x: True]
 
-    invalid_gig = Gig.construct(**{
+    invalid_gig = Gig.model_construct(**{
         "id": "GIG#2",
         "userId": "USER#6789",
         "date": date(2024, 12, 12),

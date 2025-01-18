@@ -1,7 +1,8 @@
 from datetime import date
 
-from aws_lambda_powertools.utilities.parser import BaseModel, validator
+from aws_lambda_powertools.utilities.parser import BaseModel
 from boto3.dynamodb.types import TypeDeserializer
+from pydantic import field_validator
 
 
 class Gig(BaseModel):
@@ -12,7 +13,6 @@ class Gig(BaseModel):
     spotifyArtistId: str
 
     @classmethod
-    @validator("id", "artist", "userId", "date", "spotifyArtistId",
-               pre=True, allow_reuse=True)
+    @field_validator("id", "artist", "userId", "date", "spotifyArtistId")
     def decode(cls, values):
         return TypeDeserializer().deserialize(values)
