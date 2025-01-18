@@ -100,7 +100,7 @@ class UpcomingPlaylistClient:
         logger.info("Searching for user", user_id=user_id)
         # FIXME: error handling
         results = self.table.query(KeyConditionExpression=Key("id").eq(user_id))
-        return User.construct(**results["Items"][0])
+        return User.model_construct(**results["Items"][0])
 
     def _schedule_removal_of_artist(self, gig: Gig, playlist_id: str) -> str:
         delete_date = datetime.strftime(

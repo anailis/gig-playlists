@@ -10,7 +10,7 @@ Globals:
     Handler: app.lambda_handler
     Layers:
       - >-
-        arn:aws:lambda:eu-west-2:017000801446:layer:AWSLambdaPowertoolsPythonV2:73
+        arn:aws:lambda:eu-west-2:017000801446:layer:AWSLambdaPowertoolsPythonV3-python312-x86_64:5
 
 Resources:
   GigsTable:

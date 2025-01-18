@@ -61,7 +61,7 @@ class UpcomingPlaylistReconService:
 
     def _get_user_details(self, user_id: str) -> User:
         results = self.table.query(KeyConditionExpression=Key("id").eq(user_id))
-        return User.construct(**results["Items"][0])
+        return User.model_construct(**results["Items"][0])
 
     def _get_upcoming_gigs(self, user_id: str) -> list[Gig]:
         results = self.table.query(
@@ -73,4 +73,4 @@ class UpcomingPlaylistReconService:
         )["Items"]
 
         logger.info(f"Found {len(results)} upcoming gigs")
-        return [Gig.parse_obj(gig) for gig in results]
+        return [Gig.model_validate(gig) for gig in results]

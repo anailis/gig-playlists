@@ -2,5 +2,5 @@ aws-lambda-powertools[all]
 boto3
 botocore
 spotipy
-pydantic
+pydantic>=2.0.0
 pytest
