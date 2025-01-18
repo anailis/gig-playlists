@@ -14,7 +14,6 @@ Globals:
 
 Resources:
   GigsTable:
-    Break: this template
     Type: AWS::DynamoDB::Table
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
