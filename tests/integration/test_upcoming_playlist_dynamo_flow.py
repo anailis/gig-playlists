@@ -8,7 +8,7 @@ from botocore.exceptions import ClientError
 
 logger = logging.getLogger()
 EVENT_DIR = "resources/test_data/dynamodb_stream_events"
-TEST_USER = "USER#ed9af2a7-60e5-448f-8081-9c49966d7f15"
+TEST_USER = "USER#ddd797f7-7b66-45ac-87a0-6604f52dc2fd"
 TEST_ARTIST = "7oPftvlwr6VrsViSDV7fJY"
 TEST_PLAYLIST = "70ZBZd7PC0g8f2gFg3kKGC"
 SCHEDULE_NAME = f"delete_{TEST_ARTIST}_from_{TEST_PLAYLIST}"
@@ -58,9 +58,10 @@ def test_add_and_remove_future_gig(add_gig_lambda_arn, remove_gig_lambda_arn, la
         FunctionName=add_gig_lambda_arn,
         Payload=json.dumps(dynamodb_stream)
     )
-
     assert add_lambda_response["StatusCode"] == 200
+
     payload = json.load(add_lambda_response["Payload"])
+    assert "errorMessage" not in payload, f"Lambda AddGigToUpcomingPlaylist exited with error: {payload['errorMessage']}"
     assert len(payload) == 1
     assert TEST_USER in payload.keys()
     assert len(payload[TEST_USER]) == 1

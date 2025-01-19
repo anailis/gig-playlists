@@ -3,7 +3,7 @@
   "eventName": "INSERT",
   "eventVersion": "1.1",
   "eventSource": "aws:dynamodb",
-  "awsRegion": "us-east-1",
+  "awsRegion": "eu-west-2",
   "dynamodb": {
     "Keys": {
       "Id": {
@@ -27,7 +27,7 @@
         "S": "GIG#81780e00-7779-4bae-bb6f-ce13e97f6ba2"
       },
       "userId": {
-        "S": "USER#ed9af2a7-60e5-448f-8081-9c49966d7f15"
+        "S": "USER#ddd797f7-7b66-45ac-87a0-6604f52dc2fd"
       }
     },
     "ApproximateCreationDateTime": 1428537600,
@@ -35,5 +35,5 @@
     "SizeBytes": 26,
     "StreamViewType": "NEW_AND_OLD_IMAGES"
   },
-  "eventSourceARN": "arn:aws:dynamodb:us-east-1:123456789012:table/ExampleTableWithStream/stream/2015-06-27T00:48:05.899"
+  "eventSourceARN": "arn:aws:dynamodb:eu-west-2:123456789012:table/ExampleTableWithStream/stream/2015-06-27T00:48:05.899"
 }
