@@ -98,9 +98,11 @@ class UpcomingPlaylistClient:
 
     def _get_user_details(self, user_id: str) -> User:
         logger.info("Searching for user", user_id=user_id)
-        # FIXME: error handling
         results = self.table.query(KeyConditionExpression=Key("id").eq(user_id))
-        return User.model_construct(**results["Items"][0])
+        try:
+            return User.model_construct(**results["Items"][0])
+        except IndexError:
+            raise ValueError(f"No user with ID {user_id} exists")
 
     def _schedule_removal_of_artist(self, gig: Gig, playlist_id: str) -> str:
         delete_date = datetime.strftime(
