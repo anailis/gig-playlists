@@ -62,10 +62,10 @@ def test_add_and_remove_future_gig(add_gig_lambda_arn, remove_gig_lambda_arn, la
 
     payload = json.load(add_lambda_response["Payload"])
     assert "errorMessage" not in payload, f"Lambda AddGigToUpcomingPlaylist exited with error: {payload['errorMessage']}"
-    assert len(payload) == 1
-    assert TEST_USER in payload.keys()
-    assert len(payload[TEST_USER]) == 1
-    assert TEST_ARTIST == payload[TEST_USER][0]
+    assert len(payload) == 1, f"Unexpected payload: {payload}"
+    assert TEST_USER in payload.keys(), "Playlist updated for wrong user"
+    assert len(payload[TEST_USER]) == 1, f"Incorrect number of artists ({len(payload[TEST_USER])}) added to playlist"
+    assert TEST_ARTIST == payload[TEST_USER][0], "Wrong artist added to playlist"
 
     try:
         scheduler.get_schedule(Name=SCHEDULE_NAME)
@@ -77,9 +77,12 @@ def test_add_and_remove_future_gig(add_gig_lambda_arn, remove_gig_lambda_arn, la
         FunctionName=remove_gig_lambda_arn,
         Payload=json.dumps({"spotifyArtistId": TEST_ARTIST, "playlistId": TEST_PLAYLIST})
     )
-
     assert remove_lambda_response["StatusCode"] == 200
-    assert remove_lambda_response["Payload"]
+
+    payload = json.load(remove_lambda_response["Payload"])
+    assert payload["removed"], "Artist not removed from playlist"
+    assert payload["playlistId"] == TEST_PLAYLIST, "Artist removed from wrong playlist"
+    assert payload["spotifyArtistId"] == TEST_ARTIST, "Wrong artist removed from playlist"
 
 
 def test_add_past_gig(add_gig_lambda_arn, lambda_client, scheduler):
