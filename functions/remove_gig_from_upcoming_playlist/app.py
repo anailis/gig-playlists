@@ -13,7 +13,7 @@ logger = logging.getLogger()
 logger.setLevel("INFO")
 
 
-def lambda_handler(event: dict[str, str], context: LambdaContext) -> bool:
+def lambda_handler(event: dict[str, str], context: LambdaContext) -> dict:
     """
     Removes an artist from a playlist.
 
@@ -55,4 +55,8 @@ def lambda_handler(event: dict[str, str], context: LambdaContext) -> bool:
         spotify=spotipy.Spotify(auth_manager=auth),
     )
 
-    return spotify_client.remove_artist(artist_id, playlist_id)
+    return {
+        "spotifyArtistId": artist_id,
+        "playlistId": playlist_id,
+        "removed": spotify_client.remove_artist(artist_id, playlist_id)
+    }
