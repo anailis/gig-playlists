@@ -26,7 +26,12 @@ The backend Python source directories are `functions` (contains Lambda function 
 (contains Python code that is shared across > 1 Lambda). Set these as source directories in PyCharm to remove false
 import errors.
 
-The frontend source is in `frontend`.
+The frontend Angular source is in `frontend`. It can be run locally using the Angular CLI:
+```commandline
+cd frontend
+npm install
+ng serve
+```
 
 ### Test
 
@@ -39,6 +44,10 @@ tests
 ```
 
 Tests are run with pytest. Running `pytest` in the root directory of the project will run all integration and unit tests.
+
+### CI/CD
+
+CI/CD is performed using GitHub Actions. Workflows are located in `.github/workflows`.
 
 ### Deploy
 
