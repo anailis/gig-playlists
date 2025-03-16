@@ -17,3 +17,44 @@ schedules the deletion of these songs by setting up an EventBridge Scheduler sch
 Lambda function the day after the gig.
 
 ![Architecture diagram for Giglist](docs/assets/architecture.png)
+
+## Project Organisation
+
+### Source
+
+The backend Python source directories are `functions` (contains Lambda function code, organised by function) and `libs`
+(contains Python code that is shared across > 1 Lambda). Set these as source directories in PyCharm to remove false
+import errors.
+
+The frontend Angular source is in `frontend`. It can be run locally using the Angular CLI:
+```commandline
+cd frontend
+npm install
+ng serve
+```
+
+### Test
+
+Tests are organised in the `tests` directory.
+```
+tests
+├── integration
+├── resources
+└── unit
+```
+
+Tests are run with pytest. Running `pytest` in the root directory of the project will run all integration and unit tests.
+
+### CI/CD
+
+CI/CD is performed using GitHub Actions. Workflows are located in `.github/workflows`.
+
+### Deploy
+
+The backend currently uses **Python 3.12**. 
+
+It can be deployed using the AWS SAM CLI:
+```commandline
+sam build
+sam deploy
+```
