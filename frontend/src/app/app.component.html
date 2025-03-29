@@ -1,1 +1,17 @@
-<router-outlet></router-outlet>
+<mat-toolbar>
+    <button mat-icon-button>
+        <mat-icon>menu</mat-icon>
+    </button>
+    <span class="example-spacer"></span>
+    <button mat-icon-button>
+        <span><mat-icon aria-hidden="false" aria-label="Example user verified icon" fontIcon="logout">logout</mat-icon></span>
+    </button>
+</mat-toolbar>
+<mat-sidenav-container>
+    <mat-sidenav opened mode="side" [style.width]="'250px'">
+        <app-navbar></app-navbar>
+    </mat-sidenav>
+    <mat-sidenav-content class="sidenav-content">
+        <router-outlet></router-outlet>
+    </mat-sidenav-content>
+</mat-sidenav-container>
