@@ -1,17 +1,13 @@
 <mat-toolbar>
-    <button mat-icon-button>
+    <button mat-icon-button (click)="navbarCollapsed.set(!navbarCollapsed())">
         <mat-icon>menu</mat-icon>
-    </button>
-    <span class="example-spacer"></span>
-    <button mat-icon-button>
-        <span><mat-icon aria-hidden="false" aria-label="Example user verified icon" fontIcon="logout">logout</mat-icon></span>
     </button>
 </mat-toolbar>
 <mat-sidenav-container>
-    <mat-sidenav opened mode="side" [style.width]="'250px'">
-        <app-navbar></app-navbar>
+    <mat-sidenav opened mode="side" [style.width]="navbarWidth()">
+        <app-navbar [navbarCollapsed]="navbarCollapsed()" />
     </mat-sidenav>
-    <mat-sidenav-content class="sidenav-content">
+    <mat-sidenav-content class="sidenav-content" [style.margin-left]="navbarWidth()">
         <router-outlet></router-outlet>
     </mat-sidenav-content>
 </mat-sidenav-container>

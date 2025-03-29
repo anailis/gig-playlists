@@ -1,13 +1,13 @@
 <div class="sidenav-header">
-    <img width="100" height="100" ngSrc="/assets/camel.jpg" alt="a picture of a camel" />
-    <div class="sidenav-header">
+    <div class="sidenav-header" [class.hide-header-text]="navContentCollapsed()">
         <h2>Giglist</h2>
-        <p>Username</p>
     </div>
     <mat-nav-list>
         <a mat-list-item *ngFor="let item of menuItems()">
             <mat-icon matListItemIcon>{{item.icon}}</mat-icon>
-            <span matListItemTitle>{{item.label}}</span>
+            <span matListItemTitle *ngIf="!navContentCollapsed()">
+                {{item.label}}
+            </span>
         </a>
     </mat-nav-list>
 </div>

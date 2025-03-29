@@ -1,4 +1,4 @@
-import {Component, signal} from '@angular/core';
+import {Component, Input, signal} from '@angular/core';
 import {CommonModule, NgOptimizedImage} from "@angular/common";
 import {MatListModule} from "@angular/material/list";
 import {MatIconModule} from "@angular/material/icon";
@@ -23,6 +23,11 @@ export type SidenavMenuItem = {
 })
 export class NavbarComponent {
 
+  navContentCollapsed = signal(false)
+  @Input() set navbarCollapsed(val: boolean) {
+    this.navContentCollapsed.set(val);
+  }
+
   menuItems = signal<SidenavMenuItem[]>([
     {
       icon: 'calendar_month',
@@ -38,6 +43,11 @@ export class NavbarComponent {
       icon: 'person',
       label: 'Account',
       route: 'account',
+    },
+    {
+      icon: 'logout',
+      label: 'Logout',
+      route: 'home',
     },
   ]);
 

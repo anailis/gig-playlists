@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import {Component, computed, signal} from '@angular/core';
 import { RouterModule } from '@angular/router';
 import {MatToolbarModule} from "@angular/material/toolbar";
 import {MatButtonModule} from "@angular/material/button";
@@ -20,4 +20,8 @@ import {NavbarComponent} from "./navbar/navbar.component";
   ]
 })
 export class AppComponent {
+
+  navbarCollapsed = signal(false)
+
+  navbarWidth= computed(() => this.navbarCollapsed() ? '65px' : '200px');
 }
