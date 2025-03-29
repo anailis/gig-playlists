@@ -1,7 +1,8 @@
 import {Component, Input, signal} from '@angular/core';
-import {CommonModule, NgOptimizedImage} from "@angular/common";
+import {CommonModule} from "@angular/common";
 import {MatListModule} from "@angular/material/list";
 import {MatIconModule} from "@angular/material/icon";
+import {RouterLink, RouterLinkActive} from "@angular/router";
 
 export type SidenavMenuItem = {
   icon: string;
@@ -14,9 +15,10 @@ export type SidenavMenuItem = {
   standalone: true,
   imports: [
     CommonModule,
-    NgOptimizedImage,
     MatListModule,
-    MatIconModule
+    MatIconModule,
+    RouterLink,
+    RouterLinkActive,
   ],
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.css'
