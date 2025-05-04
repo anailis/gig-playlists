@@ -10,6 +10,7 @@ import {NavbarComponent} from "./navbar/navbar.component";
   standalone: true,
   selector: 'app-component',
   templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css'],
   imports: [
     RouterModule,
     MatToolbarModule,
