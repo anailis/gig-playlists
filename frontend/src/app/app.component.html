@@ -1,3 +1,16 @@
-<header>Welcome to the Giglist. A navigation bar will live here.</header>
-<br>
-<router-outlet></router-outlet>
+<div class="app-shell">
+<mat-toolbar>
+    <button mat-icon-button (click)="navbarCollapsed.set(!navbarCollapsed())">
+        <mat-icon>menu</mat-icon>
+    </button>
+    <h2>Giglist</h2>
+</mat-toolbar>
+<mat-sidenav-container>
+    <mat-sidenav opened mode="side" [style.width]="navbarWidth()">
+        <app-navbar [navbarCollapsed]="navbarCollapsed()" />
+    </mat-sidenav>
+    <mat-sidenav-content class="sidenav-content" [style.margin-left]="navbarWidth()">
+        <router-outlet></router-outlet>
+    </mat-sidenav-content>
+</mat-sidenav-container>
+</div>

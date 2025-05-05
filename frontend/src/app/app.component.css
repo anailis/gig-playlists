@@ -1,0 +1,17 @@
+.example-spacer {
+    flex: 1 1 auto;
+}
+.sidenav-content {
+    padding: 24px;
+}
+mat-toolbar {
+    position: relative;
+    z-index: 5;
+
+    > h2 {
+        padding-left: 20px;
+    }
+}
+mat-sidenav-container {
+    height: calc(100vh - 64px);
+}

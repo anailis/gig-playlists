@@ -1,0 +1,22 @@
+<mat-toolbar class="year">2025</mat-toolbar>
+
+<div class="gig-list">
+    <ng-container *ngFor="let group of gigsByMonth">
+        <mat-toolbar class="month">{{ group.month }}</mat-toolbar>
+
+        <mat-card class="event-card" *ngFor="let gig of group.gigs">
+            <div class="event-content">
+                <div class="event-date">
+                    <div class="event-day">{{ gig.day }}</div>
+                    <div class="event-number">{{ gig.date }}</div>
+                </div>
+
+                <div class="event-title">{{ gig.title }}</div>
+
+                <button mat-icon-button>
+                    <mat-icon>edit</mat-icon>
+                </button>
+            </div>
+        </mat-card>
+    </ng-container>
+</div>
