@@ -4,6 +4,7 @@ import {MatIcon} from "@angular/material/icon";
 import {MatIconButton} from "@angular/material/button";
 import {MatCard} from "@angular/material/card";
 import {NgForOf} from "@angular/common";
+import {EventCardComponent} from "../../event-card/event-card.component";
 
 interface Gig {
   day: string;
@@ -20,7 +21,8 @@ interface Gig {
     MatIconButton,
     MatToolbar,
     MatCard,
-    NgForOf
+    NgForOf,
+    EventCardComponent
   ],
   templateUrl: './gigs.component.html',
   styleUrl: './gigs.component.css'
