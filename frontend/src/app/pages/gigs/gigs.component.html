@@ -1,53 +1,22 @@
 <mat-toolbar class="year">2025</mat-toolbar>
 
-<mat-toolbar class="month">November</mat-toolbar>
-
 <div class="gig-list">
-    <mat-card class="event-card">
-        <div class="event-content">
-            <div class="event-date">
-                <div class="event-day">Mon</div>
-                <div class="event-number">1</div>
+    <ng-container *ngFor="let group of gigsByMonth">
+        <mat-toolbar class="month">{{ group.month }}</mat-toolbar>
+
+        <mat-card class="event-card" *ngFor="let gig of group.gigs">
+            <div class="event-content">
+                <div class="event-date">
+                    <div class="event-day">{{ gig.day }}</div>
+                    <div class="event-number">{{ gig.date }}</div>
+                </div>
+
+                <div class="event-title">{{ gig.title }}</div>
+
+                <button mat-icon-button>
+                    <mat-icon>edit</mat-icon>
+                </button>
             </div>
-
-            <div class="event-title">Everything Everything</div>
-
-            <button mat-icon-button>
-                <mat-icon>edit</mat-icon>
-            </button>
-        </div>
-    </mat-card>
-    <mat-card class="event-card">
-        <div class="event-content">
-            <div class="event-date">
-                <div class="event-day">Tues</div>
-                <div class="event-number">2</div>
-            </div>
-
-            <div class="event-title">The World is a Beautiful Place and I Am No Longer Afraid to Die</div>
-
-            <button mat-icon-button>
-                <mat-icon>edit</mat-icon>
-            </button>
-        </div>
-    </mat-card>
-</div>
-
-<mat-toolbar class="month">December</mat-toolbar>
-
-<div class="gig-list">
-    <mat-card class="event-card" *ngFor="let gig of gigs">
-        <div class="event-content">
-            <div class="event-date">
-                <div class="event-day">{{ gig.day }}</div>
-                <div class="event-number">{{ gig.date }}</div>
-            </div>
-
-            <div class="event-title">{{ gig.title }}</div>
-
-            <button mat-icon-button>
-                <mat-icon>edit</mat-icon>
-            </button>
-        </div>
-    </mat-card>
+        </mat-card>
+    </ng-container>
 </div>
