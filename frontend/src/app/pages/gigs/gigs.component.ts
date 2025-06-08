@@ -39,30 +39,61 @@ export class GigsComponent {
   }
 
   // TODO: ensure cards can be ordered in both asc and desc order
-  groupByDate(gigs: Gig[]) {
-    const yearMap: { [year: number]: { [month: string]: Gig[] } } = {};
+    groupByDate(gigs: Gig[]) {
+        const gigsByYear = this.groupByYear(gigs);
 
-    for (const gig of gigs) {
-      if (!yearMap[gig.year]) {
-        yearMap[gig.year] = {};
-      }
-      if (!yearMap[gig.year][gig.month]) {
-        yearMap[gig.year][gig.month] = [];
-      }
+        return Object.keys(gigsByYear)
+            .sort((a, b) => +a - +b)
+            .map(year => {
+                const gigsInYear = gigsByYear[+year];
+                const months = this.groupByMonth(gigsInYear);
 
-      yearMap[gig.year][gig.month].push(gig);
+                const sortedMonths = Object.entries(months)
+                    .sort((a, b) => a[1].monthNumber - b[1].monthNumber)
+                    .map(([monthName, data]) => ({
+                        month: monthName,
+                        gigs: this.sortGigsByDay(data.gigs)
+                    }));
+
+                return {
+                    year: +year,
+                    months: sortedMonths
+                };
+            });
     }
 
-    return Object.keys(yearMap)
-        .sort() // sort years ascending
-        .map(year => ({
-          year: +year,
-          months: Object.keys(yearMap[+year])
-              .sort() // sort months alphabetically
-              .map(month => ({
-                month,
-                gigs: yearMap[+year][month]
-              }))
-        }));
-  }
+    private groupByYear(gigs: Gig[]): { [year: number]: Gig[] } {
+            return gigs.reduce((acc, gig) => {
+                if (!acc[gig.year]) {
+                    acc[gig.year] = [];
+                }
+                acc[gig.year].push(gig);
+                return acc;
+            }, {} as { [year: number]: Gig[] });
+        }
+
+    private groupByMonth(gigs: Gig[]): {
+        [monthName: string]: { gigs: Gig[]; monthNumber: number }
+    } {
+        return gigs.reduce((acc, gig) => {
+            if (!acc[gig.month_name]) {
+                acc[gig.month_name] = {
+                    gigs: [],
+                    monthNumber: gig.month_number
+                };
+            }
+            acc[gig.month_name].gigs.push(gig);
+            return acc;
+        }, {} as {
+            [monthName: string]: { gigs: Gig[]; monthNumber: number }
+        });
+    }
+
+    private sortGigsByDay(gigs: Gig[]): Gig[] {
+        return gigs.slice().sort((a, b) => {
+            const dateA = new Date(a.date);
+            const dateB = new Date(b.date);
+            return dateA.getDate() - dateB.getDate(); // compare day of month
+        });
+    }
 }
