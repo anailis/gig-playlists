@@ -7,9 +7,9 @@
 
             <app-event-card
                     *ngFor="let gig of monthGroup.gigs"
-                    [day]="gig.day"
-                    [date]="gig.date"
-                    [title]="gig.title">
+                    [day]=gig.day_of_week
+                    [date]=gig.day_of_month
+                    [title]="gig.artist">
             </app-event-card>
         </ng-container>
     </ng-container>

@@ -1,15 +1,9 @@
-import { Component } from '@angular/core';
+import {Component, inject} from '@angular/core';
 import {MatToolbar} from "@angular/material/toolbar";
 import {NgForOf} from "@angular/common";
 import {EventCardComponent} from "../../event-card/event-card.component";
-
-interface Gig {
-  day: string;
-  date: number;
-  month: string;
-  year: number;
-  title: string;
-}
+import {GigService} from "../../gig.service";
+import {Gig} from "../../gig";
 
 @Component({
   selector: 'app-gigs',
@@ -23,13 +17,9 @@ interface Gig {
   styleUrl: './gigs.component.css'
 })
 export class GigsComponent {
-  gigs: Gig[] = [
-    { day: 'Mon', date: 30, month: 'December', year: 2025, title: 'blink-182 *' },
-    { day: 'Sun', date: 31, month: 'December', year: 2025, title: 'Green Day *' },
-    { day: 'Tue', date: 1, month: 'November', year: 2024, title: 'Everything Everything *' },
-    { day: 'Wed', date: 2, month: 'November', year: 2025, title: 'The World is a Beautiful Place and I Am No Longer Afraid to Die *' },
-    { day: 'Wed', date: 2, month: 'April', year: 2025, title: 'Cheekface' },
-  ];
+  gigService = inject(GigService);
+
+  gigs: Gig[] = [];
 
   groupedGigs: {
     year: number;
@@ -40,7 +30,12 @@ export class GigsComponent {
   }[] = [];
 
   ngOnInit(): void {
-    this.groupedGigs = this.groupByDate(this.gigs);
+    this.gigService.getGigsForUser("e60d3adf-1bd5-4b5e-b71c-42582ed86bd6").subscribe(
+        (data: any[]) => {
+          this.gigs = data.map(obj => new Gig(obj));
+          this.groupedGigs = this.groupByDate(this.gigs);
+        }
+    );
   }
 
   // TODO: ensure cards can be ordered in both asc and desc order
