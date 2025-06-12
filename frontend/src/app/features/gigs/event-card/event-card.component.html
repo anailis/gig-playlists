@@ -1,11 +1,11 @@
 <mat-card class="event-card">
     <div class="event-content">
         <div class="event-date">
-            <div class="event-day">{{ day }}</div>
-            <div class="event-number">{{ date }}</div>
+            <div class="event-day" data-testid="day">{{ day }}</div>
+            <div class="event-number" data-testid="date">{{ date }}</div>
         </div>
 
-        <div class="event-title">{{ title }}</div>
+        <div class="event-title" data-testid="title">{{ title }}</div>
 
         <button mat-icon-button>
             <mat-icon>edit</mat-icon>
