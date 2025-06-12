@@ -1,8 +1,8 @@
 import { Routes } from '@angular/router';
-import { GigFormComponent } from './gig-form/gig-form.component'
-import {GigsComponent} from "./pages/gigs/gigs.component";
-import {AccountComponent} from "./pages/account/account.component";
-import {PlaylistsComponent} from "./pages/playlists/playlists.component";
+import { GigFormComponent } from './features/gigs/gig-form/gig-form.component'
+import {GigCalendar} from "./features/gigs/gig-calendar/gig-calendar.component";
+import {AccountComponent} from "./features/account/account.component";
+import {PlaylistsComponent} from "./features/playlists/playlists.component";
 
 const routeConfig: Routes = [
   {
@@ -12,7 +12,7 @@ const routeConfig: Routes = [
   },
   {
     path: 'gigs',
-    component: GigsComponent,
+    component: GigCalendar,
   },
   {
     path: 'account',

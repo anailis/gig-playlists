@@ -8,7 +8,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { DateTime } from 'luxon';
 
-import { GigService } from '../gig.service';
+import { GigService } from '@services/gig.service';
 
 @Component({
   standalone: true,

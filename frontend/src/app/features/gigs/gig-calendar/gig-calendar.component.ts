@@ -1,9 +1,9 @@
 import {Component, inject} from '@angular/core';
 import {MatToolbar} from "@angular/material/toolbar";
 import {NgForOf} from "@angular/common";
-import {EventCardComponent} from "../../event-card/event-card.component";
-import {GigService} from "../../gig.service";
-import {Gig} from "../../gig";
+import {EventCardComponent} from "../event-card/event-card.component";
+import {GigService} from "@core/services/gig.service";
+import {Gig} from "@models/gig";
 
 @Component({
   selector: 'app-gigs',
@@ -13,10 +13,10 @@ import {Gig} from "../../gig";
     NgForOf,
     EventCardComponent
   ],
-  templateUrl: './gigs.component.html',
-  styleUrl: './gigs.component.css'
+  templateUrl: './gig-calendar.component.html',
+  styleUrl: './gig-calendar.component.css'
 })
-export class GigsComponent {
+export class GigCalendar {
   gigService = inject(GigService);
 
   gigs: Gig[] = [];

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Gig } from './gig';
-import { environment } from './config';
+import { Gig } from '@models/gig';
+import { environment } from '../../config';
 import { DateTime } from "luxon";
 import { Observable } from "rxjs";
 
