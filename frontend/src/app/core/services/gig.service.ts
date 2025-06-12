@@ -5,6 +5,10 @@ import { environment } from '../../config';
 import { DateTime } from "luxon";
 import { Observable } from "rxjs";
 
+/**
+ * Responsible for retrieving Gig data
+ * through interactions with the Gigs API.
+ */
 @Injectable({
   providedIn: 'root'
 })
