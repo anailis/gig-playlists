@@ -52,11 +52,7 @@ Resources:
             - AttributeName: id
               KeyType: RANGE
           Projection:
-            NonKeyAttributes:
-              - artist
-              - venue
-              - spotifyArtistId
-            ProjectionType: INCLUDE
+            ProjectionType: ALL
       StreamSpecification:
         StreamViewType: NEW_AND_OLD_IMAGES
 

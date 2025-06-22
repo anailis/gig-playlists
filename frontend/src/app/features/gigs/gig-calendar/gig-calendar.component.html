@@ -1,0 +1,16 @@
+<div class="gig-list">
+    <ng-container *ngFor="let yearGroup of groupedGigs">
+        <mat-toolbar class="year">{{ yearGroup.year }}</mat-toolbar>
+
+        <ng-container *ngFor="let monthGroup of yearGroup.months">
+            <mat-toolbar class="month">{{ monthGroup.month }}</mat-toolbar>
+
+            <app-event-card
+                    *ngFor="let gig of monthGroup.gigs"
+                    [day]=gig.day_of_week
+                    [date]=gig.day_of_month
+                    [title]="gig.artist">
+            </app-event-card>
+        </ng-container>
+    </ng-container>
+</div>
