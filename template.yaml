@@ -13,11 +13,6 @@ Globals:
         arn:aws:lambda:eu-west-2:017000801446:layer:AWSLambdaPowertoolsPythonV3-python312-x86_64:5
 
 Resources:
-  GigListHostedZone:
-    Type: AWS::Route53::HostedZone
-    Properties:
-      Name: giglist.rocks
-
   GigsTable:
     Type: AWS::DynamoDB::Table
     DeletionPolicy: Retain
@@ -428,9 +423,11 @@ Resources:
             ResponseCode: 200
             ResponsePagePath: /index.html
         PriceClass: PriceClass_All
+        Aliases:
+          - www.giglist.rocks
         ViewerCertificate:
-          CloudFrontDefaultCertificate: true
-          MinimumProtocolVersion: 'TLSv1.2_2021'
+          AcmCertificateArn: arn:aws:acm:us-east-1:891376983144:certificate/3100c7d6-6a01-4773-bfb3-1efbd0958f54
+          SslSupportMethod: sni-only
 
   CloudFrontOriginAccessControl:
     Type: AWS::CloudFront::OriginAccessControl
@@ -443,6 +440,21 @@ Resources:
         OriginAccessControlOriginType: s3
         SigningBehavior: always
         SigningProtocol: sigv4
+
+  GigListHostedZone:
+    Type: AWS::Route53::HostedZone
+    Properties:
+      Name: giglist.rocks
+
+  WwwRecordSet:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref GigListHostedZone
+      Name: www.giglist.rocks.
+      Type: A
+      AliasTarget:
+        DNSName: !GetAtt CloudFrontDistribution.DomainName
+        HostedZoneId: Z2FDTNDATAQYW2 # Same for all CloudFront apps
 
 Outputs:
   AddGigToUpcomingPlaylistFunctionArn:
