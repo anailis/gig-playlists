@@ -456,6 +456,23 @@ Resources:
         DNSName: !GetAtt CloudFrontDistribution.DomainName
         HostedZoneId: Z2FDTNDATAQYW2 # Same for all CloudFront apps
 
+  CognitoUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+      UsernameAttributes:
+        - email
+      Schema:
+        - AttributeDataType: String
+          Name: email
+          Required: true
+        - AttributeDataType: String
+          Name: preferred_username
+          Required: true
+
+
 Outputs:
   AddGigToUpcomingPlaylistFunctionArn:
     Value: !GetAtt AddGigToUpcomingPlaylist.Arn
