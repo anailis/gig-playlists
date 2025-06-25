@@ -14,9 +14,12 @@ Globals:
         arn:aws:lambda:eu-west-2:017000801446:layer:AWSLambdaPowertoolsPythonV3-python312-x86_64:5
 
 Parameters:
-  GiglistCertificateARN:
+  GiglistRootCertificateARN:
     Type: String
     Default: arn:aws:acm:us-east-1:891376983144:certificate/3100c7d6-6a01-4773-bfb3-1efbd0958f54
+  GiglistAuthCertificateARN:
+    Type: String
+    Default: arn:aws:acm:us-east-1:891376983144:certificate/7f4174a3-ea6d-4c16-aa14-f22ed6821a91
 
 Resources:
   GigsTable:
@@ -432,7 +435,7 @@ Resources:
         Aliases:
           - www.giglist.rocks
         ViewerCertificate:
-          AcmCertificateArn: !Ref GiglistCertificateARN
+          AcmCertificateArn: !Ref GiglistRootCertificateARN
           SslSupportMethod: sni-only
 
   CloudFrontOriginAccessControl:
@@ -452,14 +455,24 @@ Resources:
     Properties:
       Name: giglist.rocks
 
-  RootRecordSet:
+  AuthRecordSet:
     Type: AWS::Route53::RecordSet
     Properties:
       HostedZoneId: !Ref GigListHostedZone
-      Name: giglist.rocks.
+      Name: auth.giglist.rocks.
+      Type: A
+      TTL: 300
+      ResourceRecords:
+        - 1.1.1.1 # Cognito needs a non-alias A record
+
+  TestAuthRecordSet:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref GigListHostedZone
+      Name: test.auth.giglist.rocks.
       Type: A
       AliasTarget:
-        DNSName: !GetAtt CloudFrontDistribution.DomainName
+        DNSName: dhe9dk2tm3om7.cloudfront.net # FIXME: hard-coding?
         HostedZoneId: Z2FDTNDATAQYW2 # Same for all CloudFront apps
 
   WwwRecordSet:
@@ -502,6 +515,15 @@ Resources:
         - openid
       AllowedOAuthFlows:
         - code
+
+  CognitoUserPoolDomain:
+    Type: AWS::Cognito::UserPoolDomain
+    Properties:
+      UserPoolId: !Ref CognitoUserPool
+      Domain: "test.auth.giglist.rocks"
+      ManagedLoginVersion: "1"
+      CustomDomainConfig:
+        CertificateArn: !Ref GiglistAuthCertificateARN
 
 Outputs:
   AddGigToUpcomingPlaylistFunctionArn:
