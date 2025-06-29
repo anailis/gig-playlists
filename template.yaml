@@ -501,6 +501,8 @@ Resources:
           Name: preferred_username
           Required: true
       UserPoolTier: ESSENTIALS
+      AutoVerifiedAttributes:
+        - email
 
   CognitoUserPoolClient:
     Type: AWS::Cognito::UserPoolClient
@@ -511,6 +513,7 @@ Resources:
       DefaultRedirectURI: https://www.giglist.rocks
       SupportedIdentityProviders:
         - COGNITO
+      AllowedOAuthFlowsUserPoolClient: true
       AllowedOAuthScopes:
         - openid
       AllowedOAuthFlows:
