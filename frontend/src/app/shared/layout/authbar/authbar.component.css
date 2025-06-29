@@ -1,0 +1,12 @@
+.horizontal-list {
+    display: flex;
+    flex-direction: row;
+    gap: 5px;
+    width: 100%;
+}
+
+a[mat-list-item] {
+    display: flex;
+    align-items: center;
+    width: auto;
+}
