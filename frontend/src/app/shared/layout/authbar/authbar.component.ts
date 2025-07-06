@@ -29,9 +29,9 @@ export class AuthbarComponent {
         this.updateAuthBar();
     }
 
-    private updateAuthBar() {
+    private async updateAuthBar() {
+        this.isLoggedIn = await this.authService.isSignedIn();
         this.authItems = this.authService.getAuthBarItems(this.isLoggedIn);
     }
-
 
 }

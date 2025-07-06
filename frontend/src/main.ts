@@ -1,5 +1,15 @@
 import { bootstrapApplication } from '@angular/platform-browser';
 import { AppComponent } from './app/app.component';
 import { appConfig } from './app/app.config';
+import { Amplify } from "aws-amplify";
+
+Amplify.configure({
+    Auth: {
+        Cognito: {
+            userPoolClientId: '205m3ah5f7m3gf17hadbo7c16n',
+            userPoolId: 'eu-west-2_ipRVC2as0'
+        }
+    }
+});
 
 bootstrapApplication(AppComponent, appConfig).catch((err) => console.error(err));

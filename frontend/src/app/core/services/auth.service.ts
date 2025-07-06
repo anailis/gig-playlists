@@ -1,5 +1,6 @@
 import {Injectable} from "@angular/core";
 import {environment} from "../../config";
+import { getCurrentUser } from 'aws-amplify/auth';
 
 
 export interface AuthItem {
@@ -25,5 +26,25 @@ export class AuthService {
 
     getAuthBarItems(isLoggedIn: boolean): AuthItem[] {
         return isLoggedIn ? this.loggedInAuthBarItems : this.loggedOutAuthBarItems;
+    }
+
+    async currentAuthenticatedUser() {
+        try {
+            const { username, userId, signInDetails } = await getCurrentUser();
+            console.log(`The username: ${username}`);
+            console.log(`The userId: ${userId}`);
+            console.log(`The signInDetails: ${signInDetails}`);
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    async isSignedIn(): Promise<boolean> {
+        try {
+            await this.currentAuthenticatedUser();
+            return true;
+        } catch {
+            return false;
+        }
     }
 }
