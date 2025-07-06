@@ -55,6 +55,6 @@ The backend currently uses **Python 3.12**.
 
 It can be deployed using the AWS SAM CLI:
 ```commandline
-sam build
-sam deploy
+sam build -t template.yaml
+sam deploy -t template.yaml --stack-name giglist-dev --parameter-overrides Environment=dev
 ```
