@@ -2,3 +2,4 @@
 .aws-sam/
 .idea/
 venv/
+node_modules/
