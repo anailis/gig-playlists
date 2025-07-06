@@ -1,13 +1,28 @@
 <div class="auth-header">
     <mat-nav-list class="horizontal-list">
         <a mat-list-item
-           *ngFor="let item of authItems"
-           [href]="item.link"
-           target="_blank"
-           rel="noopener noreferrer"
+           *ngIf="isLoggedIn; else loggedOut"
+           (click)="signOut()"
         >
-            <mat-icon matListItemIcon>{{item.icon}}</mat-icon>
-            <span matListItemTitle>{{ item.label }}</span>
+            <mat-icon matListItemIcon>logout</mat-icon>
+            <span matListItemTitle>Logout</span>
         </a>
+        <a mat-list-item
+           (click)="signIn()"
+        >
+            <mat-icon matListItemIcon>login</mat-icon>
+            <span matListItemTitle>Login Direct</span>
+        </a>
+        <ng-template #loggedOut>
+            <a mat-list-item
+               *ngFor="let item of loggedOutAuthItems"
+               [href]="item.link"
+               target="_blank"
+               rel="noopener noreferrer"
+            >
+                <mat-icon matListItemIcon>{{item.icon}}</mat-icon>
+                <span matListItemTitle>{{ item.label }}</span>
+            </a>
+        </ng-template>
     </mat-nav-list>
 </div>

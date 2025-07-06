@@ -510,9 +510,10 @@ Resources:
       UserPoolId: !Ref CognitoUserPool
       CallbackURLs:
         - https://www.giglist.rocks
-      DefaultRedirectURI: https://www.giglist.rocks
+        - http://localhost:4201
       LogoutURLs:
         - https://www.giglist.rocks
+        - http://localhost:4201
       SupportedIdentityProviders:
         - COGNITO
       AllowedOAuthFlowsUserPoolClient: true

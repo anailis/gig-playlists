@@ -7,7 +7,16 @@ Amplify.configure({
     Auth: {
         Cognito: {
             userPoolClientId: '205m3ah5f7m3gf17hadbo7c16n',
-            userPoolId: 'eu-west-2_ipRVC2as0'
+            userPoolId: 'eu-west-2_ipRVC2a/s0',
+            loginWith: {
+                oauth: {
+                    domain: 'test.auth.giglist.rocks',
+                    scopes: ['openid'],
+                    responseType: 'code',
+                    redirectSignIn: ['http://localhost:4201'],
+                    redirectSignOut: ['http://localhost:4201']
+                }
+            },
         }
     }
 });

@@ -1,8 +1,15 @@
 import { Component } from '@angular/core';
 import {MatListItem, MatListItemIcon, MatListItemTitle, MatNavList} from "@angular/material/list";
 import {MatIcon} from "@angular/material/icon";
-import {AuthItem, AuthService} from "@services/auth.service";
-import {NgForOf} from "@angular/common";
+import {NgForOf, NgIf} from "@angular/common";
+import {environment} from "../../../config";
+import {AuthService} from "@services/auth.service";
+
+export interface AuthItem {
+    icon: string;
+    label: string;
+    link: string;
+}
 
 @Component({
   selector: 'app-authbar',
@@ -13,25 +20,35 @@ import {NgForOf} from "@angular/common";
         MatListItemIcon,
         MatListItemTitle,
         MatListItem,
-        NgForOf
+        NgForOf,
+        NgIf
     ],
   templateUrl: './authbar.component.html',
   styleUrl: './authbar.component.css'
 })
 export class AuthbarComponent {
 
-    isLoggedIn = false;
-    authItems: AuthItem[] = [];
+    isLoggedIn: boolean = false;
+
+    loggedOutAuthItems: AuthItem[] = [
+        { icon: 'login', label: 'Login', link: environment.loginUrl },
+        { icon: 'add', label: 'Signup', link: environment.signupUrl },
+    ];
 
     constructor(private authService: AuthService) {}
 
     ngOnInit() {
-        this.updateAuthBar();
+        this.authService.isSignedIn$.subscribe(isSignedIn => {
+            this.isLoggedIn = isSignedIn;
+        });
     }
 
-    private async updateAuthBar() {
-        this.isLoggedIn = await this.authService.isSignedIn();
-        this.authItems = this.authService.getAuthBarItems(this.isLoggedIn);
+    async signOut(): Promise<void> {
+        await this.authService.signOut();
+    }
+
+    async signIn(): Promise<void> {
+        await this.authService.signIn();
     }
 
 }

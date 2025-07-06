@@ -4,6 +4,7 @@ import {MatListModule} from "@angular/material/list";
 import {MatIconModule} from "@angular/material/icon";
 import {RouterLink, RouterLinkActive} from "@angular/router";
 import {NavItem, NavService} from "@services/nav.service";
+import {AuthService} from "@services/auth.service";
 
 @Component({
   selector: 'app-navbar',
@@ -23,7 +24,10 @@ export class NavbarComponent {
   isLoggedIn = false
   navItems: NavItem[] = [];
 
-  constructor(private navService: NavService) {}
+  constructor(
+      private navService: NavService,
+      private authService: AuthService
+  ) {}
 
   navContentCollapsed = signal(false)
   @Input() set navbarCollapsed(val: boolean) {
@@ -34,7 +38,7 @@ export class NavbarComponent {
     this.updateNavItems();
   }
 
-  private updateNavItems() {
+  private async updateNavItems() {
     this.navItems = this.navService.getNavBarItems(this.isLoggedIn);
   }
 
