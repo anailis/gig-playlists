@@ -10,11 +10,11 @@ export interface NavItem {
     providedIn: 'root'
 })
 export class NavService {
-    private loggedOutNavItems: NavItem[] = [
+    private loggedOutNavBarItems: NavItem[] = [
         { icon: 'music_note', label: 'About', route: 'home'},
     ];
 
-    private loggedInNavItems: NavItem[] = [
+    private loggedInNavBarItems: NavItem[] = [
         { icon: 'calendar_month', label: 'Gigs', route: 'gigs'},
         { icon: 'music_note', label: 'Playlists', route: 'playlists'},
         { icon: 'person', label: 'Account', route: 'account'},
@@ -22,7 +22,7 @@ export class NavService {
 
     constructor() {}
 
-    getNavItems(isLoggedIn: boolean): NavItem[] {
-        return isLoggedIn ? this.loggedInNavItems : this.loggedOutNavItems;
+    getNavBarItems(isLoggedIn: boolean): NavItem[] {
+        return isLoggedIn ? this.loggedInNavBarItems : this.loggedOutNavBarItems;
     }
 }

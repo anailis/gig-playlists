@@ -35,7 +35,7 @@ export class NavbarComponent {
   }
 
   private updateNavItems() {
-    this.navItems = this.navService.getNavItems(this.isLoggedIn);
+    this.navItems = this.navService.getNavBarItems(this.isLoggedIn);
   }
 
 }
