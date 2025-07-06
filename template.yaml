@@ -511,6 +511,8 @@ Resources:
       CallbackURLs:
         - https://www.giglist.rocks
       DefaultRedirectURI: https://www.giglist.rocks
+      LogoutURLs:
+        - https://www.giglist.rocks
       SupportedIdentityProviders:
         - COGNITO
       AllowedOAuthFlowsUserPoolClient: true
