@@ -7,13 +7,13 @@
             <mat-icon matListItemIcon>logout</mat-icon>
             <span matListItemTitle>Logout</span>
         </a>
-        <a mat-list-item
-           (click)="signIn()"
-        >
-            <mat-icon matListItemIcon>login</mat-icon>
-            <span matListItemTitle>Login Direct</span>
-        </a>
         <ng-template #loggedOut>
+            <a mat-list-item
+               (click)="signIn()"
+            >
+                <mat-icon matListItemIcon>login</mat-icon>
+                <span matListItemTitle>Login</span>
+            </a>
             <a mat-list-item
                *ngFor="let item of loggedOutAuthItems"
                [href]="item.link"

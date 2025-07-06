@@ -31,7 +31,6 @@ export class AuthbarComponent {
     isLoggedIn: boolean = false;
 
     loggedOutAuthItems: AuthItem[] = [
-        { icon: 'login', label: 'Login', link: environment.loginUrl },
         { icon: 'add', label: 'Signup', link: environment.signupUrl },
     ];
 

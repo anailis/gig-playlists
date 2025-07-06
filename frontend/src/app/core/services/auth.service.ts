@@ -1,5 +1,5 @@
 import {Injectable} from "@angular/core";
-import { fetchAuthSession, getCurrentUser, signOut, fetchUserAttributes, signInWithRedirect } from 'aws-amplify/auth';
+import { getCurrentUser, signOut, signInWithRedirect } from 'aws-amplify/auth';
 import {BehaviorSubject} from "rxjs";
 
 @Injectable({
@@ -32,7 +32,7 @@ export class AuthService {
     }
 
     async signIn(): Promise<void> {
-        await signInWithRedirect({
-        });
+        await signInWithRedirect();
     }
+
 }

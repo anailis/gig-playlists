@@ -35,7 +35,10 @@ export class NavbarComponent {
   }
 
   ngOnInit() {
-    this.updateNavItems();
+    this.authService.isSignedIn$.subscribe(isSignedIn => {
+      this.isLoggedIn = isSignedIn;
+      this.updateNavItems();
+    });
   }
 
   private async updateNavItems() {
