@@ -4,15 +4,33 @@ Transform: AWS::Serverless-2016-10-31
 Description: SAM Template for gig-playlists
 Parameters:
   Environment:
+    Description: "Deployment environment"
     Type: String
     Default: dev
     AllowedValues:
       - dev
       - prod
-    Description: "Deployment environment"
+  GigsApiAllowedOrigins:
+    Description: "Allowed origins (CORS) for the Gigs API"
+    Type: CommaDelimitedList
+  ApiTokenArn:
+    Description: "ARN of a dummy API token stored in SSM, to be removed later"
+    Type: String
+
 
 Conditions:
   IsProd: !Equals [ !Ref Environment, prod ]
+
+Globals:
+  Function:
+    Timeout: 60
+    Runtime: python3.12
+    Handler: app.lambda_handler
+    Architectures:
+      - x86_64
+    Layers:
+      - >-
+        arn:aws:lambda:eu-west-2:017000801446:layer:AWSLambdaPowertoolsPythonV3-python312-x86_64:5
 
 Resources:
   StaticSiteBucket:
@@ -67,3 +85,37 @@ Resources:
             ProjectionType: ALL
       StreamSpecification:
         StreamViewType: NEW_AND_OLD_IMAGES
+
+  GigsApiAuthFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "gigs-api-authoriser-${Environment}"
+      CodeUri: functions/gigs_db_auth/
+      Description: Performs authorisation for requests to GigsAPI
+      Policies:
+        - Statement:
+            - Sid: SSMReadParameterPolicy
+              Effect: Allow
+              Action:
+                - ssm:GetParameters
+                - ssm:GetParameter
+              Resource:
+                - !Ref ApiTokenArn
+
+  GigsApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      Name: !Sub "gigs-api-${Environment}"
+      Description: API Gateway for calling GigsDbCRUD lambda function
+      Auth:
+        DefaultAuthorizer: GigsTokenAuthorizer
+        Authorizers:
+          GigsTokenAuthorizer:
+            FunctionArn: !GetAtt GigsApiAuthFunction.Arn
+            AuthorizerPayloadFormatVersion: 1.0 # Custom authoriser format
+      CorsConfiguration:
+        AllowOrigins: !Ref GigsApiAllowedOrigins
+        AllowHeaders: "'Authorization,Content-Type'"
+        AllowMethods: "'POST,GET,OPTIONS'"
+      # TODO: test this CORS configuration
+      # TODO: Create OpenAPI spec, put this in an S3 bucket, and set it as the definition here

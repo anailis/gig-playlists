@@ -1,8 +1,29 @@
 version = 0.1
+
+[default]
 [default.deploy.parameters]
-stack_name = "gig-playlists"
-resolve_s3 = true
-s3_prefix = "gig-playlists"
 region = "eu-west-2"
+
+[dev]
+[dev.deploy.parameters]
+stack_name = "giglist-dev"
+s3_prefix = "giglist-dev"
+resolve_s3 = true
 capabilities = "CAPABILITY_IAM"
-image_repositories = []
+parameter_overrides = [
+    "Environment=dev",
+    "ApiTokenArn=arn:aws:ssm:eu-west-2:891376983144:parameter/gigs/crud_api_token",
+    "GigsApiAllowedOrigins=*" # TODO: think this isn't getting picked up
+]
+
+[prod]
+[prod.deploy.parameters]
+stack_name = "giglist-prod"
+s3_prefix = "giglist-prod"
+resolve_s3 = true
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = [
+    "Environment=prod",
+    "ApiTokenArn=arn:aws:ssm:eu-west-2:891376983144:parameter/gigs/crud_api_token",
+    "GigsApiAllowedOrigins=https://app.giglist.rocks"
+]
