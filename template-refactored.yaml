@@ -84,6 +84,25 @@ Resources:
         IgnorePublicAcls: true
         RestrictPublicBuckets: true
 
+  StaticSiteBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref StaticSiteBucket
+      PolicyDocument:
+        Id: StaticSiteBucketPolicy
+        Version: 2012-10-17
+        Statement:
+          - Sid: PolicyForCloudFrontPrivateContent
+            Effect: Allow
+            Resource: !Sub ${StaticSiteBucket.Arn}/*
+            Principal:
+              Service: cloudfront.amazonaws.com
+            Condition:
+              StringEquals:
+                AWS:SourceArn: !Sub "arn:aws:cloudfront::${AWS::AccountId}:distribution/${CloudFrontDistribution}"
+            Action: "s3:GetObject*"
+
+
   #################################
   ##### Frontend distribution #####
   #################################
@@ -99,6 +118,39 @@ Resources:
         OriginAccessControlOriginType: s3
         SigningBehavior: always
         SigningProtocol: sigv4
+
+  CloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Origins:
+          - DomainName: !GetAtt StaticSiteBucket.RegionalDomainName
+            Id: S3Origin
+            S3OriginConfig:
+              OriginAccessIdentity: ""
+            OriginAccessControlId: !GetAtt CloudFrontOriginAccessControl.Id
+        Enabled: true
+        DefaultRootObject: index.html
+        DefaultCacheBehavior:
+          AllowedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+          TargetOriginId: S3Origin
+          CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad # CachingDisabled managed policy
+          ResponseHeadersPolicyId: eaab4381-ed33-4a86-88ca-d9558dc6cd63 # CORS-with-preflight-and-SecurityHeadersPolicy managed policy
+          OriginRequestPolicyId: 88a5eaf4-2fd4-4709-b370-b4c650ea3fcf # CORS-S3Origin
+          ViewerProtocolPolicy: redirect-to-https
+        CustomErrorResponses:
+          - ErrorCode: 403
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+        PriceClass: PriceClass_All
+        Aliases:
+          - !Sub "${Environment}.giglist.rocks"
+        ViewerCertificate:
+          AcmCertificateArn: !Ref GiglistRootCertificateArn
+          SslSupportMethod: sni-only
 
 
   #####################

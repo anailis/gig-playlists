@@ -33,6 +33,9 @@ npm install
 ng serve
 ```
 
+FE deployment is currently manual. Run `ng build` and copy the outputs of `dist/frontend/browser` into the static 
+site S3 bucket.
+
 ### Test
 
 Tests are organised in the `tests` directory.
