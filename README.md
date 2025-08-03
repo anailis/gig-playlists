@@ -61,3 +61,6 @@ It can be deployed using the AWS SAM CLI:
 sam build -t template.yaml
 sam deploy --config-env dev
 ```
+
+Manually created sources are: 
+- ACM certificates (because of DNS verification "chicken and egg" paradox in SAM)

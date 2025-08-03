@@ -94,7 +94,7 @@ Resources:
         Statement:
           - Sid: PolicyForCloudFrontPrivateContent
             Effect: Allow
-            Resource: !Sub ${StaticSiteBucket.Arn}/*
+            Resource: !Sub "${StaticSiteBucket.Arn}/*"
             Principal:
               Service: cloudfront.amazonaws.com
             Condition:
@@ -147,10 +147,15 @@ Resources:
             ResponsePagePath: /index.html
         PriceClass: PriceClass_All
         Aliases:
-          - !Sub "${Environment}.giglist.rocks"
+          Fn::If:
+            - IsProd
+            - ["app.giglist.rocks"]
+            - [!Sub "${Environment}.giglist.rocks"]
         ViewerCertificate:
           AcmCertificateArn: !Ref GiglistRootCertificateArn
           SslSupportMethod: sni-only
+
+  # TODO: set up DNS for cloudfront distribution
 
 
   #####################
@@ -260,6 +265,20 @@ Resources:
     Type: AWS::Route53::HostedZone
     Properties:
       Name: giglist.rocks
+
+  SubdomainRecordSet:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref GigListHostedZone
+      Name:
+        Fn::If:
+          - IsProd
+          - "app.giglist.rocks"
+          - !Sub "${Environment}.giglist.rocks"
+      Type: A
+      AliasTarget:
+        DNSName: !GetAtt CloudFrontDistribution.DomainName
+        HostedZoneId: Z2FDTNDATAQYW2 # Same for all CloudFront apps
 
 # TODO: uncomment when certificate is validated
 #  GigsApiCustomDomain:
@@ -500,3 +519,11 @@ Resources:
                 - !GetAtt SchedulerRole.Arn
       Layers:
         - !Ref SharedLibs
+
+Outputs:
+  AddGigToUpcomingPlaylistFunctionArn:
+    Value: !GetAtt AddGigToUpcomingPlaylist.Arn
+  RemoveGigFromUpcomingPlaylistFunctionArn:
+    Value: !GetAtt RemoveGigFromUpcomingPlaylist.Arn
+  StaticSiteDomain:
+    Value: !GetAtt CloudFrontDistribution.DomainName
