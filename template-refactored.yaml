@@ -2,6 +2,7 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: SAM Template for gig-playlists
+
 Parameters:
   Environment:
     Description: "Deployment environment"
@@ -10,13 +11,19 @@ Parameters:
     AllowedValues:
       - dev
       - prod
+  GiglistRootCertificateArn:
+    Description: "ARN of a ACM certificate for giglist.rocks"
+    Type: String
+    Default: arn:aws:acm:us-east-1:891376983144:certificate/3100c7d6-6a01-4773-bfb3-1efbd0958f54
   GigsApiAllowedOrigins:
     Description: "Allowed origins (CORS) for the Gigs API"
     Type: CommaDelimitedList
+  GigsApiCertificateArn:
+    Description: "ARN of a ACM certificate for the Gigs API domain"
+    Type: String
   ApiTokenArn:
     Description: "ARN of a dummy API token stored in SSM, to be removed later"
     Type: String
-
 
 Conditions:
   IsProd: !Equals [ !Ref Environment, prod ]
@@ -33,6 +40,10 @@ Globals:
         arn:aws:lambda:eu-west-2:017000801446:layer:AWSLambdaPowertoolsPythonV3-python312-x86_64:5
 
 Resources:
+  #########################
+  ##### Site contents #####
+  #########################
+
   StaticSiteBucket:
     Type: AWS::S3::Bucket
     Properties:
@@ -46,6 +57,10 @@ Resources:
         BlockPublicPolicy: true
         IgnorePublicAcls: true
         RestrictPublicBuckets: true
+
+  ####################
+  ##### DynamoDB #####
+  ####################
 
   GigsTable:
     Type: AWS::DynamoDB::Table
@@ -86,6 +101,30 @@ Resources:
       StreamSpecification:
         StreamViewType: NEW_AND_OLD_IMAGES
 
+  #######################
+  ##### API Gateway #####
+  #######################
+
+  GigsApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      Name: !Sub "gigs-api-${Environment}"
+      Description: API Gateway for calling GigsDbCRUD lambda function
+      StageName: api
+      Auth:
+        DefaultAuthorizer: GigsTokenAuthorizer
+        Authorizers:
+          GigsTokenAuthorizer:
+            FunctionArn: !GetAtt GigsApiAuthFunction.Arn
+            AuthorizerPayloadFormatVersion: 2.0
+      CorsConfiguration:
+        AllowOrigins: !Ref GigsApiAllowedOrigins
+        AllowHeaders: "'Authorization,Content-Type'"
+        AllowMethods: "'POST,GET,OPTIONS'"
+      # TODO: test this CORS configuration
+      # TODO: custom domain on this API
+      # TODO: try to use AWS managed policies to simplify permissions on Lambda functions
+
   GigsApiAuthFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -101,21 +140,112 @@ Resources:
                 - ssm:GetParameter
               Resource:
                 - !Ref ApiTokenArn
+            - Sid: LoggingPolicy
+              Effect: Allow
+              Action:
+                - logs:CreateLogGroup
+                - logs:CreateLogStream
+                - logs:PutLogEvents
+              Resource: !Sub "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:*"
 
-  GigsApi:
-    Type: AWS::Serverless::HttpApi
+  AuthorizerPermission:
+    Type: AWS::Lambda::Permission
     Properties:
-      Name: !Sub "gigs-api-${Environment}"
-      Description: API Gateway for calling GigsDbCRUD lambda function
-      Auth:
-        DefaultAuthorizer: GigsTokenAuthorizer
-        Authorizers:
-          GigsTokenAuthorizer:
-            FunctionArn: !GetAtt GigsApiAuthFunction.Arn
-            AuthorizerPayloadFormatVersion: 1.0 # Custom authoriser format
-      CorsConfiguration:
-        AllowOrigins: !Ref GigsApiAllowedOrigins
-        AllowHeaders: "'Authorization,Content-Type'"
-        AllowMethods: "'POST,GET,OPTIONS'"
-      # TODO: test this CORS configuration
-      # TODO: Create OpenAPI spec, put this in an S3 bucket, and set it as the definition here
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref GigsApiAuthFunction
+      Principal: "apigateway.amazonaws.com"
+      SourceArn: !Sub "arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${GigsApi}/authorizers/*"
+
+
+  ###########################
+  ##### Domain routing ######
+  ###########################
+
+  GigListHostedZone:
+    Type: AWS::Route53::HostedZone
+    Properties:
+      Name: giglist.rocks
+
+  GigsApiCustomDomain:
+    Type: AWS::ApiGateway::DomainName
+    Properties:
+      DomainName: !Sub "${Environment}.giglist.rocks"
+      RegionalCertificateArn: !Ref GigsApiCertificateArn
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+
+  GigsApiBasePathMapping:
+    Type: AWS::ApiGateway::BasePathMapping
+    Properties:
+      DomainName: !Ref GigsApiCustomDomain
+      RestApiId: !Ref GigsApi
+      Stage: api
+
+
+  ############################
+  ##### Lambda functions #####
+  ############################
+
+  GigsDbCRUD:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "gigs-crud-${Environment}"
+      CodeUri: functions/gigs_db_crud/
+      Description: Performs CRUD operations on DynamoDB table gigs
+      Environment:
+        Variables:
+          TABLE_NAME: !Sub "gigs_${Environment}"
+      Policies:
+        - Statement:
+            - Sid: DynamoDBGigsReadWritePolicy
+              Effect: Allow
+              Action:
+                - dynamodb:DeleteItem
+                - dynamodb:GetItem
+                - dynamodb:PutItem
+                - dynamodb:Scan
+                - dynamodb:UpdateItem
+                - dynamodb:Query
+                - dynamodb:GetRecords
+              Resource: !GetAtt GigsTable.Arn
+            - Sid: DynamoDBIndexQueryPolicy
+              Effect: Allow
+              Action:
+                - dynamodb:Query
+              Resource: !Sub "arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${GigsTable}/index/userId-id-index"
+            - Sid: LoggingPolicy
+              Effect: Allow
+              Action:
+                - logs:CreateLogGroup
+                - logs:CreateLogStream
+                - logs:PutLogEvents
+              Resource: !Sub "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:*"
+      Events:
+        CreateGig:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref GigsApi
+            Path: /gigs
+            Method: POST
+        GetGigById:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref GigsApi
+            Path: /gigs/{id}
+            Method: GET
+        GetUserById:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref GigsApi
+            Path: /users/{id}
+            Method: GET
+        GetGigsForUser:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref GigsApi
+            Path: /users/{id}/gigs
+            Method: GET
+      EventInvokeConfig:
+        MaximumEventAgeInSeconds: 21600
+        MaximumRetryAttempts: 2

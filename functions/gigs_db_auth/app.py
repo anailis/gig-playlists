@@ -3,7 +3,7 @@ import boto3
 
 from aws_lambda_powertools.utilities.data_classes import event_source
 from aws_lambda_powertools.utilities.data_classes.api_gateway_authorizer_event import (
-    APIGatewayAuthorizerTokenEvent, APIGatewayAuthorizerResponse, APIGatewayRouteArn,
+    APIGatewayAuthorizerResponse, APIGatewayRouteArn, APIGatewayAuthorizerEventV2,
 )
 
 
@@ -29,9 +29,9 @@ def allow_access_for_valid_token(
         policy.deny_all_routes()
 
 
-@event_source(data_class=APIGatewayAuthorizerTokenEvent)
-def lambda_handler(event: APIGatewayAuthorizerTokenEvent, context):
+@event_source(data_class=APIGatewayAuthorizerEventV2)
+def lambda_handler(event: APIGatewayAuthorizerEventV2, context):
     expected_token = ssm_client.get_parameter(Name="/gigs/crud_api_token")["Parameter"]["Value"]
     policy = create_policy(event.parsed_arn)
-    allow_access_for_valid_token(policy, event.authorization_token, expected_token)
+    allow_access_for_valid_token(policy, event.headers.get("authorization"), expected_token)
     return policy.asdict()

@@ -2,7 +2,7 @@ from datetime import date
 from uuid import UUID, uuid4
 import os
 
-from aws_lambda_powertools.event_handler import APIGatewayRestResolver, CORSConfig
+from aws_lambda_powertools.event_handler import CORSConfig, APIGatewayHttpResolver
 from aws_lambda_powertools.event_handler.exceptions import NotFoundError
 from aws_lambda_powertools.utilities.typing import LambdaContext
 from aws_lambda_powertools import Logger
@@ -14,7 +14,7 @@ dynamodb = boto3.resource("dynamodb")
 table = dynamodb.Table(os.environ["TABLE_NAME"])
 
 cors_config = CORSConfig(allow_origin="http://localhost:4200", max_age=300)
-app = APIGatewayRestResolver(enable_validation=True, cors=cors_config)
+app = APIGatewayHttpResolver(enable_validation=True, cors=cors_config)
 logger = Logger()
 
 GIG_PREFIX = "GIG#"
