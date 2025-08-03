@@ -286,6 +286,7 @@ Resources:
                   arn:aws:ssm:eu-west-2:891376983144:parameter/spotify/*
       Layers:
         - !Ref SharedLibs
+
   SchedulerRole:
     Type: AWS::IAM::Role
     Properties:
