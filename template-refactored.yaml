@@ -1,7 +1,7 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/awslabs/goformation/main/schema/cloudformation.schema.json
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: SAM Template for gig-playlists
+Description: SAM Template for environment-specific Giglist infrastructure
 
 Parameters:
   Environment:
@@ -15,6 +15,13 @@ Parameters:
     Description: "ARN of a ACM certificate for giglist.rocks"
     Type: String
     Default: arn:aws:acm:us-east-1:891376983144:certificate/3100c7d6-6a01-4773-bfb3-1efbd0958f54
+  GiglistAuthCertificateArn:
+    Description: "ARN of a ACM certificate for auth.giglist.rocks"
+    Type: String
+    Default: arn:aws:acm:us-east-1:891376983144:certificate/7f4174a3-ea6d-4c16-aa14-f22ed6821a91
+  CognitoCallbackUrls:
+    Description: "URLs Cognito can redirect users to after login/logout"
+    Type: CommaDelimitedList
   GigsApiAllowedOrigins:
     Description: "Allowed origins (CORS) for the Gigs API"
     Type: CommaDelimitedList
@@ -261,15 +268,10 @@ Resources:
   ##### Domain routing ######
   ###########################
 
-  GigListHostedZone:
-    Type: AWS::Route53::HostedZone
-    Properties:
-      Name: giglist.rocks
-
   SubdomainRecordSet:
     Type: AWS::Route53::RecordSet
     Properties:
-      HostedZoneId: !Ref GigListHostedZone
+      HostedZoneId: !ImportValue GigListHostedZoneId
       Name:
         Fn::If:
           - IsProd
@@ -519,6 +521,46 @@ Resources:
                 - !GetAtt SchedulerRole.Arn
       Layers:
         - !Ref SharedLibs
+
+
+  ###############################
+  ##### User authentication #####
+  ###############################
+
+  CognitoUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: !Sub "giglist-user-pool-${Environment}"
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+      UsernameAttributes:
+        - email
+      Schema:
+        - AttributeDataType: String
+          Name: email
+          Required: true
+        - AttributeDataType: String
+          Name: preferred_username
+          Required: true
+      UserPoolTier: ESSENTIALS
+      AutoVerifiedAttributes:
+        - email
+
+  CognitoUserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: !Sub "giglist-user-pool-client-${Environment}"
+      UserPoolId: !Ref CognitoUserPool
+      CallbackURLs: !Ref CognitoCallbackUrls
+      LogoutURLs: !Ref CognitoCallbackUrls
+      SupportedIdentityProviders:
+        - COGNITO
+      AllowedOAuthFlowsUserPoolClient: true
+      AllowedOAuthScopes:
+        - openid
+      AllowedOAuthFlows:
+        - code
 
 Outputs:
   AddGigToUpcomingPlaylistFunctionArn:

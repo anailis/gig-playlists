@@ -14,7 +14,8 @@ parameter_overrides = [
     "Environment=dev",
     "ApiTokenArn=arn:aws:ssm:eu-west-2:891376983144:parameter/gigs/crud_api_token",
     "GigsApiCertificateArn=arn:aws:acm:eu-west-2:891376983144:certificate/5c8e42bc-a39d-4575-ae10-c16d08037751",
-    "GigsApiAllowedOrigins=*" # TODO: think this isn't getting picked up
+    "GigsApiAllowedOrigins=*", # TODO: think this isn't getting picked up - might be because of the use of comma separated list
+    "CognitoCallbackUrls=https://dev.giglist.rocks,http://localhost:4200"
 ]
 
 [prod]
@@ -27,5 +28,6 @@ parameter_overrides = [
     "Environment=prod",
     "ApiTokenArn=arn:aws:ssm:eu-west-2:891376983144:parameter/gigs/crud_api_token",
     "GigsApiCertificateArn=CREATEME",
-    "GigsApiAllowedOrigins=https://app.giglist.rocks"
+    "GigsApiAllowedOrigins=https://app.giglist.rocks",
+    "CognitoCallbackUrls=https://app.giglist.rocks"
 ]
