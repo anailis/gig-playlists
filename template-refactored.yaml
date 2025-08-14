@@ -25,9 +25,6 @@ Parameters:
   GigsApiAllowedOrigins:
     Description: "Allowed origins (CORS) for the Gigs API"
     Type: CommaDelimitedList
-  GigsApiCertificateArn:
-    Description: "ARN of a ACM certificate for the Gigs API domain"
-    Type: String
   ApiTokenArn:
     Description: "ARN of a dummy API token stored in SSM, to be removed later"
     Type: String
@@ -131,11 +128,15 @@ Resources:
     Properties:
       DistributionConfig:
         Origins:
-          - DomainName: !GetAtt StaticSiteBucket.RegionalDomainName
-            Id: S3Origin
+          - Id: S3Origin
+            DomainName: !GetAtt StaticSiteBucket.RegionalDomainName
             S3OriginConfig:
               OriginAccessIdentity: ""
             OriginAccessControlId: !GetAtt CloudFrontOriginAccessControl.Id
+          - Id: ApiOrigin
+            DomainName:  !Sub "${GigsApi}.execute-api.${AWS::Region}.amazonaws.com"
+            CustomOriginConfig:
+              OriginProtocolPolicy: https-only
         Enabled: true
         DefaultRootObject: index.html
         DefaultCacheBehavior:
@@ -148,6 +149,24 @@ Resources:
           ResponseHeadersPolicyId: eaab4381-ed33-4a86-88ca-d9558dc6cd63 # CORS-with-preflight-and-SecurityHeadersPolicy managed policy
           OriginRequestPolicyId: 88a5eaf4-2fd4-4709-b370-b4c650ea3fcf # CORS-S3Origin
           ViewerProtocolPolicy: redirect-to-https
+        CacheBehaviors:
+          - PathPattern: /api/*
+            TargetOriginId: ApiOrigin
+            ViewerProtocolPolicy: redirect-to-https
+            CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad # CachingDisabled managed policy
+            ResponseHeadersPolicyId: eaab4381-ed33-4a86-88ca-d9558dc6cd63 # CORS-with-preflight-and-SecurityHeadersPolicy managed policy
+            OriginRequestPolicyId: b689b0a8-53d0-40ab-baf2-68738e2966ac # AllViewerExceptHostHeader managed policy
+            AllowedMethods:
+              - GET
+              - HEAD
+              - OPTIONS
+              - POST
+              - PUT
+              - PATCH
+              - DELETE
+            CachedMethods:
+              - GET
+              - HEAD
         CustomErrorResponses:
           - ErrorCode: 403
             ResponseCode: 200
@@ -161,8 +180,6 @@ Resources:
         ViewerCertificate:
           AcmCertificateArn: !Ref GiglistRootCertificateArn
           SslSupportMethod: sni-only
-
-  # TODO: set up DNS for cloudfront distribution
 
 
   #####################
@@ -281,24 +298,6 @@ Resources:
       AliasTarget:
         DNSName: !GetAtt CloudFrontDistribution.DomainName
         HostedZoneId: Z2FDTNDATAQYW2 # Same for all CloudFront apps
-
-# TODO: uncomment when certificate is validated
-#  GigsApiCustomDomain:
-#    Type: AWS::ApiGateway::DomainName
-#    Properties:
-#      DomainName: !Sub "${Environment}.giglist.rocks"
-#      # TODO: create this cert for other envs
-#      RegionalCertificateArn: !Ref GigsApiCertificateArn
-#      EndpointConfiguration:
-#        Types:
-#          - REGIONAL
-#
-#  GigsApiBasePathMapping:
-#    Type: AWS::ApiGateway::BasePathMapping
-#    Properties:
-#      DomainName: !Ref GigsApiCustomDomain
-#      RestApiId: !Ref GigsApi
-#      Stage: api
 
 
   ############################
