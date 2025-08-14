@@ -5,7 +5,7 @@ from aws_lambda_powertools.utilities.data_classes.api_gateway_authorizer_event i
 
 from gigs_db_auth.app import create_policy, allow_access_for_valid_token
 
-VALID_TOKEN = "validToken"
+EXPECTED_TOKEN = "validToken"
 
 def test_create_policy_success():
     arn = APIGatewayRouteArn(
@@ -29,13 +29,19 @@ def policy():
     return Mock()
 
 def test_correct_token_given(policy):
-    allow_access_for_valid_token(policy, VALID_TOKEN, VALID_TOKEN)
+    allow_access_for_valid_token(policy, "Bearer validToken", EXPECTED_TOKEN)
 
     policy.allow_all_routes.assert_called_once()
     policy.deny_all_routes.assert_not_called()
 
 def test_incorrect_token_given(policy):
-    allow_access_for_valid_token(policy, "invalidToken", VALID_TOKEN)
+    allow_access_for_valid_token(policy, "Bearer invalidToken", EXPECTED_TOKEN)
+
+    policy.allow_all_routes.assert_not_called()
+    policy.deny_all_routes.assert_called_once()
+
+def test_invalid_token_format_given(policy):
+    allow_access_for_valid_token(policy, "Bearer invalidToken", EXPECTED_TOKEN)
 
     policy.allow_all_routes.assert_not_called()
     policy.deny_all_routes.assert_called_once()
