@@ -149,6 +149,9 @@ Resources:
           ResponseHeadersPolicyId: eaab4381-ed33-4a86-88ca-d9558dc6cd63 # CORS-with-preflight-and-SecurityHeadersPolicy managed policy
           OriginRequestPolicyId: 88a5eaf4-2fd4-4709-b370-b4c650ea3fcf # CORS-S3Origin
           ViewerProtocolPolicy: redirect-to-https
+          FunctionAssociations:
+            - EventType: viewer-request
+              FunctionARN: !Ref FrontendAuth
         CacheBehaviors:
           - PathPattern: /api/*
             TargetOriginId: ApiOrigin
@@ -253,7 +256,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub "gigs-api-authoriser-${Environment}"
-      CodeUri: functions/gigs_db_auth/
+      CodeUri: ../functions/gigs_db_auth/
       Description: Performs authorisation for requests to GigsAPI
       Policies:
         - Statement:
@@ -309,7 +312,7 @@ Resources:
     Properties:
       LayerName: GigListSharedLibs
       Description: Classes used across multiple Lambdas in the GigList project
-      ContentUri: libs/
+      ContentUri: ../libs/
       CompatibleRuntimes:
         - python3.12
       RetentionPolicy: Retain
@@ -318,7 +321,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub "gigs-crud-${Environment}"
-      CodeUri: functions/gigs_db_crud/
+      CodeUri: ../functions/gigs_db_crud/
       Description: Performs CRUD operations on DynamoDB table gigs
       Environment:
         Variables:
@@ -378,7 +381,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub "add-gig-to-upcoming-playlist-${Environment}"
-      CodeUri: functions/add_gig_to_upcoming_playlist/
+      CodeUri: ../functions/add_gig_to_upcoming_playlist/
       Description: Updates upcoming playlist in response to gigs DynamoDB table updates
       Environment:
         Variables:
@@ -440,7 +443,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub "remove-gig-from-upcoming-playlist-${Environment}"
-      CodeUri: functions/remove_gig_from_upcoming_playlist/
+      CodeUri: ../functions/remove_gig_from_upcoming_playlist/
       Description: Removes tracks from upcoming playlist in response to scheduled events
       Policies:
         - Statement:
@@ -474,7 +477,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub "upcoming-playlist-recon-${Environment}"
-      CodeUri: functions/upcoming_playlist_recon/
+      CodeUri: ../functions/upcoming_playlist_recon/
       Description: Reconciles a user's upcoming playlist with the gigs database table
       Environment:
         Variables:
@@ -520,6 +523,17 @@ Resources:
                 - !GetAtt SchedulerRole.Arn
       Layers:
         - !Ref SharedLibs
+
+  FrontendAuth:
+    Type: AWS::CloudFront::Function
+    Properties:
+      Name: !Sub "giglist-frontend-auth-${Environment}"
+      AutoPublish: True
+      FunctionCode: |
+        __INLINE_CLOUDFRONT_CODE__
+      FunctionConfig:
+        Runtime: cloudfront-js-2.0
+        Comment: Password protects non-prod FEs
 
 
   ###############################

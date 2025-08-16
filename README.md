@@ -58,7 +58,10 @@ The backend currently uses **Python 3.12**.
 
 It can be deployed using the AWS SAM CLI:
 ```commandline
-sam build -t template.yaml
+cd infra
+./scripts/populate_sam_template.py -c ../functions/frontend_auth/app.js -u REPLACE_ME -p REPLACE_ME
+sam validate --lint -t template.inlined.yaml
+sam build -t template.inlined.yaml
 sam deploy --config-env dev
 ```
 
