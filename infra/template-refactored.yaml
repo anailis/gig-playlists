@@ -22,6 +22,9 @@ Parameters:
   CognitoCallbackUrls:
     Description: "URLs Cognito can redirect users to after login/logout"
     Type: CommaDelimitedList
+  CognitionDomainAliasTarget:
+    Description: "The domain alias target for the Cognito managed login page"
+    Type: String
   GigsApiAllowedOrigins:
     Description: "Allowed origins (CORS) for the Gigs API"
     Type: CommaDelimitedList
@@ -302,6 +305,16 @@ Resources:
         DNSName: !GetAtt CloudFrontDistribution.DomainName
         HostedZoneId: Z2FDTNDATAQYW2 # Same for all CloudFront apps
 
+  AuthRecordSet:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !ImportValue GigListHostedZoneId
+      Name: dev.auth.giglist.rocks.
+      Type: A
+      AliasTarget:
+        DNSName: !Ref CognitionDomainAliasTarget
+        HostedZoneId: Z2FDTNDATAQYW2 # Same for all CloudFront apps
+
 
   ############################
   ##### Lambda functions #####
@@ -574,6 +587,20 @@ Resources:
         - openid
       AllowedOAuthFlows:
         - code
+
+  CognitoUserPoolDomain:
+    Type: AWS::Cognito::UserPoolDomain
+    Properties:
+      Domain:
+        Fn::If:
+          - IsProd
+          - "app.auth.giglist.rocks"
+          - !Sub "${Environment}.auth.giglist.rocks"
+      UserPoolId: !Ref CognitoUserPool
+      ManagedLoginVersion: "1"
+      CustomDomainConfig:
+        CertificateArn: !Ref GiglistAuthCertificateArn
+
 
 Outputs:
   AddGigToUpcomingPlaylistFunctionArn:
