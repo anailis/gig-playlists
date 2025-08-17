@@ -44,4 +44,5 @@ jobs:
         pytest tests/unit
     - name: Lint SAM template
       run: |
-        sam validate --lint
+        sam validate --lint -t infra/template.yaml
+        sam validate --lint -t infra/shared/shared-infra.yaml

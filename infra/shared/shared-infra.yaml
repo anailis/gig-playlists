@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/awslabs/goformation/main/schema/cloudformation.schema.json
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: SAM Template for shared Giglist infrastructure
+
+Resources:
+  GigListHostedZone:
+    Type: AWS::Route53::HostedZone
+    Properties:
+      Name: giglist.rocks
+
+  AuthRecordSet:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref GigListHostedZone
+      Name: auth.giglist.rocks.
+      Type: A
+      TTL: 300
+      ResourceRecords:
+        - 1.1.1.1 # Cognito needs a non-alias A record
+
+Outputs:
+  HostedZoneId:
+    Value: !Ref GigListHostedZone
+    Export:
+      Name: GigListHostedZoneId
+  AuthRecordSetId:
+    Value: !Ref AuthRecordSet
+    Export:
+      Name: GigListAuthRecordSetId

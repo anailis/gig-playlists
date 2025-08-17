@@ -1,0 +1,6 @@
+version = 0.1
+
+[default]
+[default.deploy.parameters]
+region = "eu-west-2"
+stack_name = "giglist-shared"

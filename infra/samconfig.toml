@@ -1,0 +1,35 @@
+version = 0.1
+
+[default]
+[default.deploy.parameters]
+region = "eu-west-2"
+
+[dev]
+[dev.deploy.parameters]
+stack_name = "giglist-dev"
+s3_prefix = "giglist-dev"
+resolve_s3 = true
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = [
+    "Environment=dev",
+    "ApiTokenArn=arn:aws:ssm:eu-west-2:891376983144:parameter/gigs/crud_api_token",
+    "GigsApiCertificateArn=arn:aws:acm:eu-west-2:891376983144:certificate/69fa8074-1e4a-4f05-83a0-2a00082cb731",
+    "GigsApiAllowedOrigins=*", # TODO: think this isn't getting picked up - might be because of the use of comma separated list
+    "CognitoCallbackUrls=https://dev.giglist.rocks",
+    "CognitionDomainAliasTarget=dqyecorio6lnw.cloudfront.net"
+]
+
+[prod]
+[prod.deploy.parameters]
+stack_name = "giglist-prod"
+s3_prefix = "giglist-prod"
+resolve_s3 = true
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = [
+    "Environment=prod",
+    "ApiTokenArn=arn:aws:ssm:eu-west-2:891376983144:parameter/gigs/crud_api_token",
+    "GigsApiCertificateArn=CREATEME",
+    "GigsApiAllowedOrigins=https://app.giglist.rocks",
+    "CognitoCallbackUrls=https://app.giglist.rocks",
+    "CognitionDomainAliasTarget=CREATEME.cloudfront.net"
+]

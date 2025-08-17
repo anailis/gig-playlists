@@ -33,6 +33,9 @@ npm install
 ng serve
 ```
 
+FE deployment is currently manual. Run `ng build` and copy the outputs of `dist/frontend/browser` into the static 
+site S3 bucket.
+
 ### Test
 
 Tests are organised in the `tests` directory.
@@ -55,6 +58,12 @@ The backend currently uses **Python 3.12**.
 
 It can be deployed using the AWS SAM CLI:
 ```commandline
-sam build
-sam deploy
+cd infra
+./scripts/populate_sam_template.py -c ../functions/frontend_auth/app.js
+sam validate --lint -t template.inlined.yaml
+sam build -t template.inlined.yaml
+sam deploy --config-env dev
 ```
+
+Manually created sources are: 
+- ACM certificates (because of DNS verification "chicken and egg" paradox in SAM)

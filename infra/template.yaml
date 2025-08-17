@@ -1,0 +1,618 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/awslabs/goformation/main/schema/cloudformation.schema.json
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: SAM Template for environment-specific Giglist infrastructure
+
+Parameters:
+  Environment:
+    Description: "Deployment environment"
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - prod
+  GiglistRootCertificateArn:
+    Description: "ARN of a ACM certificate for giglist.rocks"
+    Type: String
+    Default: arn:aws:acm:us-east-1:891376983144:certificate/3100c7d6-6a01-4773-bfb3-1efbd0958f54
+  GiglistAuthCertificateArn:
+    Description: "ARN of a ACM certificate for auth.giglist.rocks"
+    Type: String
+    Default: arn:aws:acm:us-east-1:891376983144:certificate/7f4174a3-ea6d-4c16-aa14-f22ed6821a91
+  CognitoCallbackUrls:
+    Description: "URLs Cognito can redirect users to after login/logout"
+    Type: CommaDelimitedList
+  CognitionDomainAliasTarget:
+    Description: "The domain alias target for the Cognito managed login page"
+    Type: String
+  GigsApiAllowedOrigins:
+    Description: "Allowed origins (CORS) for the Gigs API"
+    Type: CommaDelimitedList
+  ApiTokenArn:
+    Description: "ARN of a dummy API token stored in SSM, to be removed later"
+    Type: String
+
+Conditions:
+  IsProd: !Equals [ !Ref Environment, prod ]
+
+Globals:
+  Function:
+    Timeout: 60
+    Runtime: python3.12
+    Handler: app.lambda_handler
+    Architectures:
+      - x86_64
+    Layers:
+      - >-
+        arn:aws:lambda:eu-west-2:017000801446:layer:AWSLambdaPowertoolsPythonV3-python312-x86_64:5
+
+Resources:
+  #######################
+  ##### Permissions #####
+  #######################
+
+  SchedulerRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Description: Role for scheduling playlist delete lambda
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - scheduler.amazonaws.com
+            Action: "sts:AssumeRole"
+      Policies:
+        - PolicyName: InvokeRemoveGigFunction
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: lambda:InvokeFunction
+                Resource: !GetAtt RemoveGigFromUpcomingPlaylist.Arn
+
+
+  #########################
+  ##### Site contents #####
+  #########################
+
+  StaticSiteBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName:
+        Fn::If:
+          - IsProd
+          - "app.giglist.rocks"
+          - !Sub "${Environment}.giglist.rocks"
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  StaticSiteBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref StaticSiteBucket
+      PolicyDocument:
+        Id: StaticSiteBucketPolicy
+        Version: 2012-10-17
+        Statement:
+          - Sid: PolicyForCloudFrontPrivateContent
+            Effect: Allow
+            Resource: !Sub "${StaticSiteBucket.Arn}/*"
+            Principal:
+              Service: cloudfront.amazonaws.com
+            Condition:
+              StringEquals:
+                AWS:SourceArn: !Sub "arn:aws:cloudfront::${AWS::AccountId}:distribution/${CloudFrontDistribution}"
+            Action: "s3:GetObject*"
+
+
+  #################################
+  ##### Frontend distribution #####
+  #################################
+
+  CloudFrontOriginAccessControl:
+    Type: AWS::CloudFront::OriginAccessControl
+    DependsOn:
+      - StaticSiteBucket
+    Properties:
+      OriginAccessControlConfig:
+        Description: Default Origin Access Control
+        Name: !Ref AWS::StackName
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+
+  CloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Origins:
+          - Id: S3Origin
+            DomainName: !GetAtt StaticSiteBucket.RegionalDomainName
+            S3OriginConfig:
+              OriginAccessIdentity: ""
+            OriginAccessControlId: !GetAtt CloudFrontOriginAccessControl.Id
+          - Id: ApiOrigin
+            DomainName:  !Sub "${GigsApi}.execute-api.${AWS::Region}.amazonaws.com"
+            CustomOriginConfig:
+              OriginProtocolPolicy: https-only
+        Enabled: true
+        DefaultRootObject: index.html
+        DefaultCacheBehavior:
+          AllowedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+          TargetOriginId: S3Origin
+          CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad # CachingDisabled managed policy
+          ResponseHeadersPolicyId: eaab4381-ed33-4a86-88ca-d9558dc6cd63 # CORS-with-preflight-and-SecurityHeadersPolicy managed policy
+          OriginRequestPolicyId: 88a5eaf4-2fd4-4709-b370-b4c650ea3fcf # CORS-S3Origin
+          ViewerProtocolPolicy: redirect-to-https
+          FunctionAssociations:
+            - EventType: viewer-request
+              FunctionARN: !Ref FrontendAuth
+        CacheBehaviors:
+          - PathPattern: /api/*
+            TargetOriginId: ApiOrigin
+            ViewerProtocolPolicy: redirect-to-https
+            CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad # CachingDisabled managed policy
+            ResponseHeadersPolicyId: eaab4381-ed33-4a86-88ca-d9558dc6cd63 # CORS-with-preflight-and-SecurityHeadersPolicy managed policy
+            OriginRequestPolicyId: b689b0a8-53d0-40ab-baf2-68738e2966ac # AllViewerExceptHostHeader managed policy
+            AllowedMethods:
+              - GET
+              - HEAD
+              - OPTIONS
+              - POST
+              - PUT
+              - PATCH
+              - DELETE
+            CachedMethods:
+              - GET
+              - HEAD
+        CustomErrorResponses:
+          - ErrorCode: 403
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+        PriceClass: PriceClass_All
+        Aliases:
+          Fn::If:
+            - IsProd
+            - ["app.giglist.rocks"]
+            - [!Sub "${Environment}.giglist.rocks"]
+        ViewerCertificate:
+          AcmCertificateArn: !Ref GiglistRootCertificateArn
+          SslSupportMethod: sni-only
+
+  FrontendAuthKeyValueStore:
+    Type: AWS::CloudFront::KeyValueStore
+    Properties:
+      Name: !Sub "gigs-${Environment}"
+
+
+  #####################
+  ##### Databases #####
+  #####################
+
+  GigsTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      TableName: !Sub "gigs_${Environment}"
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: userId
+          AttributeType: S
+        - AttributeName: date
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+        - AttributeName: userId
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: userId-date-index
+          KeySchema:
+            - AttributeName: userId
+              KeyType: HASH
+            - AttributeName: date
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+        - IndexName: userId-id-index
+          KeySchema:
+            - AttributeName: userId
+              KeyType: HASH
+            - AttributeName: id
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      StreamSpecification:
+        StreamViewType: NEW_AND_OLD_IMAGES
+
+  ################
+  ##### APIs #####
+  ################
+
+  GigsApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      Name: !Sub "gigs-api-${Environment}"
+      Description: API Gateway for calling GigsDbCRUD lambda function
+      StageName: api
+      Auth:
+        DefaultAuthorizer: GigsTokenAuthorizer
+        Authorizers:
+          GigsTokenAuthorizer:
+            FunctionArn: !GetAtt GigsApiAuthFunction.Arn
+            AuthorizerPayloadFormatVersion: 2.0
+      CorsConfiguration:
+        AllowOrigins: !Ref GigsApiAllowedOrigins
+        AllowHeaders: "'Authorization,Content-Type'"
+        AllowMethods: "'POST,GET,OPTIONS'"
+      # TODO: test this CORS configuration
+      # TODO: custom domain on this API
+      # TODO: try to use AWS managed policies to simplify permissions on Lambda functions
+
+  GigsApiAuthFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "gigs-api-authoriser-${Environment}"
+      CodeUri: ../functions/gigs_db_auth/
+      Description: Performs authorisation for requests to GigsAPI
+      Policies:
+        - Statement:
+            - Sid: SSMReadParameterPolicy
+              Effect: Allow
+              Action:
+                - ssm:GetParameters
+                - ssm:GetParameter
+              Resource:
+                - !Ref ApiTokenArn
+            - Sid: LoggingPolicy
+              Effect: Allow
+              Action:
+                - logs:CreateLogGroup
+                - logs:CreateLogStream
+                - logs:PutLogEvents
+              Resource: !Sub "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:*"
+
+  AuthorizerPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref GigsApiAuthFunction
+      Principal: "apigateway.amazonaws.com"
+      SourceArn: !Sub "arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${GigsApi}/authorizers/*"
+
+
+  ###########################
+  ##### Domain routing ######
+  ###########################
+
+  SubdomainRecordSet:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !ImportValue GigListHostedZoneId
+      Name:
+        Fn::If:
+          - IsProd
+          - "app.giglist.rocks"
+          - !Sub "${Environment}.giglist.rocks"
+      Type: A
+      AliasTarget:
+        DNSName: !GetAtt CloudFrontDistribution.DomainName
+        HostedZoneId: Z2FDTNDATAQYW2 # Same for all CloudFront apps
+
+  AuthRecordSet:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !ImportValue GigListHostedZoneId
+      Name: dev.auth.giglist.rocks.
+      Type: A
+      AliasTarget:
+        DNSName: !Ref CognitionDomainAliasTarget
+        HostedZoneId: Z2FDTNDATAQYW2 # Same for all CloudFront apps
+
+
+  ############################
+  ##### Lambda functions #####
+  ############################
+
+  SharedLibs:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: GigListSharedLibs
+      Description: Classes used across multiple Lambdas in the GigList project
+      ContentUri: ../libs/
+      CompatibleRuntimes:
+        - python3.12
+      RetentionPolicy: Retain
+
+  GigsDbCRUD:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "gigs-crud-${Environment}"
+      CodeUri: ../functions/gigs_db_crud/
+      Description: Performs CRUD operations on DynamoDB table gigs
+      Environment:
+        Variables:
+          TABLE_NAME: !Sub "gigs_${Environment}"
+      Policies:
+        - Statement:
+            - Sid: DynamoDBGigsReadWritePolicy
+              Effect: Allow
+              Action:
+                - dynamodb:DeleteItem
+                - dynamodb:GetItem
+                - dynamodb:PutItem
+                - dynamodb:Scan
+                - dynamodb:UpdateItem
+                - dynamodb:Query
+                - dynamodb:GetRecords
+              Resource: !GetAtt GigsTable.Arn
+            - Sid: DynamoDBIndexQueryPolicy
+              Effect: Allow
+              Action:
+                - dynamodb:Query
+              Resource: !Sub "arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${GigsTable}/index/userId-id-index"
+            - Sid: LoggingPolicy
+              Effect: Allow
+              Action:
+                - logs:CreateLogGroup
+                - logs:CreateLogStream
+                - logs:PutLogEvents
+              Resource: !Sub "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:*"
+      Events:
+        CreateGig:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref GigsApi
+            Path: /gigs
+            Method: POST
+        GetGigById:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref GigsApi
+            Path: /gigs/{id}
+            Method: GET
+        GetUserById:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref GigsApi
+            Path: /users/{id}
+            Method: GET
+        GetGigsForUser:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref GigsApi
+            Path: /users/{id}/gigs
+            Method: GET
+
+  AddGigToUpcomingPlaylist:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "add-gig-to-upcoming-playlist-${Environment}"
+      CodeUri: ../functions/add_gig_to_upcoming_playlist/
+      Description: Updates upcoming playlist in response to gigs DynamoDB table updates
+      Environment:
+        Variables:
+          REMOVE_LAMBDA_ARN: !GetAtt RemoveGigFromUpcomingPlaylist.Arn
+          SCHEDULER_ROLE_ARN: !GetAtt SchedulerRole.Arn
+          TABLE_NAME: !Sub "gigs_${Environment}"
+      Policies:
+        - Statement:
+            - Sid: DynamoDBReadPolicy
+              Effect: Allow
+              Action:
+                - dynamodb:ListStreams
+                - dynamodb:DescribeStream
+                - dynamodb:GetShardIterator
+                - dynamodb:Query
+              Resource: !GetAtt GigsTable.Arn
+            - Sid: CloudWatchCreateLogsPolicy
+              Effect: Allow
+              Action:
+                - logs:CreateLogGroup
+                - logs:CreateLogStream
+                - logs:PutLogEvents
+              Resource: !Sub "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:*"
+            - Sid: SSMWriteParameterPolicy
+              Effect: Allow
+              Action:
+                - ssm:GetParameters
+                - ssm:GetParameter
+                - ssm:DescribeParameters
+                - ssm:PutParameter
+              Resource:
+                - !Sub "arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/spotify/*"
+            - Sid: EventBridgeSchedulerCreatePolicy
+              Effect: Allow
+              Action:
+                - scheduler:CreateSchedule
+              Resource:
+                - !Sub "arn:${AWS::Partition}:scheduler:${AWS::Region}:${AWS::AccountId}:schedule/*"
+            - Sid: EventBridgeSchedulerPassRole
+              Effect: Allow
+              Action:
+                - iam:PassRole
+              Resource:
+                - !GetAtt SchedulerRole.Arn
+      Events:
+        Gigs:
+          Type: DynamoDB
+          Properties:
+            Stream: !GetAtt GigsTable.StreamArn
+            StartingPosition: LATEST
+            BatchSize: 10
+            FilterCriteria:
+              Filters:
+                - Pattern: '{ "eventName": ["INSERT", "MODIFY"], "dynamodb": { "Keys": { "id": { "S": [{ "prefix": "GIG" }] } } } }'
+      Layers:
+        - !Ref SharedLibs
+
+  RemoveGigFromUpcomingPlaylist:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "remove-gig-from-upcoming-playlist-${Environment}"
+      CodeUri: ../functions/remove_gig_from_upcoming_playlist/
+      Description: Removes tracks from upcoming playlist in response to scheduled events
+      Policies:
+        - Statement:
+            - Sid: DynamoDBReadPolicy
+              Effect: Allow
+              Action:
+                - dynamodb:Query
+                - dynamodb:GetItem
+              Resource: !GetAtt GigsTable.Arn
+            # TODO: can policies be shared between Spotify Lambda functions?
+            - Sid: CloudWatchCreateLogsPolicy
+              Effect: Allow
+              Action:
+                - logs:CreateLogGroup
+                - logs:CreateLogStream
+                - logs:PutLogEvents
+              Resource: !Sub "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:*"
+            - Sid: SSMWriteParameterPolicy
+              Effect: Allow
+              Action:
+                - ssm:GetParameters
+                - ssm:GetParameter
+                - ssm:DescribeParameters
+                - ssm:PutParameter
+              Resource:
+                - !Sub "arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/spotify/*"
+      Layers:
+        - !Ref SharedLibs
+
+  UpcomingPlaylistRecon:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "upcoming-playlist-recon-${Environment}"
+      CodeUri: ../functions/upcoming_playlist_recon/
+      Description: Reconciles a user's upcoming playlist with the gigs database table
+      Environment:
+        Variables:
+          REMOVE_LAMBDA_ARN: !GetAtt RemoveGigFromUpcomingPlaylist.Arn
+          SCHEDULER_ROLE_ARN: !GetAtt SchedulerRole.Arn
+          TABLE_NAME: !Sub "gigs_${Environment}"
+      Policies:
+        - Statement:
+            - Sid: DynamoDBReadPolicy
+              Effect: Allow
+              Action:
+                - dynamodb:Query
+              Resource:
+                - !GetAtt GigsTable.Arn
+                - arn:aws:dynamodb:eu-west-2:891376983144:table/gigs/index/userId-date-index
+            - Sid: CloudWatchCreateLogsPolicy
+              Effect: Allow
+              Action:
+                - logs:CreateLogGroup
+                - logs:CreateLogStream
+                - logs:PutLogEvents
+              Resource: !Sub "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:*"
+            - Sid: SSMWriteParameterPolicy
+              Effect: Allow
+              Action:
+                - ssm:GetParameters
+                - ssm:GetParameter
+                - ssm:DescribeParameters
+                - ssm:PutParameter
+              Resource:
+                - !Sub "arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/spotify/*"
+            - Sid: EventBridgeSchedulerCreatePolicy
+              Effect: Allow
+              Action:
+                - scheduler:CreateSchedule
+              Resource:
+                - !Sub "arn:${AWS::Partition}:scheduler:${AWS::Region}:${AWS::AccountId}:schedule/*"
+            - Sid: EventBridgeSchedulerPassRole
+              Effect: Allow
+              Action:
+                - iam:PassRole
+              Resource:
+                - !GetAtt SchedulerRole.Arn
+      Layers:
+        - !Ref SharedLibs
+
+  FrontendAuth:
+    Type: AWS::CloudFront::Function
+    Properties:
+      Name: !Sub "giglist-frontend-auth-${Environment}"
+      AutoPublish: True
+      FunctionCode: |
+        __INLINE_CLOUDFRONT_CODE__
+      FunctionConfig:
+        Runtime: cloudfront-js-2.0
+        Comment: Password protects non-prod FEs
+        KeyValueStoreAssociations:
+          - KeyValueStoreARN: !GetAtt FrontendAuthKeyValueStore.Arn
+
+
+  ###############################
+  ##### User authentication #####
+  ###############################
+
+  CognitoUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: !Sub "giglist-user-pool-${Environment}"
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+      UsernameAttributes:
+        - email
+      Schema:
+        - AttributeDataType: String
+          Name: email
+          Required: true
+        - AttributeDataType: String
+          Name: preferred_username
+          Required: true
+      UserPoolTier: ESSENTIALS
+      AutoVerifiedAttributes:
+        - email
+
+  CognitoUserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: !Sub "giglist-user-pool-client-${Environment}"
+      UserPoolId: !Ref CognitoUserPool
+      CallbackURLs: !Ref CognitoCallbackUrls
+      LogoutURLs: !Ref CognitoCallbackUrls
+      SupportedIdentityProviders:
+        - COGNITO
+      AllowedOAuthFlowsUserPoolClient: true
+      AllowedOAuthScopes:
+        - openid
+      AllowedOAuthFlows:
+        - code
+
+  CognitoUserPoolDomain:
+    Type: AWS::Cognito::UserPoolDomain
+    Properties:
+      Domain:
+        Fn::If:
+          - IsProd
+          - "app.auth.giglist.rocks"
+          - !Sub "${Environment}.auth.giglist.rocks"
+      UserPoolId: !Ref CognitoUserPool
+      ManagedLoginVersion: "1"
+      CustomDomainConfig:
+        CertificateArn: !Ref GiglistAuthCertificateArn
+
+
+Outputs:
+  AddGigToUpcomingPlaylistFunctionArn:
+    Value: !GetAtt AddGigToUpcomingPlaylist.Arn
+  RemoveGigFromUpcomingPlaylistFunctionArn:
+    Value: !GetAtt RemoveGigFromUpcomingPlaylist.Arn
+  StaticSiteDomain:
+    Value: !GetAtt CloudFrontDistribution.DomainName
