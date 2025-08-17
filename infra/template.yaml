@@ -187,6 +187,11 @@ Resources:
           AcmCertificateArn: !Ref GiglistRootCertificateArn
           SslSupportMethod: sni-only
 
+  FrontendAuthKeyValueStore:
+    Type: AWS::CloudFront::KeyValueStore
+    Properties:
+      Name: !Sub "gigs-${Environment}"
+
 
   #####################
   ##### Databases #####
@@ -547,6 +552,8 @@ Resources:
       FunctionConfig:
         Runtime: cloudfront-js-2.0
         Comment: Password protects non-prod FEs
+        KeyValueStoreAssociations:
+          - KeyValueStoreARN: !GetAtt FrontendAuthKeyValueStore.Arn
 
 
   ###############################

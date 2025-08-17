@@ -1,10 +1,18 @@
-function handler(event) {
+import cf from 'cloudfront';
+const kvsHandle = cf.kvs();
+
+async function handler(event) {
+    let authUser = "tmp";
+    let authPass = "tmp";
+    try {
+        authUser = await kvsHandle.get("username", { format: "string"});
+        authPass = await kvsHandle.get("password", { format: "string"});
+    } catch (err) {
+        console.log(`Kvs key lookup failed`);
+    }
+
     var request = event.request;
     var headers = request.headers;
-
-    // This is populated by the script that inlines this code into the SAM template
-    var authUser = '__CLOUDFRONT_USERNAME__';
-    var authPass = '__CLOUDFRONT_PASSWORD__';
 
     var authString = 'Basic ' + btoa(authUser + ':' + authPass);
 

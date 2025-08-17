@@ -5,16 +5,12 @@ import os
 import sys
 
 CLOUDFRONT_FUNCTION_PLACEHOLDER = "__INLINE_CLOUDFRONT_CODE__"
-CLOUDFRONT_USERNAME_PLACEHOLDER = "__CLOUDFRONT_USERNAME__"
-CLOUDFRONT_PASSWORD_PLACEHOLDER = "__CLOUDFRONT_PASSWORD__"
 INDENT = 8
 
 def get_arguments():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-t", "--template", default="template.yaml")
     parser.add_argument("-c", "--cf-auth-function", required=True)
-    parser.add_argument("-u", "--cf-auth-username", required=True)
-    parser.add_argument("-p", "--cf-auth-password", required=True)
+    parser.add_argument("-t", "--template", default="template.yaml")
     parser.add_argument("-o", "--output", default="template.inlined.yaml")
     return parser.parse_args()
 
@@ -30,15 +26,11 @@ def main():
         sys.exit(1)
 
     with open(args.cf_auth_function, 'r') as js_file:
-        js_code = js_file.read()
+        js_code = js_file.readlines()
 
-    js_code = js_code.replace(CLOUDFRONT_USERNAME_PLACEHOLDER, args.cf_auth_username)
-    js_code = js_code.replace(CLOUDFRONT_PASSWORD_PLACEHOLDER, args.cf_auth_password)
-
-    js_lines = js_code.split("\n")
     indented_code = '\n'.join(
-        (' ' * INDENT + line if line.strip() != '' and line != js_lines[0] else line)
-        for line in js_lines
+        (' ' * INDENT + line if line.strip() != '' and line != js_code[0] else line)
+        for line in js_code
     )
 
     with open(args.template, 'r') as template_file:
