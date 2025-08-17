@@ -13,9 +13,6 @@ import { Observable } from "rxjs";
   providedIn: 'root'
 })
 export class GigService {
-  // TODO: change this URL to domain
-  url = 'https://cjrpgycyf4.execute-api.eu-west-2.amazonaws.com/Prod';
-
   constructor(private http: HttpClient) {};
 
   addGig(artist: string, venue: string, spotifyArtistId: string, date: DateTime): void {
@@ -28,7 +25,7 @@ export class GigService {
       venue: venue,
     });
 
-    this.http.post<Gig>(this.url + '/gigs', gig, {
+    this.http.post<Gig>(environment.gigsApiUrl + '/gigs', gig, {
       headers: {
         'Authorization': environment.token
       }
@@ -38,7 +35,7 @@ export class GigService {
   };
 
   getGigsForUser(userId: string): Observable<Gig[]> {
-    return this.http.get<Gig[]>(`${this.url}/users/${userId}/gigs`, {
+    return this.http.get<Gig[]>(`${environment.gigsApiUrl}/users/${userId}/gigs`, {
       headers: {
         'Authorization': environment.token
       }

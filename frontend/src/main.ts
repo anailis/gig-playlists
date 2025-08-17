@@ -2,6 +2,7 @@ import { bootstrapApplication } from '@angular/platform-browser';
 import { AppComponent } from './app/app.component';
 import { appConfig } from './app/app.config';
 import { Amplify } from "aws-amplify";
+import {environment} from "./app/config";
 
 Amplify.configure({
     Auth: {
@@ -10,7 +11,7 @@ Amplify.configure({
             userPoolId: 'eu-west-2_ipRVC2a/s0',
             loginWith: {
                 oauth: {
-                    domain: 'test.auth.giglist.rocks',
+                    domain: environment.authUrl,
                     scopes: ['openid'],
                     responseType: 'code',
                     redirectSignIn: ['http://localhost:4201'],
