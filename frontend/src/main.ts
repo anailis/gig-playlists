@@ -14,8 +14,8 @@ Amplify.configure({
                     domain: environment.authUrl,
                     scopes: ['openid'],
                     responseType: 'code',
-                    redirectSignIn: ['http://localhost:4201'],
-                    redirectSignOut: ['http://localhost:4201']
+                    redirectSignIn: [environment.redirectUrl],
+                    redirectSignOut: [environment.redirectUrl]
                 }
             },
         }
