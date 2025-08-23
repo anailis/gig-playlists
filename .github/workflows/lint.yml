@@ -19,11 +19,11 @@ jobs:
         python-version: "3.12"
     - name: Set up SAM CLI
       uses: aws-actions/setup-sam@v2
-    - name: Install dependencies
+    - name: Install UV
       run: |
         python -m pip install --upgrade pip
         pip install uv
-    - name: Lint with flake8
+    - name: Lint with Ruff
       run: |
         uv run ruff check
     - name: Lint SAM template
