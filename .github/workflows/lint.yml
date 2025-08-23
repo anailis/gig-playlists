@@ -22,7 +22,11 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: "22.17"
-    - name: Set up Angular dependencies
+    - name: Set up Angular
+      uses: actions/angular-github-actions@v1
+      with:
+        version: 18.2.15
+    - name: Set up frontend dependencies
       run: |
         cd frontend
         npm ci
@@ -33,11 +37,12 @@ jobs:
     - name: Lint Python files
       run: |
         uv run ruff check
-    # TODO: run script insertion before linting
     - name: Lint SAM templates
       run: |
-        sam validate --lint -t infra/template.yaml
-        sam validate --lint -t infra/shared/shared-infra.yaml
+        cd infra
+        ./scripts/populate_sam_template.py -c ../functions/frontend_auth/app.js
+        sam validate --lint -t template.inlined.yaml
+        sam validate --lint -t shared/shared-infra.yaml
     - name: Lint Angular project
       run: |
         cd frontend
