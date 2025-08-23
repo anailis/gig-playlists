@@ -33,13 +33,10 @@ jobs:
       run: |
         cd frontend
         npm ci
-    - name: Cache Python dependencies
-      uses: actions/cache@v4
+    - name: Enable caching
+      uses: astral-sh/setup-uv@v6
       with:
-        path: ~/.venv
-        key: ${{ runner.os }}-python-${{ hashFiles('**/uv.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-python-
+        enable-cache: true
     - name: Install UV
       run: |
         python -m pip install --upgrade pip
