@@ -7,7 +7,7 @@ permissions:
   contents: read
 
 jobs:
-  build:
+  lint:
 
     runs-on: ubuntu-latest
 
@@ -19,14 +19,25 @@ jobs:
         python-version: "3.12"
     - name: Set up SAM CLI
       uses: aws-actions/setup-sam@v2
+    - name: Setup Node.js environment
+      uses: actions/setup-node@v4
+      with:
+        node-version: "22.17"
+    - name: Set up Angular dependencies
+      run:
+        npm ci
     - name: Install UV
       run: |
         python -m pip install --upgrade pip
         pip install uv
-    - name: Lint with Ruff
+    - name: Lint Python files
       run: |
         uv run ruff check
-    - name: Lint SAM template
+    - name: Lint SAM templates
       run: |
         sam validate --lint -t infra/template.yaml
         sam validate --lint -t infra/shared/shared-infra.yaml
+    - name: Lint Angular project
+      run:
+        cd frontend
+        ng lint
