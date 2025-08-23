@@ -33,7 +33,7 @@ jobs:
       run: |
         cd frontend
         npm ci
-    - name: Enable caching
+    - name: Cache Python dependencies
       uses: astral-sh/setup-uv@v6
       with:
         enable-cache: true
