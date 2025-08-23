@@ -36,7 +36,7 @@ jobs:
     - name: Lint SAM templates
       run: |
         cd infra
-        ./scripts/populate_sam_template.py -c ../functions/frontend_auth/app.js
+        ./scripts/populate-sam-template.py -c ../functions/frontend_auth/app.js
         sam validate --lint -t template.inlined.yaml
         sam validate --lint -t shared/shared-infra.yaml
     - name: Lint Angular project
