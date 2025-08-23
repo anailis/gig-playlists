@@ -22,10 +22,6 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: "22.17"
-    - name: Set up Angular
-      uses: actions/angular-github-actions@v1
-      with:
-        version: 18.2.15
     - name: Set up frontend dependencies
       run: |
         cd frontend
@@ -46,4 +42,4 @@ jobs:
     - name: Lint Angular project
       run: |
         cd frontend
-        ng lint
+        npm run ng lint
