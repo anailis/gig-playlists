@@ -23,7 +23,7 @@ jobs:
       with:
         node-version: "22.17"
     - name: Set up Angular dependencies
-      run:
+      run: |...
         cd frontend
         npm ci
     - name: Install UV
@@ -39,6 +39,6 @@ jobs:
         sam validate --lint -t infra/template.yaml
         sam validate --lint -t infra/shared/shared-infra.yaml
     - name: Lint Angular project
-      run:
+      run: |
         cd frontend
         ng lint
