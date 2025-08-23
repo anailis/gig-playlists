@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Gig } from '@models/gig';
 import { environment } from '../../config';
@@ -13,11 +13,11 @@ import { Observable } from "rxjs";
   providedIn: 'root'
 })
 export class GigService {
-  constructor(private http: HttpClient) {};
+  private http = inject(HttpClient);
 
   addGig(artist: string, venue: string, spotifyArtistId: string, date: DateTime): void {
 
-    let gig = new Gig({
+    const gig = new Gig({
       artist: artist,
       userId: 'USER#e60d3adf-1bd5-4b5e-b71c-42582ed86bd6',
       date: date.toFormat("yyyy-MM-dd"),

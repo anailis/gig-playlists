@@ -12,7 +12,7 @@ import { GigService } from '@services/gig.service';
 
 @Component({
   standalone: true,
-  selector: 'gig-form',
+  selector: 'app-gig-form',
   templateUrl: './gig-form.component.html',
   imports: [ReactiveFormsModule, MatFormFieldModule, MatInputModule,
     MatButtonModule, MatDatepickerModule, MatLuxonDateModule],

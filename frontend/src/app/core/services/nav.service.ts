@@ -20,8 +20,6 @@ export class NavService {
         { icon: 'person', label: 'Account', route: 'account'},
     ];
 
-    constructor() {}
-
     getNavBarItems(isLoggedIn: boolean): NavItem[] {
         return isLoggedIn ? this.loggedInNavBarItems : this.loggedOutNavBarItems;
     }

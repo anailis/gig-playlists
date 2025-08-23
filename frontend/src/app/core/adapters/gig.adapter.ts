@@ -10,13 +10,13 @@ import {Gig} from "@models/gig";
 })
 export class GigAdapter {
 
-    groupByYear(gigs: Gig[]): { [year: number]: Gig[] } {
+    groupByYear(gigs: Gig[]): Record<number, Gig[]> {
         return gigs.reduce((acc, gig) => {
             if (!acc[gig.year]) {
                 acc[gig.year] = [];
             }
             acc[gig.year].push(gig);
             return acc;
-        }, {} as { [year: number]: Gig[] });
+        }, {} as Record<number, Gig[]>);
     }
 }
