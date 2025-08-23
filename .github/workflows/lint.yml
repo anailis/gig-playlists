@@ -23,7 +23,7 @@ jobs:
       with:
         node-version: "22.17"
     - name: Set up Angular dependencies
-      run: |...
+      run: |
         cd frontend
         npm ci
     - name: Install UV
