@@ -314,7 +314,11 @@ Resources:
     Type: AWS::Route53::RecordSet
     Properties:
       HostedZoneId: !ImportValue GigListHostedZoneId
-      Name: dev.auth.giglist.rocks.
+      Name:
+        Fn::If:
+          - IsProd
+          - "app.auth.giglist.rocks."
+          - !Sub "${Environment}.auth.giglist.rocks."
       Type: A
       AliasTarget:
         DNSName: !Ref CognitionDomainAliasTarget
