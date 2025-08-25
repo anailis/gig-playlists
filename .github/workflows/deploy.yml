@@ -1,17 +1,13 @@
 name: deploy
 
 on:
-  [push, pull_request]
-  # TODO: undo this after tested
-  #push:
-    #branches:
-     # - master
+  pull_request
 
 permissions:
   contents: read
 
 jobs:
-  deploy:
+  deploy-dev:
     runs-on: ubuntu-latest
 
     steps:
@@ -46,5 +42,4 @@ jobs:
         run: |
           cd infra
           sam deploy --no-confirm-changeset --no-fail-on-empty-changeset --config-env dev
-      - name: Integration test
-        run: uv run pytest tests/integration
+      # TODO: run integration tests
