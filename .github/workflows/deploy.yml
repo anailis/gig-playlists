@@ -43,6 +43,8 @@ jobs:
           sam build --use-container -t template.inlined.yaml
       # Prevent prompts and failure when the stack is unchanged
       - name: Deploy to dev
-        run: sam deploy --no-confirm-changeset --no-fail-on-empty-changeset --config-env dev
+        run: |
+          cd infra
+          sam deploy --no-confirm-changeset --no-fail-on-empty-changeset --config-env dev
       - name: Integration test
         run: uv run pytest tests/integration
