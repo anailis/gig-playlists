@@ -1,4 +1,4 @@
-import {Component, Input, signal} from '@angular/core';
+import { Component, Input, signal, OnInit, inject } from '@angular/core';
 import {CommonModule} from "@angular/common";
 import {MatListModule} from "@angular/material/list";
 import {MatIconModule} from "@angular/material/icon";
@@ -19,15 +19,12 @@ import {AuthService} from "@services/auth.service";
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.css'
 })
-export class NavbarComponent {
+export class NavbarComponent implements OnInit {
+  private navService = inject(NavService);
+  private authService = inject(AuthService);
 
   isLoggedIn = false
   navItems: NavItem[] = [];
-
-  constructor(
-      private navService: NavService,
-      private authService: AuthService
-  ) {}
 
   navContentCollapsed = signal(false)
   @Input() set navbarCollapsed(val: boolean) {

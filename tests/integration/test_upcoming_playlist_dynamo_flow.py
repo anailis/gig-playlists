@@ -99,7 +99,7 @@ def test_add_and_remove_future_gig(add_gig_lambda_arn, remove_gig_lambda_arn, la
 
     # Check idempotency of add gig function
     payload = trigger_add_gig_lambda(lambda_client, add_gig_lambda_arn, dynamodb_stream)
-    assert len(payload[TEST_USER]) == 0, f"Artist was added to playlist again, creating duplicates in playlist"
+    assert len(payload[TEST_USER]) == 0, "Artist was added to playlist again, creating duplicates in playlist"
 
     payload = trigger_remove_gig_lambda(
         lambda_client,

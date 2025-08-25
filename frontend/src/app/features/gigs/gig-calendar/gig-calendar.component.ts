@@ -1,4 +1,4 @@
-import {Component, inject} from '@angular/core';
+import {Component, inject, OnInit} from '@angular/core';
 import {MatToolbar} from "@angular/material/toolbar";
 import {NgForOf} from "@angular/common";
 import {EventCardComponent} from "../event-card/event-card.component";
@@ -16,7 +16,7 @@ import {Gig} from "@models/gig";
   templateUrl: './gig-calendar.component.html',
   styleUrl: './gig-calendar.component.css'
 })
-export class GigCalendar {
+export class GigCalendar implements OnInit {
   gigService = inject(GigService);
 
   gigs: Gig[] = [];
@@ -62,19 +62,17 @@ export class GigCalendar {
             });
     }
 
-    private groupByYear(gigs: Gig[]): { [year: number]: Gig[] } {
+    private groupByYear(gigs: Gig[]): Record<number, Gig[]> {
             return gigs.reduce((acc, gig) => {
                 if (!acc[gig.year]) {
                     acc[gig.year] = [];
                 }
                 acc[gig.year].push(gig);
                 return acc;
-            }, {} as { [year: number]: Gig[] });
+            }, {} as Record<number, Gig[]>);
         }
 
-    private groupByMonth(gigs: Gig[]): {
-        [monthName: string]: { gigs: Gig[]; monthNumber: number }
-    } {
+    private groupByMonth(gigs: Gig[]): Record<string, { gigs: Gig[]; monthNumber: number }> {
         return gigs.reduce((acc, gig) => {
             if (!acc[gig.month_name]) {
                 acc[gig.month_name] = {
@@ -84,9 +82,7 @@ export class GigCalendar {
             }
             acc[gig.month_name].gigs.push(gig);
             return acc;
-        }, {} as {
-            [monthName: string]: { gigs: Gig[]; monthNumber: number }
-        });
+        }, {} as Record<string, { gigs: Gig[]; monthNumber: number }>);
     }
 
     private sortGigsByDay(gigs: Gig[]): Gig[] {

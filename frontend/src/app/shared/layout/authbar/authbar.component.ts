@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import {MatListItem, MatListItemIcon, MatListItemTitle, MatNavList} from "@angular/material/list";
 import {MatIcon} from "@angular/material/icon";
 import {NgForOf, NgIf} from "@angular/common";
@@ -26,15 +26,16 @@ export interface AuthItem {
   templateUrl: './authbar.component.html',
   styleUrl: './authbar.component.css'
 })
-export class AuthbarComponent {
+export class AuthbarComponent implements OnInit {
+    private authService = inject(AuthService);
 
-    isLoggedIn: boolean = false;
+
+    protected readonly environment = environment;
+    isLoggedIn = false;
 
     loggedOutAuthItems: AuthItem[] = [
         { icon: 'add', label: 'Signup', link: environment.signupUrl },
     ];
-
-    constructor(private authService: AuthService) {}
 
     ngOnInit() {
         this.authService.isSignedIn$.subscribe(isSignedIn => {
