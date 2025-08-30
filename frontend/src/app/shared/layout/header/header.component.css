@@ -1,0 +1,12 @@
+header {
+    display: flex;
+    justify-content: space-between;
+}
+
+mat-toolbar {
+    flex: 0 1 30%;
+}
+
+span {
+    flex: 0 1 30%;
+}

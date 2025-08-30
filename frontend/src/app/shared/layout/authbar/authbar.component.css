@@ -1,12 +1,9 @@
-.horizontal-list {
+mat-nav-list {
     display: flex;
-    flex-direction: row;
-    gap: 5px;
-    width: 100%;
+    justify-content: flex-end;
 }
 
-a[mat-list-item] {
-    display: flex;
-    align-items: center;
-    width: auto;
+a {
+    flex: 0 0 content;
+    right: 20px;
 }
