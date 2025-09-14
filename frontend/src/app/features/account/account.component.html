@@ -1,23 +1,30 @@
-<div class="account-settings">
-    <h3>Account Settings</h3>
-    <p>
-        Email address: standin&#64;gmail.com
-        <button mat-icon-button>
-            <mat-icon>edit</mat-icon>
-        </button>
-    </p>
-    <a mat-flat-button>
-        Reset password
-    </a>
-    <br>
-    <a mat-flat-button color="warn">
+<div class="account-settings mat-typography">
+    <div class="settings-section">
+        <h6>Email</h6>
+        <mat-card class="email">
+            <p>standin&#64;gmail.com</p>
+            <button mat-icon-button>
+                <mat-icon>edit</mat-icon>
+            </button>
+        </mat-card>
+    </div>
+    <div class="settings-section">
+        <h6>Password</h6>
+        <a mat-flat-button>
+            Reset password
+        </a>
+    </div>
+    <div class="settings-section">
+        <h6>Delete Account</h6>
+        <a mat-flat-button color="warn">
         Delete account
-    </a>
-</div>
-<div class="integrations">
-    <h3>Spotify Integration</h3>
-    <p>No Spotify account linked</p>
-    <button mat-flat-button>
-        Link a Spotify account
-    </button>
+        </a>
+    </div>
+    <div class="settings-section">
+        <h6>Spotify Integration</h6>
+        <p>No Spotify account linked</p>
+        <button mat-flat-button>
+            Link a Spotify account
+        </button>
+    </div>
 </div>

@@ -1,0 +1,29 @@
+.account-settings {
+    display: flex;
+    flex-direction: column;
+    margin: 2%;
+}
+
+mat-divider {
+    margin: 15px;
+}
+
+mat-card {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    width: 50%;
+}
+
+mat-card p {
+    margin: 2%;
+}
+
+button {
+    justify-items: start;
+}
+
+.settings-section h6 {
+    margin-top: 20px;
+}
