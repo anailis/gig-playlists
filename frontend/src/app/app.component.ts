@@ -7,6 +7,7 @@ import {MatSidenavModule} from "@angular/material/sidenav";
 import {NavbarComponent} from "./shared/layout/navbar/navbar.component";
 import {AuthbarComponent} from "./shared/layout/authbar/authbar.component";
 import {HeaderComponent} from "./shared/layout/header/header.component";
+import {NgClass, NgStyle} from "@angular/common";
 
 @Component({
   standalone: true,
@@ -20,11 +21,14 @@ import {HeaderComponent} from "./shared/layout/header/header.component";
         MatIconModule,
         MatSidenavModule,
         NavbarComponent,
-        HeaderComponent
+        HeaderComponent,
+        NgStyle,
     ]
 })
 export class AppComponent {
-    // TODO: fix this to use the values from HeaderComponent
-    navbarCollapsed = signal(true);
-    navbarWidth= computed(() => this.navbarCollapsed() ? '65px' : '200px');
+    navBarCollapsed: boolean = false;
+
+    collapseNavBar(collapsed: boolean) {
+        this.navBarCollapsed = collapsed;
+    }
 }

@@ -1,9 +1,9 @@
-import {Component, computed, signal} from '@angular/core';
+import {Component, computed, EventEmitter, inject, Output, signal} from '@angular/core';
 import {MatToolbar} from "@angular/material/toolbar";
 import {MatIconButton} from "@angular/material/button";
 import {MatIcon} from "@angular/material/icon";
-import {MatSidenavContainer} from "@angular/material/sidenav";
 import {AuthbarComponent} from "../authbar/authbar.component";
+import {NavService} from "@services/nav.service";
 
 @Component({
   selector: 'app-header',
@@ -12,15 +12,18 @@ import {AuthbarComponent} from "../authbar/authbar.component";
     MatToolbar,
     MatIconButton,
     MatIcon,
-    MatSidenavContainer,
     AuthbarComponent
   ],
   templateUrl: './header.component.html',
   styleUrl: './header.component.css'
 })
 export class HeaderComponent {
-  navbarCollapsed = signal(false)
+  private navService = inject(NavService);
+  @Output() navBarCollapsed = new EventEmitter<boolean>();
 
-  navbarWidth= computed(() => this.navbarCollapsed() ? '65px' : '200px');
+  menuClick() {
+    this.navService.toggleNavbar();
+    this.navBarCollapsed.emit(this.navService.getNavBarStatus());
+  }
 
 }

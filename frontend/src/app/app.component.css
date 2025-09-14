@@ -1,27 +1,22 @@
-/* app-shell {
-    display: flex;
+.app-shell {
+    display: grid;
+    grid-template-areas:
+    "header header"
+    "sidebar content";
+    grid-template-rows: 1fr 10fr;
+    width: 100vw;
     height: 100vh;
+    gap: 0;
 }
-.toolbar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 10%;
 
-    > h2 {
-        padding-left: 20px;
-    }
+app-header {
+    grid-area: header
 }
-.sidenav-shell {
-    position: relative;
-    width: 15%;
-    top: 10%;
-    padding: 24px;
+
+mat-sidenav-container {
+    grid-area: sidebar;
 }
-.authbar-content {
-    position: fixed;
-    top: 0;
-    right: 5px;
-    padding: 5px;
-} */
+
+main {
+    grid-area: content;
+}

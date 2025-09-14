@@ -1,4 +1,4 @@
-<div class="sidenav-header">
+<div>
     <mat-nav-list>
         <a mat-list-item
            *ngFor="let item of navItems"
@@ -8,7 +8,7 @@
            [activated]="rla.isActive"
         >
             <mat-icon matListItemIcon>{{item.icon}}</mat-icon>
-            <span matListItemTitle *ngIf="!navContentCollapsed()">
+            <span matListItemTitle *ngIf="!navBarCollapsed">
                 {{item.label}}
             </span>
         </a>

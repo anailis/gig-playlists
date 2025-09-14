@@ -1,4 +1,4 @@
-import { Component, Input, signal, OnInit, inject } from '@angular/core';
+import {Component, Input, signal, OnInit, inject, computed, Output, EventEmitter} from '@angular/core';
 import {CommonModule} from "@angular/common";
 import {MatListModule} from "@angular/material/list";
 import {MatIconModule} from "@angular/material/icon";
@@ -25,17 +25,17 @@ export class NavbarComponent implements OnInit {
 
   isLoggedIn = false
   navItems: NavItem[] = [];
-
-  navContentCollapsed = signal(false)
-  @Input() set navbarCollapsed(val: boolean) {
-    this.navContentCollapsed.set(val);
-  }
+  navBarCollapsed = false;
 
   ngOnInit() {
     this.authService.isSignedIn$.subscribe(isSignedIn => {
       this.isLoggedIn = isSignedIn;
       this.updateNavItems();
     });
+
+    this.navService.navBarCollapsed$.subscribe(collapsed => {
+      this.navBarCollapsed = collapsed;
+    })
   }
 
   private async updateNavItems() {

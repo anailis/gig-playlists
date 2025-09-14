@@ -1,4 +1,5 @@
-import { Injectable } from '@angular/core';
+import {Injectable} from '@angular/core';
+import {BehaviorSubject} from "rxjs";
 
 export interface NavItem {
     icon: string;
@@ -20,7 +21,18 @@ export class NavService {
         { icon: 'person', label: 'Account', route: 'account'},
     ];
 
+    private navBarCollapsed = new BehaviorSubject<boolean>(false);
+    navBarCollapsed$ = this.navBarCollapsed.asObservable();
+
     getNavBarItems(isLoggedIn: boolean): NavItem[] {
         return isLoggedIn ? this.loggedInNavBarItems : this.loggedOutNavBarItems;
+    }
+
+    toggleNavbar() {
+        this.navBarCollapsed.next(!this.navBarCollapsed.value);
+    }
+
+    getNavBarStatus() {
+        return this.navBarCollapsed.value;
     }
 }

@@ -1,8 +1,8 @@
-<div class="app-shell">
-    <app-header></app-header>
-    <mat-sidenav-container class="sidenav-shell">
-        <mat-sidenav opened mode="side" [style.width]="navbarWidth()">
-            <app-navbar [navbarCollapsed]="navbarCollapsed()" />
+<div class="app-shell" [ngStyle]="{ 'grid-template-columns': navBarCollapsed ? '65px 1fr' : 'minmax(200px, 250px)' }">
+.    <app-header (navBarCollapsed)="collapseNavBar($event)"></app-header>
+    <mat-sidenav-container>
+        <mat-sidenav opened mode="side">
+            <app-navbar/>
         </mat-sidenav>
     </mat-sidenav-container>
     <main>
