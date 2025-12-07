@@ -32,7 +32,13 @@ export class GigCalendar implements OnInit {
   ngOnInit(): void {
     this.gigService.getGigsForUser("e60d3adf-1bd5-4b5e-b71c-42582ed86bd6").subscribe(
         (data: any[]) => {
-          this.gigs = data.map(obj => new Gig(obj));
+          this.gigs = data.map(obj => new Gig({
+              artist: obj.artist,
+              userId: obj.userId,
+              spotifyArtistId: obj.spotifyArtistId,
+              date: obj.date,
+              venue: obj.venue
+          }));
           this.groupedGigs = this.groupByDate(this.gigs);
         }
     );
