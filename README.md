@@ -33,7 +33,7 @@ npm install
 ng serve
 ```
 
-FE deployment is currently manual. Run `ng build` and copy the outputs of `dist/frontend/browser` into the static 
+FE deployment is currently manual. Run `ng build --configuration {env}` and copy the outputs of `dist/frontend/browser` into the static 
 site S3 bucket. Non-production sites will require a password for access. This is checked by the `frontend_auth` Cloud
 Front function.
 
