@@ -1,4 +1,4 @@
-import {Component, inject, Input} from '@angular/core';
+import {Component, EventEmitter, inject, Input, Output} from '@angular/core';
 import {MatIcon} from "@angular/material/icon";
 import {MatIconButton} from "@angular/material/button";
 import {MatCard} from "@angular/material/card";
@@ -20,12 +20,15 @@ export class EventCardComponent {
   @Input() day!: string;
   @Input() date!: number;
   @Input() title!: string;
+  @Output() changed = new EventEmitter<void>();
 
   gigService = inject(GigService);
 
   deleteGig() {
     if (this.id !== undefined) {
-      this.gigService.deleteGig(this.id);
+      this.gigService.deleteGig(this.id).subscribe(() => {
+        this.changed.emit();
+      });
     }
   }
 

@@ -26,7 +26,9 @@
                     [id]="gig.id"
                     [day]=gig.day_of_week
                     [date]=gig.day_of_month
-                    [title]="gig.artist">
+                    [title]="gig.artist"
+                    (changed)="refreshList()"
+            >
             </app-event-card>
         </ng-container>
     </ng-container>

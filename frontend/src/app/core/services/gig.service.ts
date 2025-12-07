@@ -34,14 +34,12 @@ export class GigService {
     });
   };
 
-  deleteGig(gig_id: string): void {
+  deleteGig(gig_id: string): Observable<Gig> {
     const stripped_id: string = gig_id.replace(/^GIG#/, "");
-    this.http.delete<Gig>(environment.gigsApiUrl + '/gigs/' + stripped_id, {
+    return this.http.delete<Gig>(environment.gigsApiUrl + '/gigs/' + stripped_id, {
       headers: {
         'Authorization': environment.token
       }
-    }).subscribe(message => {
-      console.log(message);
     })
   }
 
