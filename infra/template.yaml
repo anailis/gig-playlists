@@ -262,6 +262,7 @@ Resources:
           - POST
           - GET
           - OPTIONS
+          - DELETE
       # TODO: custom domain on this API
       # TODO: try to use AWS managed policies to simplify permissions on Lambda functions
 
@@ -381,6 +382,12 @@ Resources:
             ApiId: !Ref GigsApi
             Path: /gigs
             Method: POST
+        DeleteGig:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref GigsApi
+            Path: /gigs/{id}
+            Method: DELETE
         GetGigById:
           Type: HttpApi
           Properties:
