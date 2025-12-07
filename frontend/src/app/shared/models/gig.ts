@@ -1,4 +1,5 @@
 export class Gig {
+  id: string | undefined;
   artist: string;
   userId: string;
   spotifyArtistId: string;
@@ -10,7 +11,8 @@ export class Gig {
   day_of_month: number;
   day_of_week: string;
 
-  constructor(data: { artist: string; userId: string; spotifyArtistId: string; date: string; venue: string }) {
+  constructor(data: { artist: string; userId: string; spotifyArtistId: string; date: string; venue: string, gig_id?: string }) {
+    this.id = data.gig_id;
     this.artist = data.artist;
     this.userId = data.userId;
     this.spotifyArtistId = data.spotifyArtistId;

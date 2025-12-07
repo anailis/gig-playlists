@@ -42,6 +42,7 @@ export class GigCalendar implements OnInit {
     this.gigService.getGigsForUser("e60d3adf-1bd5-4b5e-b71c-42582ed86bd6").subscribe(
         (data: any[]) => {
           this.gigs = data.map(obj => new Gig({
+              gig_id: obj.id,
               artist: obj.artist,
               userId: obj.userId,
               spotifyArtistId: obj.spotifyArtistId,
@@ -53,7 +54,7 @@ export class GigCalendar implements OnInit {
     );
   }
 
-  // TODO: ensure cards can be ordered in both asc and desc order
+  // TODO: improve this...
     groupByDate(gigs: Gig[]) {
         const gigsByYear = this.groupByYear(gigs);
 

@@ -1,7 +1,8 @@
-import {Component, Input} from '@angular/core';
+import {Component, inject, Input} from '@angular/core';
 import {MatIcon} from "@angular/material/icon";
 import {MatIconButton} from "@angular/material/button";
 import {MatCard} from "@angular/material/card";
+import {GigService} from "@services/gig.service";
 
 @Component({
   selector: 'app-event-card',
@@ -15,8 +16,17 @@ import {MatCard} from "@angular/material/card";
   styleUrl: './event-card.component.css'
 })
 export class EventCardComponent {
+  @Input() id!: string | undefined;
   @Input() day!: string;
   @Input() date!: number;
   @Input() title!: string;
+
+  gigService = inject(GigService);
+
+  deleteGig() {
+    if (this.id !== undefined) {
+      this.gigService.deleteGig(this.id);
+    }
+  }
 
 }

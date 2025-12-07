@@ -23,6 +23,7 @@
 
             <app-event-card
                     *ngFor="let gig of monthGroup.gigs"
+                    [id]="gig.id"
                     [day]=gig.day_of_week
                     [date]=gig.day_of_month
                     [title]="gig.artist">

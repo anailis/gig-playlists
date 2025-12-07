@@ -6,7 +6,7 @@ import { DateTime } from "luxon";
 import { Observable } from "rxjs";
 
 /**
- * Responsible for retrieving Gig data
+ * Responsible for retrieving and modifying Gig data
  * through interactions with the Gigs API.
  */
 @Injectable({
@@ -33,6 +33,17 @@ export class GigService {
       console.log(message);
     });
   };
+
+  deleteGig(gig_id: string): void {
+    const stripped_id: string = gig_id.replace(/^GIG#/, "");
+    this.http.delete<Gig>(environment.gigsApiUrl + '/gigs/' + stripped_id, {
+      headers: {
+        'Authorization': environment.token
+      }
+    }).subscribe(message => {
+      console.log(message);
+    })
+  }
 
   getGigsForUser(userId: string): Observable<Gig[]> {
     return this.http.get<Gig[]>(`${environment.gigsApiUrl}/users/${userId}/gigs`, {
