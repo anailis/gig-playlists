@@ -7,8 +7,8 @@ import {environment} from "./app/config";
 Amplify.configure({
     Auth: {
         Cognito: {
-            userPoolClientId: '205m3ah5f7m3gf17hadbo7c16n',
-            userPoolId: 'eu-west-2_ipRVC2a/s0',
+            userPoolClientId: environment.userPoolClientId,
+            userPoolId: environment.userPoolId,
             loginWith: {
                 oauth: {
                     domain: environment.authUrl,
