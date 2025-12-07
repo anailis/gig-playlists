@@ -4,15 +4,20 @@ import {NgForOf} from "@angular/common";
 import {EventCardComponent} from "../event-card/event-card.component";
 import {GigService} from "@core/services/gig.service";
 import {Gig} from "@models/gig";
+import {MatIcon} from "@angular/material/icon";
+import {MatButtonToggle, MatButtonToggleGroup} from "@angular/material/button-toggle";
 
 @Component({
   selector: 'app-gigs',
   standalone: true,
-  imports: [
-    MatToolbar,
-    NgForOf,
-    EventCardComponent
-  ],
+    imports: [
+        MatToolbar,
+        NgForOf,
+        EventCardComponent,
+        MatIcon,
+        MatButtonToggle,
+        MatButtonToggleGroup
+    ],
   templateUrl: './gig-calendar.component.html',
   styleUrl: './gig-calendar.component.css'
 })

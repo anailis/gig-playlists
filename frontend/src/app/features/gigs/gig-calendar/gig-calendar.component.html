@@ -1,3 +1,15 @@
+<div>
+    <mat-button-toggle-group [hideSingleSelectionIndicator]=true>
+        <mat-button-toggle value="upcoming">
+            <mat-icon>keyboard_double_arrow_right</mat-icon>
+            Upcoming Gigs
+    </mat-button-toggle>
+        <mat-button-toggle value="past">
+            <mat-icon>keyboard_double_arrow_left</mat-icon>
+            Past Gigs
+        </mat-button-toggle>
+    </mat-button-toggle-group>
+</div>
 <div class="gig-list">
     <ng-container *ngFor="let yearGroup of groupedGigs">
         <mat-toolbar class="year">{{ yearGroup.year }}</mat-toolbar>
