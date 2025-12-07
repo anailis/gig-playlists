@@ -4,15 +4,13 @@
             <mat-icon>menu</mat-icon>
         </button>
         <h2>Giglist</h2>
-    </mat-toolbar>
-    <mat-sidenav-container class="authbar-shell">
         <app-authbar class="authbar-content"></app-authbar>
-    </mat-sidenav-container>
-    <mat-sidenav-container class="sidenav-shell">
-        <mat-sidenav opened mode="side" [style.width]="navbarWidth()">
+    </mat-toolbar>
+    <mat-sidenav-container class="page-content">
+        <mat-sidenav opened mode="side" class="sidenav-shell" [style.width]="navbarWidth()">
             <app-navbar [navbarCollapsed]="navbarCollapsed()" />
         </mat-sidenav>
-        <mat-sidenav-content class="sidenav-content" [style.margin-left]="navbarWidth()">
+        <mat-sidenav-content class="main-content">
             <router-outlet></router-outlet>
         </mat-sidenav-content>
     </mat-sidenav-container>

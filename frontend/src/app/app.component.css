@@ -1,6 +1,7 @@
 .app-shell {
     display: flex;
-    height: 100vh;
+    height: 100%;
+    width: 100%;
 }
 .toolbar {
     position: fixed;
@@ -8,6 +9,7 @@
     left: 0;
     width: 100%;
     height: 10%;
+    z-index: 1000;
 
     > h2 {
         padding-left: 20px;
@@ -15,9 +17,15 @@
 }
 .sidenav-shell {
     position: relative;
-    width: 15%;
     top: 10%;
     padding: 24px;
+}
+.page-content {
+    flex: 1;
+    display: block;
+}
+mat-sidenav-content {
+    margin-right: 5%;
 }
 .authbar-content {
     position: fixed;
