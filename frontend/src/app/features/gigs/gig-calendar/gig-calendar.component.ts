@@ -6,6 +6,8 @@ import {GigService} from "@core/services/gig.service";
 import {Gig} from "@models/gig";
 import {MatIcon} from "@angular/material/icon";
 import {MatButtonToggle, MatButtonToggleGroup} from "@angular/material/button-toggle";
+import {MatButton} from "@angular/material/button";
+import {RouterLink} from "@angular/router";
 
 @Component({
   selector: 'app-gigs',
@@ -16,7 +18,9 @@ import {MatButtonToggle, MatButtonToggleGroup} from "@angular/material/button-to
         EventCardComponent,
         MatIcon,
         MatButtonToggle,
-        MatButtonToggleGroup
+        MatButtonToggleGroup,
+        MatButton,
+        RouterLink
     ],
   templateUrl: './gig-calendar.component.html',
   styleUrl: './gig-calendar.component.css'

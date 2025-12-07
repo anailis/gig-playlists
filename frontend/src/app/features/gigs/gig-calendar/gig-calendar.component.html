@@ -1,4 +1,8 @@
-<div>
+<div class="controls">
+    <button mat-stroked-button class="add-gig-button" [routerLink]="['/add-gig']">
+        <mat-icon>add</mat-icon>
+        Add a gig
+    </button>
     <mat-button-toggle-group [hideSingleSelectionIndicator]=true>
         <mat-button-toggle value="upcoming">
             <mat-icon>keyboard_double_arrow_right</mat-icon>
