@@ -29,7 +29,7 @@ def get_arn_from_stack(stack: dict, key: str) -> str:
 @pytest.fixture(scope="session")
 def stack():
     client = boto3.client("cloudformation")
-    response = client.describe_stacks(StackName="gig-playlists")
+    response = client.describe_stacks(StackName="giglist-dev")
     return response["Stacks"][0]["Outputs"]
 
 
