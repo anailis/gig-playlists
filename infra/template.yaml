@@ -27,7 +27,7 @@ Parameters:
     Type: String
   GigsApiAllowedOrigins:
     Description: "Allowed origins (CORS) for the Gigs API"
-    Type: CommaDelimitedList
+    Type: String
   ApiTokenArn:
     Description: "ARN of a dummy API token stored in SSM, to be removed later"
     Type: String
@@ -253,10 +253,16 @@ Resources:
             FunctionArn: !GetAtt GigsApiAuthFunction.Arn
             AuthorizerPayloadFormatVersion: 2.0
       CorsConfiguration:
-        AllowOrigins: !Ref GigsApiAllowedOrigins
-        AllowHeaders: "'Authorization,Content-Type'"
-        AllowMethods: "'POST,GET,OPTIONS'"
-      # TODO: test this CORS configuration
+        AllowOrigins:
+          - !Ref GigsApiAllowedOrigins
+        AllowHeaders:
+          - authorization
+          - content-type
+        AllowMethods:
+          - POST
+          - GET
+          - OPTIONS
+          - DELETE
       # TODO: custom domain on this API
       # TODO: try to use AWS managed policies to simplify permissions on Lambda functions
 
@@ -376,6 +382,12 @@ Resources:
             ApiId: !Ref GigsApi
             Path: /gigs
             Method: POST
+        DeleteGig:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref GigsApi
+            Path: /gigs/{id}
+            Method: DELETE
         GetGigById:
           Type: HttpApi
           Properties:

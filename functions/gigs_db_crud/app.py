@@ -62,11 +62,23 @@ def get_gig_by_id(gig_id: str):
 
 @app.post("/gigs")
 def post_gig(gig: Gig):
-    item: dict = gig.dict()
+    item: dict = gig.model_dump()
     item["date"] = gig.date.strftime("%Y-%m-%d")
     item["id"] = GIG_PREFIX + str(gig.id)
     table.put_item(Item=item)
     return {"message": "Created gig with ID " + str(gig.id)}
+
+
+@app.delete("/gigs/<gig_id>")
+def delete_gig(gig_id: str):
+    full_gig_id = GIG_PREFIX + gig_id
+    results = table.query(KeyConditionExpression=Key("id").eq(full_gig_id))
+    if results["Count"] == 0:
+        raise NotFoundError
+    else:
+        user_id = results["Items"][0]["userId"]
+        table.delete_item(Key={"id": full_gig_id, "userId": user_id})
+        return {"message": f"Deleted gig with ID {gig_id}"}
 
 
 def lambda_handler(event: dict, context: LambdaContext) -> dict:

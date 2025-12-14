@@ -14,8 +14,8 @@ parameter_overrides = [
     "Environment=dev",
     "ApiTokenArn=arn:aws:ssm:eu-west-2:891376983144:parameter/gigs/crud_api_token",
     "GigsApiCertificateArn=arn:aws:acm:eu-west-2:891376983144:certificate/69fa8074-1e4a-4f05-83a0-2a00082cb731",
-    "GigsApiAllowedOrigins=*", # TODO: think this isn't getting picked up - might be because of the use of comma separated list
-    "CognitoCallbackUrls=https://dev.giglist.rocks",
+    "GigsApiAllowedOrigins=*",
+    "CognitoCallbackUrls=https://dev.giglist.rocks,http://localhost:4200",
     "CognitionDomainAliasTarget=dqyecorio6lnw.cloudfront.net"
 ]
 

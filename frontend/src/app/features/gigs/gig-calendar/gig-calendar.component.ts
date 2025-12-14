@@ -4,15 +4,24 @@ import {NgForOf} from "@angular/common";
 import {EventCardComponent} from "../event-card/event-card.component";
 import {GigService} from "@core/services/gig.service";
 import {Gig} from "@models/gig";
+import {MatIcon} from "@angular/material/icon";
+import {MatButtonToggle, MatButtonToggleGroup} from "@angular/material/button-toggle";
+import {MatButton} from "@angular/material/button";
+import {RouterLink} from "@angular/router";
 
 @Component({
   selector: 'app-gigs',
   standalone: true,
-  imports: [
-    MatToolbar,
-    NgForOf,
-    EventCardComponent
-  ],
+    imports: [
+        MatToolbar,
+        NgForOf,
+        EventCardComponent,
+        MatIcon,
+        MatButtonToggle,
+        MatButtonToggleGroup,
+        MatButton,
+        RouterLink
+    ],
   templateUrl: './gig-calendar.component.html',
   styleUrl: './gig-calendar.component.css'
 })
@@ -30,15 +39,30 @@ export class GigCalendar implements OnInit {
   }[] = [];
 
   ngOnInit(): void {
-    this.gigService.getGigsForUser("e60d3adf-1bd5-4b5e-b71c-42582ed86bd6").subscribe(
-        (data: any[]) => {
-          this.gigs = data.map(obj => new Gig(obj));
-          this.groupedGigs = this.groupByDate(this.gigs);
-        }
-    );
+    this.loadGigs();
   }
 
-  // TODO: ensure cards can be ordered in both asc and desc order
+  refreshList(): void {
+    this.loadGigs();
+  }
+
+  loadGigs(): void {
+      this.gigService.getGigsForUser("e60d3adf-1bd5-4b5e-b71c-42582ed86bd6").subscribe(
+          (data: any[]) => {
+              this.gigs = data.map(obj => new Gig({
+                  gig_id: obj.id,
+                  artist: obj.artist,
+                  userId: obj.userId,
+                  spotifyArtistId: obj.spotifyArtistId,
+                  date: obj.date,
+                  venue: obj.venue
+              }));
+              this.groupedGigs = this.groupByDate(this.gigs);
+          }
+      );
+  }
+
+  // TODO: improve this...
     groupByDate(gigs: Gig[]) {
         const gigsByYear = this.groupByYear(gigs);
 
