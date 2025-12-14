@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import {Component, inject} from '@angular/core';
+import {TidalAuthService} from "@services/tidal_auth.service";
 
 @Component({
   selector: 'app-playlists',
@@ -8,5 +9,13 @@ import { Component } from '@angular/core';
   styleUrl: './playlists.component.css'
 })
 export class PlaylistsComponent {
+  tidalService = inject(TidalAuthService);
+
+  ngOnInit(): void {
+  }
+
+  loginToTidal() {
+    this.tidalService.login();
+  }
 
 }
