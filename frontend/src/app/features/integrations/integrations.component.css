@@ -1,0 +1,11 @@
+.eg {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-around;
+    gap: 20px;
+}
+
+mat-card {
+    text-align: center;
+    flex: 1;
+}
