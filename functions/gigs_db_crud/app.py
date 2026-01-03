@@ -36,7 +36,7 @@ def get_user_by_id(user_id: str):
     if results["Count"] == 0:
         raise NotFoundError
     else:
-        return results["Items"]
+        return results["Items"][0]
 
 
 @app.get("/users/<user_id>/gigs")
