@@ -1,5 +1,6 @@
 import {Component, inject} from '@angular/core';
 import {TidalAuthService} from "@services/tidal_auth.service";
+import {TidalAPIService} from "@services/tidal_api.service";
 
 @Component({
   selector: 'app-playlists',
@@ -9,13 +10,19 @@ import {TidalAuthService} from "@services/tidal_auth.service";
   styleUrl: './playlists.component.css'
 })
 export class PlaylistsComponent {
-  tidalService = inject(TidalAuthService);
+  tidalAuthService = inject(TidalAuthService);
+  tidalApiService = inject(TidalAPIService);
 
-  ngOnInit(): void {
+  async ngOnInit() {
+    await this.tidalAuthService.finaliseLogin();
   }
 
   loginToTidal() {
-    this.tidalService.login();
+    this.tidalAuthService.login();
+  }
+
+  seeAlbum() {
+    this.tidalApiService.seeAlbum();
   }
 
 }
