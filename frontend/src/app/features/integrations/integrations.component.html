@@ -3,7 +3,7 @@
         <mat-card appearance="outlined">
             <mat-card-content>
                 <h2>{{ integration.name }}</h2>
-                <button mat-stroked-button *ngIf="!integration.enabled">
+                <button mat-stroked-button *ngIf="!integration.enabled" (click)="integrateWithThirdParty(integration.name)">
                     <mat-icon>add</mat-icon>
                     Enable integration
                 </button>
