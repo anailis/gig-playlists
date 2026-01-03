@@ -25,9 +25,7 @@
     flex: 1;
     position: relative;
     top: 10%;
-}
-mat-sidenav-content {
-    margin-right: 5%;
+    margin: 2% !important;
 }
 .authbar-content {
     position: fixed;
