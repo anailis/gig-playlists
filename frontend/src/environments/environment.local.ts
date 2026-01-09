@@ -6,6 +6,5 @@ export const environment = {
     cognitoRedirectUrl: "http://localhost:4200",
     integrationRedirectUrl: "http://localhost:4200/integrations",
     gigsApiUrl: "https://406q0l2co5.execute-api.eu-west-2.amazonaws.com/api/",
-    tidalClientId: "n8Vc7GScKkHP4Yua",
-    tidalClientSecret: ""
+    tidalClientId: "n8Vc7GScKkHP4Yua"
 };

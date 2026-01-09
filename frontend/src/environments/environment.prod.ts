@@ -5,5 +5,6 @@ export const environment = {
     authUrl: "app.auth.giglist.rocks",
     cognitoRedirectUrl: "",
     integrationRedirectUrl: "",
-    gigsApiUrl: ""
+    gigsApiUrl: "",
+    tidalClientId: ""
 };
