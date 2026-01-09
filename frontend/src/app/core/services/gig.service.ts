@@ -15,39 +15,26 @@ import { Observable } from "rxjs";
 export class GigService {
   private http = inject(HttpClient);
 
-  addGig(artist: string, venue: string, spotifyArtistId: string, date: DateTime): void {
-
+  addGig(userId: string, artist: string, venue: string, spotifyArtistId: string, date: DateTime): void {
     const gig = new Gig({
       artist: artist,
-      userId: 'USER#e60d3adf-1bd5-4b5e-b71c-42582ed86bd6',
+      userId: 'USER#' + userId,
       date: date.toFormat("yyyy-MM-dd"),
       spotifyArtistId: spotifyArtistId,
       venue: venue,
     });
 
-    this.http.post<Gig>(environment.gigsApiUrl + '/gigs', gig, {
-      headers: {
-        'Authorization': environment.token
-      }
-    }).subscribe(message => {
+    this.http.post<Gig>(environment.gigsApiUrl + '/gigs', gig).subscribe(message => {
       console.log(message);
     });
   };
 
-  deleteGig(gig_id: string): Observable<Gig> {
-    const stripped_id: string = gig_id.replace(/^GIG#/, "");
-    return this.http.delete<Gig>(environment.gigsApiUrl + '/gigs/' + stripped_id, {
-      headers: {
-        'Authorization': environment.token
-      }
-    })
+  deleteGig(gigId: string): Observable<Gig> {
+    const stripped_id: string = gigId.replace(/^GIG#/, "");
+    return this.http.delete<Gig>(environment.gigsApiUrl + '/gigs/' + stripped_id);
   }
 
   getGigsForUser(userId: string): Observable<Gig[]> {
-    return this.http.get<Gig[]>(`${environment.gigsApiUrl}/users/${userId}/gigs`, {
-      headers: {
-        'Authorization': environment.token
-      }
-    })
+    return this.http.get<Gig[]>(`${environment.gigsApiUrl}/users/${userId}/gigs`);
   }
 }

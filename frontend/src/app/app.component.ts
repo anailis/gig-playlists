@@ -26,5 +26,5 @@ export class AppComponent {
 
   navbarCollapsed = signal(false)
 
-  navbarWidth= computed(() => this.navbarCollapsed() ? '65px' : '200px');
+  navbarWidth= computed(() => this.navbarCollapsed() ? '115px' : '250px');
 }

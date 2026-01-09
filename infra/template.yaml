@@ -247,11 +247,14 @@ Resources:
       Description: API Gateway for calling GigsDbCRUD lambda function
       StageName: api
       Auth:
-        DefaultAuthorizer: GigsTokenAuthorizer
+        DefaultAuthorizer: GigsCognitoAuthorizer
         Authorizers:
-          GigsTokenAuthorizer:
-            FunctionArn: !GetAtt GigsApiAuthFunction.Arn
-            AuthorizerPayloadFormatVersion: 2.0
+          GigsCognitoAuthorizer:
+            IdentitySource: "$request.header.Authorization"
+            JwtConfiguration:
+              Audience:
+                - !Ref CognitoUserPoolClient
+              Issuer: !Sub "https://cognito-idp.${AWS::Region}.amazonaws.com/${CognitoUserPool}"
       CorsConfiguration:
         AllowOrigins:
           - !Ref GigsApiAllowedOrigins
@@ -265,37 +268,6 @@ Resources:
           - DELETE
       # TODO: custom domain on this API
       # TODO: try to use AWS managed policies to simplify permissions on Lambda functions
-
-  GigsApiAuthFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      FunctionName: !Sub "gigs-api-authoriser-${Environment}"
-      CodeUri: ../functions/gigs_db_auth/
-      Description: Performs authorisation for requests to GigsAPI
-      Policies:
-        - Statement:
-            - Sid: SSMReadParameterPolicy
-              Effect: Allow
-              Action:
-                - ssm:GetParameters
-                - ssm:GetParameter
-              Resource:
-                - !Ref ApiTokenArn
-            - Sid: LoggingPolicy
-              Effect: Allow
-              Action:
-                - logs:CreateLogGroup
-                - logs:CreateLogStream
-                - logs:PutLogEvents
-              Resource: !Sub "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:*"
-
-  AuthorizerPermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      Action: lambda:InvokeFunction
-      FunctionName: !Ref GigsApiAuthFunction
-      Principal: "apigateway.amazonaws.com"
-      SourceArn: !Sub "arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${GigsApi}/authorizers/*"
 
 
   ###########################

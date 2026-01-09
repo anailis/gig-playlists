@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import {Component, inject} from '@angular/core';
+import {TidalAPIService} from "@services/tidal_api.service";
 
 @Component({
   selector: 'app-playlists',
@@ -8,5 +9,10 @@ import { Component } from '@angular/core';
   styleUrl: './playlists.component.css'
 })
 export class PlaylistsComponent {
+  tidalApiService = inject(TidalAPIService);
+
+  seeAlbum() {
+    this.tidalApiService.seeAlbum();
+  }
 
 }

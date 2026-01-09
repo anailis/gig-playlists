@@ -30,7 +30,7 @@ The frontend Angular source is in `frontend`. It can be run locally using the An
 ```commandline
 cd frontend
 npm install
-ng serve
+ng serve --configuration {env}
 ```
 
 FE deployment is currently manual. Run `ng build --configuration {env}` and copy the outputs of `dist/frontend/browser` into the static 

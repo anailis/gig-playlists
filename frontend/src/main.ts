@@ -14,8 +14,8 @@ Amplify.configure({
                     domain: environment.authUrl,
                     scopes: ['openid'],
                     responseType: 'code',
-                    redirectSignIn: [environment.redirectUrl],
-                    redirectSignOut: [environment.redirectUrl]
+                    redirectSignIn: [environment.cognitoRedirectUrl],
+                    redirectSignOut: [environment.cognitoRedirectUrl]
                 }
             },
         }

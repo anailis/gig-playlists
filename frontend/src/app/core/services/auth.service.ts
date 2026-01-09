@@ -1,5 +1,5 @@
 import {Injectable} from "@angular/core";
-import { getCurrentUser, signOut, signInWithRedirect } from 'aws-amplify/auth';
+import { getCurrentUser, signOut, signInWithRedirect, AuthUser, fetchAuthSession } from 'aws-amplify/auth';
 import {BehaviorSubject} from "rxjs";
 
 @Injectable({
@@ -9,15 +9,18 @@ export class AuthService {
 
     private signedIn = new BehaviorSubject<boolean>(false);
     public isSignedIn$ = this.signedIn.asObservable();
+    public user: AuthUser | null = null;
 
     constructor() {
         this.checkUser();
     }
 
-    private async checkUser() {
+    private checkUser() {
         try {
-            await getCurrentUser();
-            this.signedIn.next(true)
+            getCurrentUser().then((user: AuthUser) => {
+                this.user = user;
+                this.signedIn.next(true);
+            });
         } catch(err) {
             console.log("Not logged in");
             console.log(err);
@@ -35,4 +38,20 @@ export class AuthService {
         await signInWithRedirect();
     }
 
+    getUserId(): string | null {
+        if (this.user) {
+            return this.user.userId;
+        }
+        return null;
+    }
+
+    async getToken(): Promise<string> {
+        const session = await fetchAuthSession({ forceRefresh: true });
+        const accessToken = session.tokens?.accessToken.toString();
+        if (accessToken) {
+            return accessToken;
+        } else {
+            throw new Error("No auth token available");
+        }
+    }
 }

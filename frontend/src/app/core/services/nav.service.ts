@@ -17,6 +17,7 @@ export class NavService {
     private loggedInNavBarItems: NavItem[] = [
         { icon: 'calendar_month', label: 'Gigs', route: 'gigs'},
         { icon: 'music_note', label: 'Playlists', route: 'playlists'},
+        { icon: 'link', label: 'Integrations', route: 'integrations'},
         { icon: 'person', label: 'Account', route: 'account'},
     ];
 
