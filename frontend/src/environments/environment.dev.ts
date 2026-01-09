@@ -1,7 +1,6 @@
 export const environment = {
     userPoolClientId: "86un46gol3gmk35ado0qsbb07",
     userPoolId: "eu-west-2_fyXtvJMKe",
-    token: "",
     signupUrl: "",
     authUrl: "dev.auth.giglist.rocks",
     cognitoRedirectUrl: "https://dev.giglist.rocks",

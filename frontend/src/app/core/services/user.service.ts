@@ -15,10 +15,6 @@ export class UserService {
     private http = inject(HttpClient);
 
     getUser(userId: string): Observable<User> {
-        return this.http.get<User>(`${environment.gigsApiUrl}/users/${userId}`, {
-            headers: {
-                'Authorization': environment.token
-            }
-        })
+        return this.http.get<User>(`${environment.gigsApiUrl}/users/${userId}`)
     }
 }

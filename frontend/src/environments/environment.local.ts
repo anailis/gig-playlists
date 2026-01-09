@@ -1,7 +1,6 @@
 export const environment = {
     userPoolClientId: "86un46gol3gmk35ado0qsbb07",
     userPoolId: "eu-west-2_fyXtvJMKe",
-    token: "Bearer w0rmsinCAN",
     signupUrl: "https://dev.auth.giglist.rocks/signup?client_id=86un46gol3gmk35ado0qsbb07&response_type=code&scope=openid&redirect_uri=http%3A%2F%2Flocalhost%3A4200",
     authUrl: "dev.auth.giglist.rocks",
     cognitoRedirectUrl: "http://localhost:4200",
