@@ -1,17 +1,15 @@
-from datetime import date
-from uuid import UUID, uuid4
 import os
 
 from aws_lambda_powertools.event_handler import APIGatewayHttpResolver
-from aws_lambda_powertools.event_handler.exceptions import NotFoundError
 from aws_lambda_powertools.utilities.typing import LambdaContext
 from aws_lambda_powertools import Logger
 import boto3
-from boto3.dynamodb.conditions import Key
-from pydantic import BaseModel, Field
+
+from gigs_db_service import GigsDbService, Gig
 
 dynamodb = boto3.resource("dynamodb")
 table = dynamodb.Table(os.environ["TABLE_NAME"])
+db_service = GigsDbService(table)
 
 app = APIGatewayHttpResolver(enable_validation=True)
 logger = Logger()
@@ -20,64 +18,33 @@ GIG_PREFIX = "GIG#"
 USER_PREFIX = "USER#"
 
 
-class Gig(BaseModel):
-    id: UUID = Field(default_factory=uuid4)
-    userId: str
-    artist: str
-    date: date
-    venue: str
-    spotifyArtistId: str
-
+def get_requesting_user() -> str:
+    authoriser_details = app.current_event.get("requestContext", {}).get("authorizer", {})
+    return authoriser_details.get("jwt", {}).get("claims", {}).get("sub", "")
 
 @app.get("/users/<user_id>")
 def get_user_by_id(user_id: str):
-    results = table.query(KeyConditionExpression=Key("id").eq(USER_PREFIX + user_id))
-    if results["Count"] == 0:
-        raise NotFoundError
-    else:
-        return results["Items"][0]
+    return db_service.get_user_by_id(user_id, requesting_user_id=get_requesting_user())
 
 
 @app.get("/users/<user_id>/gigs")
 def get_gigs_for_user(user_id: str):
-    results = table.query(
-        IndexName="userId-id-index",
-        KeyConditionExpression=(
-                Key("userId").eq(USER_PREFIX + user_id) &
-                Key("id").begins_with(GIG_PREFIX)
-        )
-    )
-    return results["Items"]
+    return db_service.get_gigs_for_user(user_id)
 
 
 @app.get("/gigs/<gig_id>")
 def get_gig_by_id(gig_id: str):
-    results = table.query(KeyConditionExpression=Key("id").eq(GIG_PREFIX + gig_id))
-    if results["Count"] == 0:
-        raise NotFoundError
-    else:
-        return results["Items"]
+    return db_service.get_gig_by_id(gig_id)
 
 
 @app.post("/gigs")
 def post_gig(gig: Gig):
-    item: dict = gig.model_dump()
-    item["date"] = gig.date.strftime("%Y-%m-%d")
-    item["id"] = GIG_PREFIX + str(gig.id)
-    table.put_item(Item=item)
-    return {"message": "Created gig with ID " + str(gig.id)}
+    return db_service.post_gig(gig)
 
 
 @app.delete("/gigs/<gig_id>")
 def delete_gig(gig_id: str):
-    full_gig_id = GIG_PREFIX + gig_id
-    results = table.query(KeyConditionExpression=Key("id").eq(full_gig_id))
-    if results["Count"] == 0:
-        raise NotFoundError
-    else:
-        user_id = results["Items"][0]["userId"]
-        table.delete_item(Key={"id": full_gig_id, "userId": user_id})
-        return {"message": f"Deleted gig with ID {gig_id}"}
+    return db_service.delete_gig(gig_id)
 
 
 def lambda_handler(event: dict, context: LambdaContext) -> dict:
