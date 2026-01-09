@@ -10,9 +10,9 @@ export class TidalIntegrationService implements IntegrationService {
 
     integrate() {
         localStorage.setItem('clientId', environment.tidalClientId);
-        localStorage.setItem('redirectUri', environment.redirectUrl);
+        localStorage.setItem('redirectUri', environment.integrationRedirectUrl);
 
-        this.authorise(environment.tidalClientId, environment.redirectUrl);
+        this.authorise(environment.tidalClientId, environment.integrationRedirectUrl);
     }
 
     registerIntegration() {
