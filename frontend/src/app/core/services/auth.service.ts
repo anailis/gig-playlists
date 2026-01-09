@@ -1,5 +1,5 @@
 import {Injectable} from "@angular/core";
-import { getCurrentUser, signOut, signInWithRedirect, AuthUser, fetchAuthSession, AuthSession } from 'aws-amplify/auth';
+import { getCurrentUser, signOut, signInWithRedirect, AuthUser, fetchAuthSession } from 'aws-amplify/auth';
 import {BehaviorSubject} from "rxjs";
 
 @Injectable({

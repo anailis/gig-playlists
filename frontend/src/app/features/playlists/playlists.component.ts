@@ -10,11 +10,7 @@ import {TidalAPIService} from "@services/tidal_api.service";
   styleUrl: './playlists.component.css'
 })
 export class PlaylistsComponent {
-  tidalAuthService = inject(TidalIntegrationService);
   tidalApiService = inject(TidalAPIService);
-
-  async ngOnInit() {
-  }
 
   seeAlbum() {
     this.tidalApiService.seeAlbum();

@@ -14,9 +14,6 @@ export class AccountComponent {
   authService: AuthService = inject(AuthService);
   userId: string | null = null;
 
-  constructor() {
-  }
-
   getUser() {
     this.userId = this.authService.getUserId();
     if (this.userId) {
