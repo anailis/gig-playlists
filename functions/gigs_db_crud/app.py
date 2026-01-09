@@ -34,7 +34,7 @@ def get_gigs_for_user(user_id: str):
 
 @app.get("/gigs/<gig_id>")
 def get_gig_by_id(gig_id: str):
-    return db_service.get_gig_by_id(gig_id)
+    return db_service.get_gig_by_id(gig_id, requesting_user_id=get_requesting_user())
 
 
 @app.post("/gigs")

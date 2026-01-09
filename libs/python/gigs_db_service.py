@@ -46,12 +46,15 @@ class GigsDbService:
         )
         return results["Items"]
 
-    def get_gig_by_id(self, gig_id: str):
+    def get_gig_by_id(self, gig_id: str, requesting_user_id: str):
         results = self.table.query(KeyConditionExpression=Key("id").eq(self.GIG_PREFIX + gig_id))
         if results["Count"] == 0:
             raise NotFoundError
         else:
-            return results["Items"]
+            gig = results["Items"][0]
+            if gig["userId"] != self.USER_PREFIX + requesting_user_id:
+                raise ForbiddenError("Forbidden: user cannot access this resource")
+            return results["Items"][0]
 
     def post_gig(self, gig: Gig):
         item: dict = gig.model_dump()
