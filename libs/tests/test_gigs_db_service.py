@@ -1,9 +1,10 @@
+from datetime import date
 from unittest.mock import Mock
 
 import pytest
 from aws_lambda_powertools.event_handler.exceptions import ForbiddenError, NotFoundError
 
-from gigs_db_service import GigsDbService
+from gigs_db_service import GigsDbService, Gig
 
 
 class TestGetUserById:
@@ -69,6 +70,44 @@ class TestGetGigById:
         service = GigsDbService(table=table)
 
         assert service.get_gig_by_id(gig_id="gig123", requesting_user_id="user456") == gig
+
+
+class TestPostGig:
+    def test_user_cannot_create_gig_for_other_user(self):
+        service = GigsDbService(table=Mock())
+        gig = Gig(
+            userId="USER#user456",
+            artist="artist",
+            date=date(year=2025, month=1, day=2),
+            venue="venue",
+            spotifyArtistId="spotify123"
+        )
+
+        with pytest.raises(ForbiddenError):
+            service.post_gig(gig, requesting_user_id="unauthorized_user")
+
+    def test_gig_created(self):
+        table = Mock()
+        service = GigsDbService(table=table)
+        gig = Gig(
+            userId="USER#user456",
+            artist="artist",
+            date=date(year=2025, month=1, day=2),
+            venue="venue",
+            spotifyArtistId="spotify123"
+        )
+
+        assert service.post_gig(gig, requesting_user_id="user456") == {
+            "message": "Created gig with ID " + str(gig.id)
+        }
+        table.put_item.assert_called_once_with(Item={
+            "id": "GIG#" + str(gig.id),
+            "userId": "USER#user456",
+            "date": "2025-01-02",
+            "artist": "artist",
+            "venue": "venue",
+            "spotifyArtistId": "spotify123",
+        })
 
 
 class TestDeleteGig:

@@ -39,7 +39,7 @@ def get_gig_by_id(gig_id: str):
 
 @app.post("/gigs")
 def post_gig(gig: Gig):
-    return db_service.post_gig(gig)
+    return db_service.post_gig(gig, requesting_user_id=get_requesting_user())
 
 
 @app.delete("/gigs/<gig_id>")

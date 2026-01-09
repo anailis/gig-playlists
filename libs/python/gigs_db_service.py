@@ -56,7 +56,9 @@ class GigsDbService:
                 raise ForbiddenError("Forbidden: user cannot access this resource")
             return results["Items"][0]
 
-    def post_gig(self, gig: Gig):
+    def post_gig(self, gig: Gig, requesting_user_id: str):
+        if gig.userId != self.USER_PREFIX + requesting_user_id:
+            raise ForbiddenError("Forbidden: user cannot create gig for another user")
         item: dict = gig.model_dump()
         item["date"] = gig.date.strftime("%Y-%m-%d")
         item["id"] = self.GIG_PREFIX + str(gig.id)
