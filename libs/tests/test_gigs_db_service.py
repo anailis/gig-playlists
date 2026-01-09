@@ -27,3 +27,18 @@ class TestGetUserById:
         service = GigsDbService(table=table)
 
         assert service.get_user_by_id(user_id="123", requesting_user_id="123") == "user"
+
+
+class TestGetGigsForUser:
+    def test_user_cannot_access_other_users_gigs(self):
+        service = GigsDbService(table=Mock())
+
+        with pytest.raises(ForbiddenError):
+            service.get_gigs_for_user(user_id="123", requesting_user_id="456")
+
+    def test_gigs_returned_for_user(self):
+        table = Mock()
+        table.query.return_value = {"Count": 2, "Items": ["gig1", "gig2"]}
+        service = GigsDbService(table=table)
+
+        assert service.get_gigs_for_user(user_id="123", requesting_user_id="123") == ["gig1", "gig2"]

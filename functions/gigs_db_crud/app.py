@@ -29,7 +29,7 @@ def get_user_by_id(user_id: str):
 
 @app.get("/users/<user_id>/gigs")
 def get_gigs_for_user(user_id: str):
-    return db_service.get_gigs_for_user(user_id)
+    return db_service.get_gigs_for_user(user_id, requesting_user_id=get_requesting_user())
 
 
 @app.get("/gigs/<gig_id>")

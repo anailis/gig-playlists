@@ -33,7 +33,10 @@ class GigsDbService:
         else:
             return results["Items"][0]
 
-    def get_gigs_for_user(self, user_id: str):
+    def get_gigs_for_user(self, user_id: str, requesting_user_id: str):
+        if user_id != requesting_user_id:
+            raise ForbiddenError("Forbidden: user cannot access this resource")
+
         results = self.table.query(
             IndexName="userId-id-index",
             KeyConditionExpression=(
