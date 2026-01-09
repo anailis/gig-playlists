@@ -63,12 +63,14 @@ class GigsDbService:
         self.table.put_item(Item=item)
         return {"message": "Created gig with ID " + str(gig.id)}
 
-    def delete_gig(self, gig_id: str):
+    def delete_gig(self, gig_id: str, requesting_user_id: str):
         full_gig_id = self.GIG_PREFIX + gig_id
         results = self.table.query(KeyConditionExpression=Key("id").eq(full_gig_id))
         if results["Count"] == 0:
             raise NotFoundError
         else:
             user_id = results["Items"][0]["userId"]
+            if user_id != self.USER_PREFIX + requesting_user_id:
+                raise ForbiddenError("Forbidden: user cannot delete this resource")
             self.table.delete_item(Key={"id": full_gig_id, "userId": user_id})
             return {"message": f"Deleted gig with ID {gig_id}"}

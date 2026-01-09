@@ -69,3 +69,35 @@ class TestGetGigById:
         service = GigsDbService(table=table)
 
         assert service.get_gig_by_id(gig_id="gig123", requesting_user_id="user456") == gig
+
+
+class TestDeleteGig:
+    def test_user_cannot_delete_other_users_gig(self):
+        table = Mock()
+        gig = {"id": "GIG#gig123", "userId": "USER#user456"}
+        table.query.return_value = {"Count": 1, "Items": [gig]}
+        service = GigsDbService(table=table)
+
+        table.delete_item.assert_not_called()
+        with pytest.raises(ForbiddenError):
+            service.delete_gig(gig_id="gig123", requesting_user_id="unauthorized_user")
+
+    def test_404_thrown_when_gig_not_found(self):
+        table = Mock()
+        table.query.return_value = {"Count": 0, "Items": []}
+        service = GigsDbService(table=table)
+
+        table.delete_item.assert_not_called()
+        with pytest.raises(NotFoundError):
+            service.delete_gig(gig_id="gig123", requesting_user_id="user456")
+
+    def test_gig_deleted(self):
+        table = Mock()
+        gig = {"id": "GIG#gig123", "userId": "USER#user456"}
+        table.query.return_value = {"Count": 1, "Items": [gig]}
+        service = GigsDbService(table=table)
+
+        assert service.delete_gig(gig_id="gig123", requesting_user_id="user456") == {
+            "message": "Deleted gig with ID gig123"
+        }
+        table.delete_item.assert_called_once_with(Key={"id": "GIG#gig123", "userId": "USER#user456"})

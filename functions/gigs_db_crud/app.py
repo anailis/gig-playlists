@@ -44,7 +44,7 @@ def post_gig(gig: Gig):
 
 @app.delete("/gigs/<gig_id>")
 def delete_gig(gig_id: str):
-    return db_service.delete_gig(gig_id)
+    return db_service.delete_gig(gig_id, requesting_user_id=get_requesting_user())
 
 
 def lambda_handler(event: dict, context: LambdaContext) -> dict:
