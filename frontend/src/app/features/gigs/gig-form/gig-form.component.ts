@@ -9,6 +9,7 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { DateTime } from 'luxon';
 
 import { GigService } from '@services/gig.service';
+import {AuthService} from "@services/auth.service";
 
 @Component({
   standalone: true,
@@ -20,6 +21,8 @@ import { GigService } from '@services/gig.service';
 })
 export class GigFormComponent {
   gigService = inject(GigService);
+  authService = inject(AuthService);
+
   gigForm = new FormGroup({
     artist: new FormControl('', Validators.required),
     venue: new FormControl('', Validators.required),
@@ -28,8 +31,15 @@ export class GigFormComponent {
   });
 
   onSubmit() {
+    const userId = this.authService.getUserId();
+
+    if (!userId) {
+      throw Error("User not logged in");
+    }
+
     // is this the best way to do this?
     this.gigService.addGig(
+      userId,
       this.gigForm.value.artist ?? '',
       this.gigForm.value.venue ?? '',
       this.gigForm.value.spotifyArtistId ?? '',
