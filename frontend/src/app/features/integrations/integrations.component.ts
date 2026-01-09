@@ -1,4 +1,4 @@
-import {Component, inject} from '@angular/core';
+import {Component, inject, OnInit} from '@angular/core';
 import {NgForOf, NgIf} from "@angular/common";
 import {MatCard, MatCardContent} from "@angular/material/card";
 import {MatButton} from "@angular/material/button";
@@ -24,7 +24,7 @@ import {SpotifyIntegrationService} from "@services/spotify_integration.service";
   templateUrl: './integrations.component.html',
   styleUrl: './integrations.component.css'
 })
-export class IntegrationsComponent {
+export class IntegrationsComponent implements OnInit {
 
   userService: UserService = inject(UserService);
   authService: AuthService = inject(AuthService);
@@ -35,7 +35,7 @@ export class IntegrationsComponent {
     [IntegrationType.SPOTIFY]: this.spotifyIntegration,
     [IntegrationType.TIDAL]: this.tidalIntegration,
   }
-  userIntegrations: Set<IntegrationType> = new Set();
+  userIntegrations: Set<IntegrationType> = new Set<IntegrationType>();
   userId: string | null = null;
 
   ngOnInit() {
