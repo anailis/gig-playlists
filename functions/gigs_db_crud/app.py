@@ -2,7 +2,7 @@ from datetime import date
 from uuid import UUID, uuid4
 import os
 
-from aws_lambda_powertools.event_handler import CORSConfig, APIGatewayHttpResolver
+from aws_lambda_powertools.event_handler import APIGatewayHttpResolver
 from aws_lambda_powertools.event_handler.exceptions import NotFoundError
 from aws_lambda_powertools.utilities.typing import LambdaContext
 from aws_lambda_powertools import Logger
@@ -13,8 +13,7 @@ from pydantic import BaseModel, Field
 dynamodb = boto3.resource("dynamodb")
 table = dynamodb.Table(os.environ["TABLE_NAME"])
 
-cors_config = CORSConfig(allow_origin="http://localhost:4200", max_age=300)
-app = APIGatewayHttpResolver(enable_validation=True, cors=cors_config)
+app = APIGatewayHttpResolver(enable_validation=True)
 logger = Logger()
 
 GIG_PREFIX = "GIG#"
@@ -30,7 +29,7 @@ class Gig(BaseModel):
     spotifyArtistId: str
 
 
-@app.get("/users/<user_id>", cors=True)
+@app.get("/users/<user_id>")
 def get_user_by_id(user_id: str):
     results = table.query(KeyConditionExpression=Key("id").eq(USER_PREFIX + user_id))
     if results["Count"] == 0:
