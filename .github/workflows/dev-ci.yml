@@ -104,3 +104,22 @@ jobs:
           cd infra
           sam deploy --no-confirm-changeset --no-fail-on-empty-changeset --config-env dev
           # TODO: run integration tests
+
+  integration-test:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'deploy_to_dev'
+    needs: [ lint-and-unit-test ]
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.12"
+      - name: Install UV
+        run: |
+          python -m pip install --upgrade pip
+          pip install uv
+      - name: Run integration tests
+        run: |
+          uv run pytest tests/integration
