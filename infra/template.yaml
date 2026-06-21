@@ -44,7 +44,7 @@ Globals:
       - x86_64
     Layers:
       - >-
-        arn:aws:lambda:eu-west-2:017000801446:layer:AWSLambdaPowertoolsPythonV3-python312-x86_64:5
+        arn:aws:lambda:eu-west-2:017000801446:layer:AWSLambdaPowertoolsPythonV3-python312-x86_64:22
 
 Resources:
   #######################
@@ -378,6 +378,9 @@ Resources:
             ApiId: !Ref GigsApi
             Path: /users/{id}/gigs
             Method: GET
+      Layers:
+          - !Ref SharedLibs
+
 
   AddGigToUpcomingPlaylist:
     Type: AWS::Serverless::Function
