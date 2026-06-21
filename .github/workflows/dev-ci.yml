@@ -107,8 +107,8 @@ jobs:
 
   integration-test:
     runs-on: ubuntu-latest
-    if: github.event_name == 'deploy_to_dev'
-    needs: [ lint-and-unit-test ]
+    if: github.event_name == 'pull_request'
+    needs: [ deploy-to-dev ]
 
     steps:
       - uses: actions/checkout@v4
