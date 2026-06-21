@@ -3,6 +3,7 @@ import {MatToolbar} from "@angular/material/toolbar";
 import {NgForOf} from "@angular/common";
 import {EventCardComponent} from "../event-card/event-card.component";
 import {GigService} from "@core/services/gig.service";
+import {AuthService} from "@services/auth.service";
 import {Gig} from "@models/gig";
 import {MatIcon} from "@angular/material/icon";
 import {MatButtonToggle, MatButtonToggleGroup} from "@angular/material/button-toggle";
@@ -27,6 +28,8 @@ import {RouterLink} from "@angular/router";
 })
 export class GigCalendar implements OnInit {
   gigService = inject(GigService);
+  authService: AuthService = inject(AuthService);
+  userId: string | null = null;
 
   gigs: Gig[] = [];
 
@@ -47,19 +50,24 @@ export class GigCalendar implements OnInit {
   }
 
   loadGigs(): void {
-      this.gigService.getGigsForUser("e60d3adf-1bd5-4b5e-b71c-42582ed86bd6").subscribe(
-          (data: any[]) => {
-              this.gigs = data.map(obj => new Gig({
-                  gig_id: obj.id,
-                  artist: obj.artist,
-                  userId: obj.userId,
-                  spotifyArtistId: obj.spotifyArtistId,
-                  date: obj.date,
-                  venue: obj.venue
-              }));
-              this.groupedGigs = this.groupByDate(this.gigs);
-          }
-      );
+      this.userId = this.authService.getUserId();
+      if (this.userId) {
+          this.gigService.getGigsForUser(this.userId).subscribe(
+              (data: any[]) => {
+                  this.gigs = data.map(obj => new Gig({
+                      gig_id: obj.id,
+                      artist: obj.artist,
+                      userId: obj.userId,
+                      spotifyArtistId: obj.spotifyArtistId,
+                      date: obj.date,
+                      venue: obj.venue
+                  }));
+                  this.groupedGigs = this.groupByDate(this.gigs);
+              }
+          );
+      } else {
+            console.log("No user logged in.");
+      }
   }
 
   // TODO: improve this...
