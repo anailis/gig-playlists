@@ -3,7 +3,9 @@ from unittest.mock import Mock
 
 import pytest
 
-from upcoming_playlist.upcoming_playlist_recon_service import UpcomingPlaylistReconService
+from upcoming_playlist.upcoming_playlist_recon_service import (
+    UpcomingPlaylistReconService,
+)
 
 CURRENT_DATE = date(2024, 1, 1)
 PLAYLIST_ID = "PLAYLIST12345"
@@ -19,37 +21,40 @@ def fixed_date(monkeypatch):
         def today(cls):
             return CURRENT_DATE
 
-    monkeypatch.setattr(
-        "upcoming_playlist.upcoming_playlist_client.date",
-        FixedDate
-    )
+    monkeypatch.setattr("upcoming_playlist.upcoming_playlist_client.date", FixedDate)
 
 
 @pytest.fixture()
 def table():
     table = Mock()
-    user = {"Items": [{
-        "id": "USER#1234",
-        "userId": "USER#1234",
-        "displayName": "user",
-        "upcomingPlaylistId": PLAYLIST_ID
-    }]}
-    gigs = {"Items": [
-        {
-            "id": "GIG#1",
-            "userId": USER_ID,
-            "date": date(2024, 8, 12),
-            "spotifyArtistId": "1",
-            "artist": "artist1"
-        },
-        {
-            "id": "GIG#2",
-            "userId": USER_ID,
-            "date": date(2024, 3, 12),
-            "spotifyArtistId": "2",
-            "artist": "artist2"
-        }
-    ]}
+    user = {
+        "Items": [
+            {
+                "id": "USER#1234",
+                "userId": "USER#1234",
+                "displayName": "user",
+                "upcomingPlaylistId": PLAYLIST_ID,
+            }
+        ]
+    }
+    gigs = {
+        "Items": [
+            {
+                "id": "GIG#1",
+                "userId": USER_ID,
+                "date": date(2024, 8, 12),
+                "spotifyArtistId": "1",
+                "artist": "artist1",
+            },
+            {
+                "id": "GIG#2",
+                "userId": USER_ID,
+                "date": date(2024, 3, 12),
+                "spotifyArtistId": "2",
+                "artist": "artist2",
+            },
+        ]
+    }
     table.query.side_effect = [user, gigs]
     return table
 
@@ -70,11 +75,7 @@ def spotify_client():
 
 def test_successful_recon(table, scheduler, spotify_client):
     recon_service = UpcomingPlaylistReconService(
-        table,
-        scheduler,
-        spotify_client,
-        TARGET_ARN,
-        ROLE_ARN
+        table, scheduler, spotify_client, TARGET_ARN, ROLE_ARN
     )
     recon_service.reconcile_playlist(USER_ID)
 
