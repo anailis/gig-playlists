@@ -1,7 +1,7 @@
 import logging
 import json
-import os
 from datetime import date, timedelta
+from pathlib import Path
 
 import boto3
 import pytest
@@ -9,10 +9,7 @@ from botocore.exceptions import ClientError
 
 logger = logging.getLogger()
 
-EVENT_DIR = os.path.join(
-    os.path.dirname(os.path.realpath(__file__)),
-    "../resources/test_data/dynamodb_stream_events",
-)
+EVENT_DIR = Path(__file__).resolve().parents[1] / "resources" / "test_data" / "dynamodb_stream_events"
 TEST_USER = "USER#e60d3adf-1bd5-4b5e-b71c-42582ed86bd6"
 TEST_ARTIST = "7oPftvlwr6VrsViSDV7fJY"
 TEST_PLAYLIST = "70ZBZd7PC0g8f2gFg3kKGC"
@@ -88,7 +85,7 @@ def trigger_remove_gig_lambda(lambda_client, arn, event):
 def test_add_and_remove_future_gig(
     add_gig_lambda_arn, remove_gig_lambda_arn, lambda_client, scheduler
 ):
-    with open(os.path.join(EVENT_DIR, "create_gig.json")) as f:
+    with open(EVENT_DIR / "create_gig.json") as f:
         event = json.load(f)
     event["dynamodb"]["NewImage"]["date"]["S"] = (
         date.today() + timedelta(days=2)
@@ -131,7 +128,7 @@ def test_add_and_remove_future_gig(
 
 
 def test_add_past_gig(add_gig_lambda_arn, lambda_client, scheduler):
-    with open(os.path.join(EVENT_DIR, "create_gig.json")) as f:
+    with open(EVENT_DIR / "create_gig.json") as f:
         event = json.load(f)
     dynamodb_stream = {"Records": [event]}
 
