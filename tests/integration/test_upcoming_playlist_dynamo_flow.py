@@ -13,7 +13,7 @@ EVENT_DIR = os.path.join(
     os.path.dirname(os.path.realpath(__file__)),
     "../resources/test_data/dynamodb_stream_events"
 )
-TEST_USER = "USER#ddd797f7-7b66-45ac-87a0-6604f52dc2fd"
+TEST_USER = "USER#e60d3adf-1bd5-4b5e-b71c-42582ed86bd6"
 TEST_ARTIST = "7oPftvlwr6VrsViSDV7fJY"
 TEST_PLAYLIST = "70ZBZd7PC0g8f2gFg3kKGC"
 SCHEDULE_NAME = f"delete_{TEST_ARTIST}_from_{TEST_PLAYLIST}"
