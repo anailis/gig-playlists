@@ -5,7 +5,7 @@ from aws_lambda_powertools.utilities.typing import LambdaContext
 from aws_lambda_powertools import Logger
 import boto3
 
-from libs.gigs_db.gigs_db_service import GigsDbService, Gig
+from gigs_db import GigsDbService, Gig
 
 dynamodb = boto3.resource("dynamodb")
 table = dynamodb.Table(os.environ["TABLE_NAME"])

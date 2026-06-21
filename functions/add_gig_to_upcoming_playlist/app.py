@@ -14,7 +14,7 @@ from aws_lambda_powertools.utilities.typing import LambdaContext
 
 
 from spotify.spotify_playlist_client import SpotifyPlaylistClient
-from upcoming_playlist.upcoming_playlist_client import UpcomingPlaylistClient
+from upcoming_playlist import UpcomingPlaylistClient
 from models.gig import Gig
 from spotify.spotipy_ssm_credentials_cache import SSMCacheHandler
 
