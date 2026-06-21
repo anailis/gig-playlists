@@ -26,7 +26,9 @@ def lambda_handler(event: dict[str, str], context: LambdaContext) -> dict:
     try:
         artist_id = event["spotifyArtistId"]
     except KeyError:
-        logger.error("Payload to RemoveGigFromUpcomingPlaylist must supply spotifyArtistId")
+        logger.error(
+            "Payload to RemoveGigFromUpcomingPlaylist must supply spotifyArtistId"
+        )
         raise
 
     try:
@@ -36,9 +38,9 @@ def lambda_handler(event: dict[str, str], context: LambdaContext) -> dict:
         raise
 
     auth = SpotifyOAuth(
-        client_id=ssm_client.get_parameter(Name="/spotify/client_id")[
-            "Parameter"
-        ]["Value"],
+        client_id=ssm_client.get_parameter(Name="/spotify/client_id")["Parameter"][
+            "Value"
+        ],
         client_secret=ssm_client.get_parameter(
             Name="/spotify/client_secret", WithDecryption=True
         )["Parameter"]["Value"],
@@ -58,5 +60,5 @@ def lambda_handler(event: dict[str, str], context: LambdaContext) -> dict:
     return {
         "spotifyArtistId": artist_id,
         "playlistId": playlist_id,
-        "removed": spotify_client.remove_artist(artist_id, playlist_id)
+        "removed": spotify_client.remove_artist(artist_id, playlist_id),
     }

@@ -18,15 +18,13 @@ table = dynamodb.Table(os.environ["TABLE_NAME"])
 scheduler = boto3.client("scheduler")
 
 auth = SpotifyOAuth(
-    client_id=ssm_client.get_parameter(Name="/spotify/client_id")[
-        "Parameter"
-    ]["Value"],
+    client_id=ssm_client.get_parameter(Name="/spotify/client_id")["Parameter"]["Value"],
     client_secret=ssm_client.get_parameter(
         Name="/spotify/client_secret", WithDecryption=True
     )["Parameter"]["Value"],
-    redirect_uri=ssm_client.get_parameter(Name="/spotify/redirect_url")[
-        "Parameter"
-    ]["Value"],
+    redirect_uri=ssm_client.get_parameter(Name="/spotify/redirect_url")["Parameter"][
+        "Value"
+    ],
     scope=[
         "playlist-modify-private",
         "playlist-read-private",
