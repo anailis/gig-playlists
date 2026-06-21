@@ -6,9 +6,9 @@ import pytest
 import spotipy
 from spotipy import SpotifyException
 
-from spotify_playlist_client import SpotifyPlaylistClient
+from spotify.spotify_playlist_client import SpotifyPlaylistClient
 
-TEST_DATA_DIR = Path(__file__).parents[2] / "resources" / "test_data"
+TEST_DATA_DIR = Path(__file__).parents[3] / "resources" / "test_data"
 USER_ID = "12345"
 PLAYLIST_ID = "6789"
 ARTIST_NOT_IN_PLAYLIST = "1HxXNvsraqrsgfmju1yKk8"

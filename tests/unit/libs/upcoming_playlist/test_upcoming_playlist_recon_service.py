@@ -3,7 +3,7 @@ from unittest.mock import Mock
 
 import pytest
 
-from upcoming_playlist_recon_service import UpcomingPlaylistReconService
+from upcoming_playlist.upcoming_playlist_recon_service import UpcomingPlaylistReconService
 
 CURRENT_DATE = date(2024, 1, 1)
 PLAYLIST_ID = "PLAYLIST12345"
@@ -20,7 +20,7 @@ def fixed_date(monkeypatch):
             return CURRENT_DATE
 
     monkeypatch.setattr(
-        "upcoming_playlist_client.date",
+        "upcoming_playlist.upcoming_playlist_client.date",
         FixedDate
     )
 

@@ -6,10 +6,10 @@ from botocore.exceptions import ClientError
 from aws_lambda_powertools.logging import Logger
 from spotipy import SpotifyException
 
-from spotify_playlist_client import SpotifyPlaylistClient
+from spotify.spotify_playlist_client import SpotifyPlaylistClient
 
-from gig import Gig
-from user import User
+from models.gig import Gig
+from models.user import User
 
 logger = Logger()
 

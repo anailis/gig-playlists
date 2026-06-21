@@ -3,10 +3,10 @@ from datetime import date
 
 from boto3.dynamodb.conditions import Key
 
-from spotify_playlist_client import SpotifyPlaylistClient
-from gig import Gig
-from upcoming_playlist_client import UpcomingPlaylistClient
-from user import User
+from spotify.spotify_playlist_client import SpotifyPlaylistClient
+from models.gig import Gig
+from upcoming_playlist.upcoming_playlist_client import UpcomingPlaylistClient
+from models.user import User
 
 
 logger = logging.getLogger()

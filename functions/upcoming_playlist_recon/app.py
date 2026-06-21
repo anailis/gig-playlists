@@ -6,7 +6,7 @@ from aws_lambda_powertools.utilities.typing import LambdaContext
 from aws_lambda_powertools.logging import Logger
 from spotipy import SpotifyOAuth
 
-from spotify_playlist_client import SpotifyPlaylistClient
+from spotify.spotify_playlist_client import SpotifyPlaylistClient
 from spotipy_ssm_credentials_cache import SSMCacheHandler
 from upcoming_playlist_recon_service import UpcomingPlaylistReconService
 

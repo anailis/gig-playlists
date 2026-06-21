@@ -6,8 +6,8 @@ import pytest
 from botocore.exceptions import ClientError
 from spotipy import SpotifyException
 
-from upcoming_playlist_client import UpcomingPlaylistClient
-from gig import Gig
+from upcoming_playlist.upcoming_playlist_client import UpcomingPlaylistClient
+from models.gig import Gig
 
 
 CURRENT_DATE = date(2024, 1, 1)
@@ -27,7 +27,7 @@ def fixed_date(monkeypatch):
             return CURRENT_DATE
 
     monkeypatch.setattr(
-        "upcoming_playlist_client.date",
+        "upcoming_playlist.upcoming_playlist_client.date",
         FixedDate
     )
 

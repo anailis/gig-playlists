@@ -4,7 +4,7 @@ from unittest.mock import Mock
 import pytest
 from aws_lambda_powertools.event_handler.exceptions import ForbiddenError, NotFoundError
 
-from gigs_db_service import GigsDbService, Gig
+from gigs_db.gigs_db_service import GigsDbService, Gig
 
 
 class TestGetUserById:
