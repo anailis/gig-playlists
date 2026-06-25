@@ -10,7 +10,7 @@ from botocore.exceptions import ClientError
 logger = logging.getLogger()
 
 EVENT_DIR = Path(__file__).resolve().parents[1] / "resources" / "test_data" / "dynamodb_stream_events"
-TEST_USER = "USER#e60d3adf-1bd5-4b5e-b71c-42582ed86bd6"
+TEST_USER = "USER#562272c4-b031-707c-bafa-e3a3e49c3df0"
 TEST_ARTIST = "7oPftvlwr6VrsViSDV7fJY"
 TEST_PLAYLIST = "70ZBZd7PC0g8f2gFg3kKGC"
 SCHEDULE_NAME = f"delete_{TEST_ARTIST}_from_{TEST_PLAYLIST}"
@@ -50,6 +50,13 @@ def scheduler():
     yield boto3.client("scheduler")
 
 
+@pytest.fixture
+def create_gig_event():
+    with open(EVENT_DIR / "create_gig.json") as f:
+        event = json.load(f)
+    event["dynamodb"]["NewImage"]["userId"]["S"] = TEST_USER
+    return event
+
 def trigger_add_gig_lambda(lambda_client, arn, event):
     add_lambda_response = lambda_client.invoke(
         FunctionName=arn, Payload=json.dumps(event)
@@ -83,14 +90,12 @@ def trigger_remove_gig_lambda(lambda_client, arn, event):
 
 
 def test_add_and_remove_future_gig(
-    add_gig_lambda_arn, remove_gig_lambda_arn, lambda_client, scheduler
+    add_gig_lambda_arn, remove_gig_lambda_arn, lambda_client, scheduler, create_gig_event
 ):
-    with open(EVENT_DIR / "create_gig.json") as f:
-        event = json.load(f)
-    event["dynamodb"]["NewImage"]["date"]["S"] = (
+    create_gig_event["dynamodb"]["NewImage"]["date"]["S"] = (
         date.today() + timedelta(days=2)
     ).strftime("%Y-%m-%d")
-    dynamodb_stream = {"Records": [event]}
+    dynamodb_stream = {"Records": [create_gig_event]}
 
     payload = trigger_add_gig_lambda(lambda_client, add_gig_lambda_arn, dynamodb_stream)
     assert len(payload[TEST_USER]) == 1, (
@@ -100,7 +105,7 @@ def test_add_and_remove_future_gig(
     try:
         scheduler.get_schedule(Name=SCHEDULE_NAME)
     except ClientError:
-        pytest.fail("Delete schedule was not created")
+        pytest.fail(f"Delete schedule {SCHEDULE_NAME} was not created")
 
     # Check idempotency of add gig function
     payload = trigger_add_gig_lambda(lambda_client, add_gig_lambda_arn, dynamodb_stream)
@@ -127,10 +132,8 @@ def test_add_and_remove_future_gig(
     scheduler.delete_schedule(Name=SCHEDULE_NAME)
 
 
-def test_add_past_gig(add_gig_lambda_arn, lambda_client, scheduler):
-    with open(EVENT_DIR / "create_gig.json") as f:
-        event = json.load(f)
-    dynamodb_stream = {"Records": [event]}
+def test_add_past_gig(add_gig_lambda_arn, lambda_client, scheduler, create_gig_event):
+    dynamodb_stream = {"Records": [create_gig_event]}
 
     payload = trigger_add_gig_lambda(lambda_client, add_gig_lambda_arn, dynamodb_stream)
     assert len(payload[TEST_USER]) == 0
