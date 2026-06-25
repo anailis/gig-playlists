@@ -23,8 +23,10 @@ Lambda function the day after the gig.
 ### Source
 
 The backend Python source directories are `functions` (contains Lambda function code, organised by function) and `libs`
-(contains Python code that is shared across > 1 Lambda). Set these as source directories in PyCharm to remove false
-import errors.
+(contains Python code that is shared across > 1 Lambda, packaged as a Lambda layer). 
+Set these as source directories in PyCharm to remove false import errors. 
+Note that the code in `libs` has to be contained within a directory called `python` - 
+this is a requirement of Lambda layers. 
 
 The frontend Angular source is in `frontend`. It can be run locally using the Angular CLI:
 ```commandline

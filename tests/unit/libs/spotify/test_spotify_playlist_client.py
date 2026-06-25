@@ -6,9 +6,9 @@ import pytest
 import spotipy
 from spotipy import SpotifyException
 
-from spotify_playlist_client import SpotifyPlaylistClient
+from spotify.spotify_playlist_client import SpotifyPlaylistClient
 
-TEST_DATA_DIR = Path(__file__).parents[2] / "resources" / "test_data"
+TEST_DATA_DIR = Path(__file__).parents[3] / "resources" / "test_data"
 USER_ID = "12345"
 PLAYLIST_ID = "6789"
 ARTIST_NOT_IN_PLAYLIST = "1HxXNvsraqrsgfmju1yKk8"
@@ -59,8 +59,7 @@ def test_tracks_added_to_existing_playlist(artist_id, sp_top_tracks, top_track_u
     client = SpotifyPlaylistClient(sp_top_tracks)
     client.add_artist(artist_id, PLAYLIST_ID)
     sp_top_tracks.playlist_add_items.assert_called_with(
-        playlist_id=PLAYLIST_ID,
-        items=top_track_uris
+        playlist_id=PLAYLIST_ID, items=top_track_uris
     )
     sp_top_tracks.user_playlist_create.assert_not_called()
 
@@ -83,14 +82,9 @@ def test_artist_in_playlist(artist_id, sp, tracks_in_playlist):
     client = SpotifyPlaylistClient(sp)
     client.remove_artist(artist_id, PLAYLIST_ID)
     sp.playlist_remove_all_occurrences_of_items.assert_called_with(
-        playlist_id=PLAYLIST_ID,
-        items=tracks_in_playlist
+        playlist_id=PLAYLIST_ID, items=tracks_in_playlist
     )
 
 
 def raise_spotify_exception(artist):
-    raise SpotifyException(
-        "404",
-        "NOT FOUND",
-        f"{artist} not found"
-    )
+    raise SpotifyException("404", "NOT FOUND", f"{artist} not found")

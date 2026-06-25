@@ -5,7 +5,7 @@ from aws_lambda_powertools.utilities.typing import LambdaContext
 from aws_lambda_powertools import Logger
 import boto3
 
-from gigs_db_service import GigsDbService, Gig
+from gigs_db.gigs_db_service import GigsDbService, Gig
 
 dynamodb = boto3.resource("dynamodb")
 table = dynamodb.Table(os.environ["TABLE_NAME"])
@@ -19,8 +19,11 @@ USER_PREFIX = "USER#"
 
 
 def get_requesting_user() -> str:
-    authoriser_details = app.current_event.get("requestContext", {}).get("authorizer", {})
+    authoriser_details = app.current_event.get("requestContext", {}).get(
+        "authorizer", {}
+    )
     return authoriser_details.get("jwt", {}).get("claims", {}).get("sub", "")
+
 
 @app.get("/users/<user_id>")
 def get_user_by_id(user_id: str):
@@ -29,7 +32,9 @@ def get_user_by_id(user_id: str):
 
 @app.get("/users/<user_id>/gigs")
 def get_gigs_for_user(user_id: str):
-    return db_service.get_gigs_for_user(user_id, requesting_user_id=get_requesting_user())
+    return db_service.get_gigs_for_user(
+        user_id, requesting_user_id=get_requesting_user()
+    )
 
 
 @app.get("/gigs/<gig_id>")

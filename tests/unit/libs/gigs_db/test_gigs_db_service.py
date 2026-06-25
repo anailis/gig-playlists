@@ -4,7 +4,7 @@ from unittest.mock import Mock
 import pytest
 from aws_lambda_powertools.event_handler.exceptions import ForbiddenError, NotFoundError
 
-from gigs_db_service import GigsDbService, Gig
+from gigs_db.gigs_db_service import GigsDbService, Gig
 
 
 class TestGetUserById:
@@ -42,7 +42,10 @@ class TestGetGigsForUser:
         table.query.return_value = {"Count": 2, "Items": ["gig1", "gig2"]}
         service = GigsDbService(table=table)
 
-        assert service.get_gigs_for_user(user_id="123", requesting_user_id="123") == ["gig1", "gig2"]
+        assert service.get_gigs_for_user(user_id="123", requesting_user_id="123") == [
+            "gig1",
+            "gig2",
+        ]
 
 
 class TestGetGigById:
@@ -53,7 +56,9 @@ class TestGetGigById:
         service = GigsDbService(table=table)
 
         with pytest.raises(ForbiddenError):
-            service.get_gig_by_id(gig_id="gig123", requesting_user_id="unauthorized_user")
+            service.get_gig_by_id(
+                gig_id="gig123", requesting_user_id="unauthorized_user"
+            )
 
     def test_404_thrown_when_gig_not_found(self):
         table = Mock()
@@ -69,7 +74,9 @@ class TestGetGigById:
         table.query.return_value = {"Count": 1, "Items": [gig]}
         service = GigsDbService(table=table)
 
-        assert service.get_gig_by_id(gig_id="gig123", requesting_user_id="user456") == gig
+        assert (
+            service.get_gig_by_id(gig_id="gig123", requesting_user_id="user456") == gig
+        )
 
 
 class TestPostGig:
@@ -80,7 +87,7 @@ class TestPostGig:
             artist="artist",
             date=date(year=2025, month=1, day=2),
             venue="venue",
-            spotifyArtistId="spotify123"
+            spotifyArtistId="spotify123",
         )
 
         with pytest.raises(ForbiddenError):
@@ -94,20 +101,22 @@ class TestPostGig:
             artist="artist",
             date=date(year=2025, month=1, day=2),
             venue="venue",
-            spotifyArtistId="spotify123"
+            spotifyArtistId="spotify123",
         )
 
         assert service.post_gig(gig, requesting_user_id="user456") == {
             "message": "Created gig with ID " + str(gig.id)
         }
-        table.put_item.assert_called_once_with(Item={
-            "id": "GIG#" + str(gig.id),
-            "userId": "USER#user456",
-            "date": "2025-01-02",
-            "artist": "artist",
-            "venue": "venue",
-            "spotifyArtistId": "spotify123",
-        })
+        table.put_item.assert_called_once_with(
+            Item={
+                "id": "GIG#" + str(gig.id),
+                "userId": "USER#user456",
+                "date": "2025-01-02",
+                "artist": "artist",
+                "venue": "venue",
+                "spotifyArtistId": "spotify123",
+            }
+        )
 
 
 class TestDeleteGig:
@@ -139,4 +148,6 @@ class TestDeleteGig:
         assert service.delete_gig(gig_id="gig123", requesting_user_id="user456") == {
             "message": "Deleted gig with ID gig123"
         }
-        table.delete_item.assert_called_once_with(Key={"id": "GIG#gig123", "userId": "USER#user456"})
+        table.delete_item.assert_called_once_with(
+            Key={"id": "GIG#gig123", "userId": "USER#user456"}
+        )

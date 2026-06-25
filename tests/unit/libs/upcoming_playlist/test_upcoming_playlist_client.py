@@ -6,8 +6,8 @@ import pytest
 from botocore.exceptions import ClientError
 from spotipy import SpotifyException
 
-from upcoming_playlist_client import UpcomingPlaylistClient
-from gig import Gig
+from upcoming_playlist.upcoming_playlist_client import UpcomingPlaylistClient
+from models.gig import Gig
 
 
 CURRENT_DATE = date(2024, 1, 1)
@@ -26,21 +26,22 @@ def fixed_date(monkeypatch):
         def today(cls):
             return CURRENT_DATE
 
-    monkeypatch.setattr(
-        "upcoming_playlist_client.date",
-        FixedDate
-    )
+    monkeypatch.setattr("upcoming_playlist.upcoming_playlist_client.date", FixedDate)
 
 
 @pytest.fixture()
 def table():
     table = Mock()
-    table.query.return_value = {"Items": [{
-        "id": USER_ID,
-        "userId": USER_ID,
-        "displayName": "user",
-        "upcomingPlaylistId": PLAYLIST_ID
-    }]}
+    table.query.return_value = {
+        "Items": [
+            {
+                "id": USER_ID,
+                "userId": USER_ID,
+                "displayName": "user",
+                "upcomingPlaylistId": PLAYLIST_ID,
+            }
+        ]
+    }
     return table
 
 
@@ -59,22 +60,20 @@ def spotify_client():
 
 @pytest.fixture()
 def gig():
-    return Gig.model_construct(**{
-        "id": "GIG#1",
-        "userId": USER_ID,
-        "date": date(2024, 3, 12),
-        "spotifyArtistId": ARTIST_ID,
-        "artist": "artist"
-    })
+    return Gig.model_construct(
+        **{
+            "id": "GIG#1",
+            "userId": USER_ID,
+            "date": date(2024, 3, 12),
+            "spotifyArtistId": ARTIST_ID,
+            "artist": "artist",
+        }
+    )
 
 
 def test_gig_is_in_future(table, spotify_client, scheduler, gig):
     upcoming_client = UpcomingPlaylistClient(
-        table,
-        scheduler,
-        spotify_client,
-        TARGET_ARN,
-        ROLE_ARN
+        table, scheduler, spotify_client, TARGET_ARN, ROLE_ARN
     )
     gigs_by_user = upcoming_client.process_gigs([gig])
 
@@ -90,10 +89,9 @@ def test_gig_is_in_future(table, spotify_client, scheduler, gig):
         Target={
             "Arn": TARGET_ARN,
             "RoleArn": ROLE_ARN,
-            "Input": json.dumps({
-                "spotifyArtistId": ARTIST_ID,
-                "playlistId": PLAYLIST_ID
-            })
+            "Input": json.dumps(
+                {"spotifyArtistId": ARTIST_ID, "playlistId": PLAYLIST_ID}
+            ),
         },
     )
 
@@ -104,20 +102,18 @@ def test_gig_is_in_future(table, spotify_client, scheduler, gig):
 
 
 def test_gig_is_in_past(table, spotify_client, scheduler):
-    gig = Gig.model_construct(**{
-        "id": "GIG#1",
-        "userId": USER_ID,
-        "date": date(2023, 12, 12),
-        "spotifyArtistId": ARTIST_ID,
-        "artist": "artist"
-    })
+    gig = Gig.model_construct(
+        **{
+            "id": "GIG#1",
+            "userId": USER_ID,
+            "date": date(2023, 12, 12),
+            "spotifyArtistId": ARTIST_ID,
+            "artist": "artist",
+        }
+    )
 
     upcoming_client = UpcomingPlaylistClient(
-        table,
-        scheduler,
-        spotify_client,
-        TARGET_ARN,
-        ROLE_ARN
+        table, scheduler, spotify_client, TARGET_ARN, ROLE_ARN
     )
     gigs_by_user = upcoming_client.process_gigs([gig])
 
@@ -130,20 +126,18 @@ def test_gig_is_in_past(table, spotify_client, scheduler):
 
 
 def test_user_has_multiple_gigs_for_same_artist(table, scheduler, spotify_client, gig):
-    second_gig = Gig.model_construct(**{
-        "id": "GIG#2",
-        "userId": USER_ID,
-        "date": date(2024, 12, 12),
-        "spotifyArtistId": ARTIST_ID,
-        "artist": "artist"
-    })
+    second_gig = Gig.model_construct(
+        **{
+            "id": "GIG#2",
+            "userId": USER_ID,
+            "date": date(2024, 12, 12),
+            "spotifyArtistId": ARTIST_ID,
+            "artist": "artist",
+        }
+    )
 
     upcoming_client = UpcomingPlaylistClient(
-        table,
-        scheduler,
-        spotify_client,
-        TARGET_ARN,
-        ROLE_ARN
+        table, scheduler, spotify_client, TARGET_ARN, ROLE_ARN
     )
     gigs_by_user = upcoming_client.process_gigs([gig, second_gig])
 
@@ -159,10 +153,9 @@ def test_user_has_multiple_gigs_for_same_artist(table, scheduler, spotify_client
         Target={
             "Arn": TARGET_ARN,
             "RoleArn": ROLE_ARN,
-            "Input": json.dumps({
-                "spotifyArtistId": ARTIST_ID,
-                "playlistId": PLAYLIST_ID
-            })
+            "Input": json.dumps(
+                {"spotifyArtistId": ARTIST_ID, "playlistId": PLAYLIST_ID}
+            ),
         },
     )
 
@@ -174,34 +167,27 @@ def test_user_has_multiple_gigs_for_same_artist(table, scheduler, spotify_client
 
 def test_tracks_cannot_be_retrieved(table, scheduler, gig):
     spotify_client = Mock()
-    exception = SpotifyException(
-        "404",
-        "NOT FOUND",
-        "not found"
-    )
+    exception = SpotifyException("404", "NOT FOUND", "not found")
     spotify_client.add_artist.side_effect = [exception, lambda x: True]
 
-    invalid_gig = Gig.model_construct(**{
-        "id": "GIG#2",
-        "userId": USER_ID,
-        "date": date(2024, 12, 12),
-        "spotifyArtistId": NONEXISTENT_ARTIST_ID,
-        "artist": "artist not on spotify"
-    })
+    invalid_gig = Gig.model_construct(
+        **{
+            "id": "GIG#2",
+            "userId": USER_ID,
+            "date": date(2024, 12, 12),
+            "spotifyArtistId": NONEXISTENT_ARTIST_ID,
+            "artist": "artist not on spotify",
+        }
+    )
 
     upcoming_client = UpcomingPlaylistClient(
-        table,
-        scheduler,
-        spotify_client,
-        TARGET_ARN,
-        ROLE_ARN
+        table, scheduler, spotify_client, TARGET_ARN, ROLE_ARN
     )
     gigs_by_user = upcoming_client.process_gigs([invalid_gig, gig])
 
-    spotify_client.add_artist.assert_has_calls([
-        call(NONEXISTENT_ARTIST_ID, PLAYLIST_ID),
-        call(ARTIST_ID, PLAYLIST_ID)
-    ])
+    spotify_client.add_artist.assert_has_calls(
+        [call(NONEXISTENT_ARTIST_ID, PLAYLIST_ID), call(ARTIST_ID, PLAYLIST_ID)]
+    )
     scheduler.create_schedule.assert_called_once()
     scheduler.create_schedule.assert_called_with(
         Name=f"delete_{ARTIST_ID}_from_{PLAYLIST_ID}",
@@ -212,10 +198,9 @@ def test_tracks_cannot_be_retrieved(table, scheduler, gig):
         Target={
             "Arn": TARGET_ARN,
             "RoleArn": ROLE_ARN,
-            "Input": json.dumps({
-                "spotifyArtistId": ARTIST_ID,
-                "playlistId": PLAYLIST_ID
-            })
+            "Input": json.dumps(
+                {"spotifyArtistId": ARTIST_ID, "playlistId": PLAYLIST_ID}
+            ),
         },
     )
 
@@ -228,70 +213,62 @@ def test_tracks_cannot_be_retrieved(table, scheduler, gig):
 def test_schedule_cannot_be_made(table, spotify_client, gig):
     scheduler = Mock()
     exception = ClientError(
-        {
-            "Error": {
-                "Code": "XXX",
-                "Message": "RESOURCE QUOTA EXCEEDED"
-            }
-        },
-        "CREATE SCHEDULE"
+        {"Error": {"Code": "XXX", "Message": "RESOURCE QUOTA EXCEEDED"}},
+        "CREATE SCHEDULE",
     )
     scheduler.create_schedule.side_effect = [exception, lambda x: True]
 
-    invalid_gig = Gig.model_construct(**{
-        "id": "GIG#2",
-        "userId": "USER#6789",
-        "date": date(2024, 12, 12),
-        "spotifyArtistId": ARTIST_ID,
-        "artist": "problem with schedule"
-    })
+    invalid_gig = Gig.model_construct(
+        **{
+            "id": "GIG#2",
+            "userId": "USER#6789",
+            "date": date(2024, 12, 12),
+            "spotifyArtistId": ARTIST_ID,
+            "artist": "problem with schedule",
+        }
+    )
 
     upcoming_client = UpcomingPlaylistClient(
-        table,
-        scheduler,
-        spotify_client,
-        TARGET_ARN,
-        ROLE_ARN
+        table, scheduler, spotify_client, TARGET_ARN, ROLE_ARN
     )
     gigs_by_user = upcoming_client.process_gigs([invalid_gig, gig])
 
-    spotify_client.add_artist.assert_has_calls([
-        call(ARTIST_ID, PLAYLIST_ID),
-        call(ARTIST_ID, PLAYLIST_ID)
-    ])
+    spotify_client.add_artist.assert_has_calls(
+        [call(ARTIST_ID, PLAYLIST_ID), call(ARTIST_ID, PLAYLIST_ID)]
+    )
     spotify_client.remove_artist.assert_called_once()
-    scheduler.create_schedule.assert_has_calls([
-        call(
-            Name=f"delete_{ARTIST_ID}_from_{PLAYLIST_ID}",
-            Description=f"Delete problem with schedule from playlist {PLAYLIST_ID}",
-            ActionAfterCompletion="DELETE",
-            ScheduleExpression="at(2024-12-13T00:00:00)",
-            FlexibleTimeWindow={"Mode": "OFF"},
-            Target={
-                "Arn": TARGET_ARN,
-                "RoleArn": ROLE_ARN,
-                "Input": json.dumps({
-                    "spotifyArtistId": ARTIST_ID,
-                    "playlistId": PLAYLIST_ID
-                })
-            }
-        ),
-        call(
-            Name=f"delete_{ARTIST_ID}_from_{PLAYLIST_ID}",
-            Description=f"Delete artist from playlist {PLAYLIST_ID}",
-            ActionAfterCompletion="DELETE",
-            ScheduleExpression="at(2024-03-13T00:00:00)",
-            FlexibleTimeWindow={"Mode": "OFF"},
-            Target={
-                "Arn": TARGET_ARN,
-                "RoleArn": ROLE_ARN,
-                "Input": json.dumps({
-                    "spotifyArtistId": ARTIST_ID,
-                    "playlistId": PLAYLIST_ID
-                })
-            }
-        ),
-    ])
+    scheduler.create_schedule.assert_has_calls(
+        [
+            call(
+                Name=f"delete_{ARTIST_ID}_from_{PLAYLIST_ID}",
+                Description=f"Delete problem with schedule from playlist {PLAYLIST_ID}",
+                ActionAfterCompletion="DELETE",
+                ScheduleExpression="at(2024-12-13T00:00:00)",
+                FlexibleTimeWindow={"Mode": "OFF"},
+                Target={
+                    "Arn": TARGET_ARN,
+                    "RoleArn": ROLE_ARN,
+                    "Input": json.dumps(
+                        {"spotifyArtistId": ARTIST_ID, "playlistId": PLAYLIST_ID}
+                    ),
+                },
+            ),
+            call(
+                Name=f"delete_{ARTIST_ID}_from_{PLAYLIST_ID}",
+                Description=f"Delete artist from playlist {PLAYLIST_ID}",
+                ActionAfterCompletion="DELETE",
+                ScheduleExpression="at(2024-03-13T00:00:00)",
+                FlexibleTimeWindow={"Mode": "OFF"},
+                Target={
+                    "Arn": TARGET_ARN,
+                    "RoleArn": ROLE_ARN,
+                    "Input": json.dumps(
+                        {"spotifyArtistId": ARTIST_ID, "playlistId": PLAYLIST_ID}
+                    ),
+                },
+            ),
+        ]
+    )
 
     assert len(gigs_by_user) == 2
     assert USER_ID in gigs_by_user.keys()

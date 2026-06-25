@@ -3,20 +3,24 @@ from datetime import date
 
 from boto3.dynamodb.conditions import Key
 
-from spotify_playlist_client import SpotifyPlaylistClient
-from gig import Gig
-from upcoming_playlist_client import UpcomingPlaylistClient
-from user import User
+from spotify.spotify_playlist_client import SpotifyPlaylistClient
+from models.gig import Gig
+from upcoming_playlist.upcoming_playlist_client import UpcomingPlaylistClient
+from models.user import User
 
 
 logger = logging.getLogger()
 
 
 class UpcomingPlaylistReconService:
-    def __init__(self, table, scheduler,
-                 spotify_client: SpotifyPlaylistClient,
-                 target_arn: str,
-                 role_arn: str):
+    def __init__(
+        self,
+        table,
+        scheduler,
+        spotify_client: SpotifyPlaylistClient,
+        target_arn: str,
+        role_arn: str,
+    ):
         self.table = table
         self.spotify_client = spotify_client
         self.upcoming_playlist_client = UpcomingPlaylistClient(
@@ -55,8 +59,7 @@ class UpcomingPlaylistReconService:
         logger.info(f"Removed {len(artists_to_remove)} artists from playlist")
 
         self.upcoming_playlist_client.process_gigs(
-            gigs=gigs_to_add,
-            user_details={user_id: user_details}
+            gigs=gigs_to_add, user_details={user_id: user_details}
         )
 
     def _get_user_details(self, user_id: str) -> User:
@@ -67,9 +70,9 @@ class UpcomingPlaylistReconService:
         results = self.table.query(
             IndexName="userId-date-index",
             KeyConditionExpression=(
-                    Key("userId").eq(user_id)
-                    & Key("date").gt(date.today().strftime("%Y-%m-%d"))
-            )
+                Key("userId").eq(user_id)
+                & Key("date").gt(date.today().strftime("%Y-%m-%d"))
+            ),
         )["Items"]
 
         logger.info(f"Found {len(results)} upcoming gigs")

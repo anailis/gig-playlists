@@ -16,7 +16,6 @@ class Gig(BaseModel):
 
 
 class GigsDbService:
-
     GIG_PREFIX = "GIG#"
     USER_PREFIX = "USER#"
 
@@ -27,7 +26,9 @@ class GigsDbService:
         if user_id != requesting_user_id:
             raise ForbiddenError("Forbidden: user cannot access this resource")
 
-        results = self.table.query(KeyConditionExpression=Key("id").eq(self.USER_PREFIX + user_id))
+        results = self.table.query(
+            KeyConditionExpression=Key("id").eq(self.USER_PREFIX + user_id)
+        )
         if results["Count"] == 0:
             raise NotFoundError
         else:
@@ -40,14 +41,16 @@ class GigsDbService:
         results = self.table.query(
             IndexName="userId-id-index",
             KeyConditionExpression=(
-                    Key("userId").eq(self.USER_PREFIX + user_id) &
-                    Key("id").begins_with(self.GIG_PREFIX)
-            )
+                Key("userId").eq(self.USER_PREFIX + user_id)
+                & Key("id").begins_with(self.GIG_PREFIX)
+            ),
         )
         return results["Items"]
 
     def get_gig_by_id(self, gig_id: str, requesting_user_id: str):
-        results = self.table.query(KeyConditionExpression=Key("id").eq(self.GIG_PREFIX + gig_id))
+        results = self.table.query(
+            KeyConditionExpression=Key("id").eq(self.GIG_PREFIX + gig_id)
+        )
         if results["Count"] == 0:
             raise NotFoundError
         else:
