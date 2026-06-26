@@ -4,6 +4,7 @@ import {GigCalendar} from "./features/gigs/gig-calendar/gig-calendar.component";
 import {AccountComponent} from "./features/account/account.component";
 import {PlaylistsComponent} from "./features/playlists/playlists.component";
 import {IntegrationsComponent} from "@features/integrations/integrations.component";
+import {TidalCallbackComponent} from "@features/integrations/tidal-callback/tidal-callback.component";
 
 const routeConfig: Routes = [
   {
@@ -31,6 +32,10 @@ const routeConfig: Routes = [
     path: 'add-gig',
     component: GigFormComponent,
   },
+  {
+    path: 'tidal-integration-callback',
+    component: TidalCallbackComponent,
+  }
 ];
 
 export default routeConfig;

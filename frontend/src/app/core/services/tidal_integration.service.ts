@@ -1,7 +1,7 @@
 import {Injectable} from "@angular/core";
 import {environment} from "environments/environment";
 import {IntegrationService} from "@services/integration.service";
-import {init as initAuth, initializeLogin} from "@tidal-music/auth";
+import {finalizeLogin, init as initAuth, initializeLogin} from "@tidal-music/auth";
 
 @Injectable({
     providedIn: 'root'
@@ -9,9 +9,9 @@ import {init as initAuth, initializeLogin} from "@tidal-music/auth";
 export class TidalIntegrationService implements IntegrationService {
 
     private readonly clientId = environment.tidalClientId;
-    private readonly redirectUri = environment.integrationRedirectUrl;
+    private readonly redirectUri = environment.tidalRedirectUrl;
 
-    //Starts the OAuth login flow - redirects the browser away from the application.
+    // Starts the OAuth login flow - redirects the browser away from the application.
     async integrate() {
         this.persistLoginContext()
         await this.authorise();
@@ -34,5 +34,17 @@ export class TidalIntegrationService implements IntegrationService {
 
         // redirect
         window.location.href = loginUrl;
+    }
+
+    // Called when app redirects back from Tidal
+    async finaliseAuth() {
+
+        await initAuth({
+            clientId: this.clientId,
+            credentialsStorageKey: 'authorizationCode'
+        });
+
+        // pass query params from redirect
+        await finalizeLogin(window.location.search);
     }
 }
