@@ -8,32 +8,31 @@ import {init as initAuth, initializeLogin} from "@tidal-music/auth";
 })
 export class TidalIntegrationService implements IntegrationService {
 
-    integrate() {
-        localStorage.setItem('clientId', environment.tidalClientId);
-        localStorage.setItem('redirectUri', environment.integrationRedirectUrl);
+    private readonly clientId = environment.tidalClientId;
+    private readonly redirectUri = environment.integrationRedirectUrl;
 
-        this.authorise(environment.tidalClientId, environment.integrationRedirectUrl);
+    //Starts the OAuth login flow - redirects the browser away from the application.
+    async integrate() {
+        this.persistLoginContext()
+        await this.authorise();
     }
 
-    registerIntegration() {
-        const params = Object.fromEntries(new URLSearchParams(window.location.search));
-
-        if (params['code']) {
-            console.log(params['code']);
-        }
+    private persistLoginContext() {
+        localStorage.setItem('clientId', this.clientId);
+        localStorage.setItem('redirectUri', this.redirectUri);
     }
 
-    // retrieves an authorisation token
-    async authorise(clientId: string, redirectUri: string) {
+    async authorise() {
         await initAuth({
-            clientId,
+            clientId: this.clientId,
             credentialsStorageKey: 'authorizationCode',
         });
 
         const loginUrl = await initializeLogin({
-            redirectUri,
+            redirectUri: this.redirectUri,
         });
 
-        window.open(loginUrl, '_self');
+        // redirect
+        window.location.href = loginUrl;
     }
 }
