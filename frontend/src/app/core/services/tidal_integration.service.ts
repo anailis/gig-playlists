@@ -1,7 +1,7 @@
 import {Injectable} from "@angular/core";
 import {environment} from "environments/environment";
 import {IntegrationService} from "@services/integration.service";
-import {finalizeLogin, init as initAuth, initializeLogin} from "@tidal-music/auth";
+import {credentialsProvider, finalizeLogin, init as initAuth, initializeLogin} from "@tidal-music/auth";
 
 @Injectable({
     providedIn: 'root'

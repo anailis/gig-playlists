@@ -1,6 +1,7 @@
 import {Component, OnInit} from '@angular/core';
 import {TidalIntegrationService} from "@services/tidal_integration.service";
 import {Router} from "@angular/router";
+import * as tidalAuth from '@tidal-music/auth';
 
 @Component({
   selector: 'app-tidal-callback',
@@ -16,6 +17,7 @@ export class TidalCallbackComponent implements OnInit {
   ) {}
 
   async ngOnInit() {
+    console.log(tidalAuth);
 
     await this.tidalIntegrationService.finaliseAuth();
 
