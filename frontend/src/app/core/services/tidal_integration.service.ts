@@ -2,7 +2,6 @@ import {Injectable} from "@angular/core";
 import {environment} from "environments/environment";
 import {IntegrationService} from "@services/integration.service";
 import {
-    AuthorizationServer,
     calculatePKCECodeChallenge,
     generateRandomCodeVerifier,
     generateRandomState,
@@ -20,7 +19,6 @@ export class TidalIntegrationService implements IntegrationService {
     private STATE_KEY = 'tidal_state';
     private CODE_VERIFIER_KEY = 'tidal_code_verifier';
 
-    // Starts the OAuth login flow - redirects the browser away from the application.
     async integrate() {
         const verifier = generateRandomCodeVerifier();
         const challenge = await calculatePKCECodeChallenge(verifier);
@@ -45,6 +43,7 @@ export class TidalIntegrationService implements IntegrationService {
             state
         )
 
+        // redirect user to Tidal's authorization page
         window.location.href = authorizationUrl.toString();
     }
 
