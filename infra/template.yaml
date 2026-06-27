@@ -381,6 +381,36 @@ Resources:
       Layers:
           - !Ref SharedLibs
 
+  ExchangeAuthorizationCodeForToken:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "exchange-authorization-code-for-token-${Environment}"
+      CodeUri: ../functions/exchange_authorization_code_for_token/
+      Description: Exchanges authorization code for refresh token and stores it in DynamoDB
+      Environment:
+        Variables:
+          TABLE_NAME: !Sub "gigs_${Environment}"
+      Policies:
+        - Statement:
+            - Sid: DynamoDBReadWritePolicy
+              Effect: Allow
+              Action:
+                - dynamodb:PutItem
+              Resource:
+                - !GetAtt GigsTable.Arn
+            - Sid: KMSEncryptPolicy
+              Effect: Allow
+              Action:
+                - kms:Encrypt
+              Resource:
+                - !GetAtt RefreshTokenKMSKey.Arn
+            - Sid: CloudWatchCreateLogsPolicy
+              Effect: Allow
+              Action:
+                - logs:CreateLogGroup
+                - logs:CreateLogStream
+                - logs:PutLogEvents
+              Resource: !Sub "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:*"
 
   AddGigToUpcomingPlaylist:
     Type: AWS::Serverless::Function
@@ -594,6 +624,17 @@ Resources:
       ManagedLoginVersion: "1"
       CustomDomainConfig:
         CertificateArn: !Ref GiglistAuthCertificateArn
+
+  ######################
+  ##### Encryption #####
+  ######################
+
+  RefreshTokenKMSKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: KMS key for encrypting refresh tokens
+      KeySpec: SYMMETRIC_DEFAULT
+      KeyUsage: ENCRYPT_DECRYPT
 
 
 Outputs:
