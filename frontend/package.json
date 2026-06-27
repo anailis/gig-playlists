@@ -25,6 +25,7 @@
     "@tidal-music/api": "^0.7.0",
     "@tidal-music/auth": "^1.4.0",
     "luxon": "^3.5.0",
+    "oauth4webapi": "^3.8.6",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.14.10"
