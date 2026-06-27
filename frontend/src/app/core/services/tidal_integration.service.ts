@@ -1,8 +1,12 @@
 import {Injectable} from "@angular/core";
 import {environment} from "environments/environment";
 import {IntegrationService} from "@services/integration.service";
-import {finalizeLogin, init as initAuth} from "@tidal-music/auth";
-import {calculatePKCECodeChallenge, generateRandomCodeVerifier, generateRandomState} from "oauth4webapi";
+import {
+    AuthorizationServer,
+    calculatePKCECodeChallenge,
+    generateRandomCodeVerifier,
+    generateRandomState,
+} from "oauth4webapi";
 
 @Injectable({
     providedIn: 'root'
@@ -12,7 +16,9 @@ export class TidalIntegrationService implements IntegrationService {
     private readonly clientId = environment.tidalClientId;
     private readonly redirectUri = environment.tidalRedirectUrl;
     private readonly authorizationEndpoint = 'https://login.tidal.com/authorize';
-    private readonly code_challenge_method = 'S256'
+    private readonly code_challenge_method = 'S256';
+    private STATE_KEY = 'tidal_state';
+    private CODE_VERIFIER_KEY = 'tidal_code_verifier';
 
     // Starts the OAuth login flow - redirects the browser away from the application.
     async integrate() {
@@ -31,22 +37,39 @@ export class TidalIntegrationService implements IntegrationService {
         authorizationUrl.searchParams.set('state', state);
 
         sessionStorage.setItem(
-            'tidal_code_verifier',
+            this.CODE_VERIFIER_KEY,
             verifier
         );
+        sessionStorage.setItem(
+            this.STATE_KEY,
+            state
+        )
 
         window.location.href = authorizationUrl.toString();
     }
 
     // Called when app redirects back from Tidal
     async finaliseAuth() {
+        // TODO: make a call to my own backend to exchange the code for an refresh token
+    }
 
-        await initAuth({
-            clientId: this.clientId,
-            credentialsStorageKey: 'authorizationCode'
-        });
+    private getCodeVerifier(): string {
+        const verifier = sessionStorage.getItem(this.CODE_VERIFIER_KEY);
 
-        // pass query params from redirect
-        await finalizeLogin(window.location.search);
+        if (!verifier) {
+            throw new Error('Missing PKCE code verifier');
+        }
+
+        return verifier;
+    }
+
+    private getState(): string {
+        const state = sessionStorage.getItem(this.STATE_KEY);
+
+        if (!state) {
+            throw new Error('Missing OAuth state');
+        }
+
+        return state;
     }
 }

@@ -17,7 +17,6 @@ export class TidalCallbackComponent implements OnInit {
   ) {}
 
   async ngOnInit() {
-    console.log(tidalAuth);
 
     await this.tidalIntegrationService.finaliseAuth();
 
