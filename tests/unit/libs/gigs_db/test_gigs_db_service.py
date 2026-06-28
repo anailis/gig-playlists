@@ -4,7 +4,7 @@ from unittest.mock import Mock
 import pytest
 from aws_lambda_powertools.event_handler.exceptions import ForbiddenError, NotFoundError
 
-from gigs_db.gigs_db_service import GigsDbService, Gig
+from gigs_db.gigs_db_service import GigsDbService, Gig, Integration, IntegrationType
 
 
 class TestGetUserById:
@@ -151,3 +151,77 @@ class TestDeleteGig:
         table.delete_item.assert_called_once_with(
             Key={"id": "GIG#gig123", "userId": "USER#user456"}
         )
+
+class TestPostIntegration:
+    def test_integration_created(self, mocker):
+        table = Mock()
+        service = GigsDbService(table=table)
+        integration = Integration(
+            userId="USER#user456",
+            refreshToken="encrypted_refresh_token",
+            type=IntegrationType.SPOTIFY,
+            scope=[]
+        )
+        mocker.patch(f"{GigsDbService.__module__}.GigsDbService.get_user_by_id", return_value={"integrations": []})
+
+        assert service.post_integration(integration, requesting_user_id="user456") == {
+            "message": "Created integration with ID " + str(integration.id)
+        }
+        table.put_item.assert_called_once_with(
+            Item={
+                "id": "INTEGRATION#" + str(integration.id),
+                "userId": "USER#user456",
+                "type": IntegrationType.SPOTIFY,
+                "refreshToken": "encrypted_refresh_token",
+                "scope": [],
+            }
+        )
+        table.update_item.assert_called_once_with(
+            Key={
+                "id": "USER#user456",
+                "userId": "USER#user456",
+            },
+            UpdateExpression="""
+                SET integrations = list_append(
+                    if_not_exists(integrations, :empty_list),
+                    :new_item
+                )
+            """,
+            ExpressionAttributeValues={
+                ":empty_list": [],
+                ":new_item": [
+                    {
+                        "type": IntegrationType.SPOTIFY,
+                        "id": "INTEGRATION#" + str(integration.id),
+                    }
+                ],
+            },
+        )
+
+    def test_existing_integrations_are_not_overwritten(self, mocker):
+        table = Mock()
+        service = GigsDbService(table=table)
+        integration = Integration(
+            userId="USER#user456",
+            refreshToken="encrypted_refresh_token",
+            type=IntegrationType.SPOTIFY,
+            scope=[]
+        )
+        mocker.patch(
+            f"{GigsDbService.__module__}.GigsDbService.get_user_by_id",
+            return_value={"integrations": [{"id": "INTEGRATION#existing_id", "type": "SPOTIFY"}]})
+
+        with pytest.raises(ForbiddenError):
+            service.post_integration(integration, requesting_user_id="user456")
+
+    def test_user_cannot_create_integration_for_other_user(self):
+        service = GigsDbService(table=Mock())
+        integration = Integration(
+            userId="USER#user456",
+            refreshToken="encrypted_refresh_token",
+            type=IntegrationType.SPOTIFY,
+            scope=[]
+        )
+
+        with pytest.raises(ForbiddenError):
+            service.post_integration(integration, requesting_user_id="unauthorized_user")

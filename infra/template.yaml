@@ -378,6 +378,12 @@ Resources:
             ApiId: !Ref GigsApi
             Path: /users/{id}/gigs
             Method: GET
+        PostIntegration:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref GigsApi
+            Path: /integrations
+            Method: POST
       Layers:
           - !Ref SharedLibs
 
@@ -390,6 +396,7 @@ Resources:
       Environment:
         Variables:
           TABLE_NAME: !Sub "gigs_${Environment}"
+          KEY_ID: !GetAtt RefreshTokenKMSKey.KeyId
       Policies:
         - Statement:
             - Sid: DynamoDBReadWritePolicy
