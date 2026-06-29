@@ -240,6 +240,22 @@ Resources:
   ##### APIs #####
   ################
 
+  TokenApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      Name: !Sub "token-api-${Environment}"
+      Description: API for managing tokens for integrations
+      StageName: api
+      Auth:
+        DefaultAuthorizer: GigsCognitoAuthorizer
+        Authorizers:
+          GigsCognitoAuthorizer:
+            IdentitySource: "$request.header.Authorization"
+            JwtConfiguration:
+              Audience:
+                - !Ref CognitoUserPoolClient
+              Issuer: !Sub "https://cognito-idp.${AWS::Region}.amazonaws.com/${CognitoUserPool}"
+
   GigsApi:
     Type: AWS::Serverless::HttpApi
     Properties:
@@ -397,6 +413,14 @@ Resources:
         Variables:
           TABLE_NAME: !Sub "gigs_${Environment}"
           KEY_ID: !GetAtt RefreshTokenKMSKey.KeyId
+          INTEGRATIONS_API_URL: !Sub "https://${GigsApi}.execute-api.${AWS::Region}.amazonaws.com/api/integrations"
+      Events:
+        CreateRefreshToken:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref TokenApi
+            Path: /refresh-tokens
+            Method: POST
       Policies:
         - Statement:
             - Sid: DynamoDBReadWritePolicy
