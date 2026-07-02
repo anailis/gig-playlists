@@ -329,6 +329,16 @@ Resources:
         - python3.12
       RetentionPolicy: Retain
 
+  AuthLibs:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: GigListAuthLibs
+      Description: Library for handling authentication in Giglist
+      ContentUri: ../libs/auth
+      CompatibleRuntimes:
+        - python3.12
+      RetentionPolicy: Retain
+
   GigsDbCRUD:
     Type: AWS::Serverless::Function
     Properties:

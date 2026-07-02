@@ -7,17 +7,13 @@ import requests
 from aws_lambda_powertools import Logger
 from requests import HTTPError
 
+from jwt import get_requesting_user
 
 logger = Logger()
 
 kms_client = boto3.client("kms")
 dynamodb_client = boto3.resource("dynamodb")
 table = dynamodb_client.Table(os.environ["TABLE_NAME"])
-
-
-def get_requesting_user(event) -> str:
-    authoriser_details = event["requestContext"]["authorizer"]
-    return authoriser_details.get("jwt", {}).get("claims", {}).get("sub", "")
 
 
 def lambda_handler(event: dict, context):
@@ -48,7 +44,7 @@ def lambda_handler(event: dict, context):
         response = requests.post(
             os.environ["INTEGRATIONS_API_URL"],
             json={
-                "userId": "USER#" + get_requesting_user(event),
+                "userId": get_requesting_user(event),
                 "type": body["type"],
                 "refreshToken": base64.b64encode(response["CiphertextBlob"]).decode("utf-8"),
                 "scope": body["scope"],
