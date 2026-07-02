@@ -255,6 +255,16 @@ Resources:
               Audience:
                 - !Ref CognitoUserPoolClient
               Issuer: !Sub "https://cognito-idp.${AWS::Region}.amazonaws.com/${CognitoUserPool}"
+      CorsConfiguration:
+        AllowOrigins:
+          - !Ref GigsApiAllowedOrigins
+        AllowHeaders:
+          - authorization
+          - content-type
+        AllowMethods:
+          - POST
+          - GET
+          - OPTIONS
 
   GigsApi:
     Type: AWS::Serverless::HttpApi
@@ -452,6 +462,8 @@ Resources:
                 - logs:CreateLogStream
                 - logs:PutLogEvents
               Resource: !Sub "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:*"
+      Layers:
+        - !Ref AuthLibs
 
   AddGigToUpcomingPlaylist:
     Type: AWS::Serverless::Function

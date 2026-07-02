@@ -6,5 +6,6 @@ export const environment = {
     cognitoRedirectUrl: "",
     tidalRedirectUrl: "",
     gigsApiUrl: "",
+    tokenExchangeUrl: "",
     tidalClientId: ""
 };
