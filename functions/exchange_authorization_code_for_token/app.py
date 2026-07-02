@@ -31,4 +31,4 @@ def lambda_handler(event: dict, context):
         integration_type=body["type"]
     )
 
-    return "Code exchanged for token successfully"
+    return {"message": "Code exchanged for token successfully"}
