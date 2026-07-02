@@ -240,6 +240,32 @@ Resources:
   ##### APIs #####
   ################
 
+  TokenApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      Name: !Sub "token-api-${Environment}"
+      Description: API for managing tokens for integrations
+      StageName: api
+      Auth:
+        DefaultAuthorizer: GigsCognitoAuthorizer
+        Authorizers:
+          GigsCognitoAuthorizer:
+            IdentitySource: "$request.header.Authorization"
+            JwtConfiguration:
+              Audience:
+                - !Ref CognitoUserPoolClient
+              Issuer: !Sub "https://cognito-idp.${AWS::Region}.amazonaws.com/${CognitoUserPool}"
+      CorsConfiguration:
+        AllowOrigins:
+          - !Ref GigsApiAllowedOrigins
+        AllowHeaders:
+          - authorization
+          - content-type
+        AllowMethods:
+          - POST
+          - GET
+          - OPTIONS
+
   GigsApi:
     Type: AWS::Serverless::HttpApi
     Properties:
@@ -313,6 +339,16 @@ Resources:
         - python3.12
       RetentionPolicy: Retain
 
+  AuthLibs:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: GigListAuthLibs
+      Description: Library for handling authentication in Giglist
+      ContentUri: ../libs/auth
+      CompatibleRuntimes:
+        - python3.12
+      RetentionPolicy: Retain
+
   GigsDbCRUD:
     Type: AWS::Serverless::Function
     Properties:
@@ -378,9 +414,56 @@ Resources:
             ApiId: !Ref GigsApi
             Path: /users/{id}/gigs
             Method: GET
+        PostIntegration:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref GigsApi
+            Path: /integrations
+            Method: POST
       Layers:
           - !Ref SharedLibs
 
+  ExchangeAuthorizationCodeForToken:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "exchange-authorization-code-for-token-${Environment}"
+      CodeUri: ../functions/exchange_authorization_code_for_token/
+      Description: Exchanges authorization code for refresh token and stores it in DynamoDB
+      Environment:
+        Variables:
+          TABLE_NAME: !Sub "gigs_${Environment}"
+          KEY_ID: !GetAtt RefreshTokenKMSKey.KeyId
+          INTEGRATIONS_API_URL: !Sub "https://${GigsApi}.execute-api.${AWS::Region}.amazonaws.com/api/integrations"
+      Events:
+        CreateRefreshToken:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref TokenApi
+            Path: /refresh-tokens
+            Method: POST
+      Policies:
+        - Statement:
+            - Sid: DynamoDBReadWritePolicy
+              Effect: Allow
+              Action:
+                - dynamodb:PutItem
+              Resource:
+                - !GetAtt GigsTable.Arn
+            - Sid: KMSEncryptPolicy
+              Effect: Allow
+              Action:
+                - kms:Encrypt
+              Resource:
+                - !GetAtt RefreshTokenKMSKey.Arn
+            - Sid: CloudWatchCreateLogsPolicy
+              Effect: Allow
+              Action:
+                - logs:CreateLogGroup
+                - logs:CreateLogStream
+                - logs:PutLogEvents
+              Resource: !Sub "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:*"
+      Layers:
+        - !Ref AuthLibs
 
   AddGigToUpcomingPlaylist:
     Type: AWS::Serverless::Function
@@ -594,6 +677,17 @@ Resources:
       ManagedLoginVersion: "1"
       CustomDomainConfig:
         CertificateArn: !Ref GiglistAuthCertificateArn
+
+  ######################
+  ##### Encryption #####
+  ######################
+
+  RefreshTokenKMSKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: KMS key for encrypting refresh tokens
+      KeySpec: SYMMETRIC_DEFAULT
+      KeyUsage: ENCRYPT_DECRYPT
 
 
 Outputs:

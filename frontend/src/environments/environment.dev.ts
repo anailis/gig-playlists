@@ -4,7 +4,8 @@ export const environment = {
     signupUrl: "",
     authUrl: "dev.auth.giglist.rocks",
     cognitoRedirectUrl: "https://dev.giglist.rocks",
-    integrationRedirectUrl: "https://dev.giglist.rocks/integrations",
+    tidalRedirectUrl: "https://dev.giglist.rocks/tidal-integration-callback",
     gigsApiUrl: "https://406q0l2co5.execute-api.eu-west-2.amazonaws.com/api/",
+    tokenExchangeUrl: "https://a9ep1n3bb0.execute-api.eu-west-2.amazonaws.com/api/refresh-tokens",
     tidalClientId: "n8Vc7GScKkHP4Yua"
 };

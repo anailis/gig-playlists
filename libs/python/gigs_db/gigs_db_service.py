@@ -1,4 +1,5 @@
 from datetime import date
+from enum import StrEnum
 from uuid import UUID, uuid4
 
 from aws_lambda_powertools.event_handler.exceptions import NotFoundError, ForbiddenError
@@ -15,9 +16,23 @@ class Gig(BaseModel):
     spotifyArtistId: str
 
 
+class IntegrationType(StrEnum):
+    SPOTIFY = "SPOTIFY"
+    TIDAL = "TIDAL"
+
+
+class Integration(BaseModel):
+    id: UUID = Field(default_factory=uuid4)
+    userId: str
+    type: IntegrationType
+    refreshToken: str
+    scope: list
+
+
 class GigsDbService:
     GIG_PREFIX = "GIG#"
     USER_PREFIX = "USER#"
+    INTEGRATION_PREFIX = "INTEGRATION#"
 
     def __init__(self, table):
         self.table = table
@@ -79,3 +94,40 @@ class GigsDbService:
                 raise ForbiddenError("Forbidden: user cannot delete this resource")
             self.table.delete_item(Key={"id": full_gig_id, "userId": user_id})
             return {"message": f"Deleted gig with ID {gig_id}"}
+
+    def post_integration(self, integration: Integration, requesting_user_id: str):
+        user_id = integration.userId.split("#")[-1]
+        if user_id != requesting_user_id:
+            raise ForbiddenError("Forbidden: user cannot create integration for another user")
+
+        user = self.get_user_by_id(user_id, requesting_user_id)
+        existing_integrations = [exist_int["type"] for exist_int in user.get("integrations", [])]
+        if integration.type in existing_integrations:
+            raise ForbiddenError(f"Forbidden: user already has an integration of type {integration.type}")
+
+        item: dict = integration.model_dump()
+        item["id"] = self.INTEGRATION_PREFIX + str(integration.id)
+        self.table.put_item(Item=item)
+
+        self.table.update_item(
+            Key={
+                "id": integration.userId,
+                "userId": integration.userId,
+            },
+            UpdateExpression="""
+                SET integrations = list_append(
+                    if_not_exists(integrations, :empty_list),
+                    :new_item
+                )
+            """,
+            ExpressionAttributeValues={
+                ":empty_list": [],
+                ":new_item": [
+                    {
+                        "type": integration.type,
+                        "id": item["id"],
+                    }
+                ],
+            },
+        )
+        return {"message": "Created integration with ID " + str(integration.id)}

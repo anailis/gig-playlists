@@ -40,7 +40,6 @@ export class IntegrationsComponent implements OnInit {
 
   ngOnInit() {
     // TODO: generify this and fix typing
-    this.tidalIntegration.registerIntegration();
     this.userId = this.authService.getUserId();
     if (this.userId) {
       this.userService.getUser(this.userId).subscribe(user => {

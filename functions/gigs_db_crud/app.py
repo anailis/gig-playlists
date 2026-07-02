@@ -5,7 +5,7 @@ from aws_lambda_powertools.utilities.typing import LambdaContext
 from aws_lambda_powertools import Logger
 import boto3
 
-from gigs_db.gigs_db_service import GigsDbService, Gig
+from gigs_db.gigs_db_service import GigsDbService, Gig, Integration
 
 dynamodb = boto3.resource("dynamodb")
 table = dynamodb.Table(os.environ["TABLE_NAME"])
@@ -50,6 +50,11 @@ def post_gig(gig: Gig):
 @app.delete("/gigs/<gig_id>")
 def delete_gig(gig_id: str):
     return db_service.delete_gig(gig_id, requesting_user_id=get_requesting_user())
+
+
+@app.post("/integrations")
+def post_integration(integration: Integration):
+    return db_service.post_integration(integration, requesting_user_id=get_requesting_user())
 
 
 def lambda_handler(event: dict, context: LambdaContext) -> dict:
