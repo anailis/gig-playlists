@@ -1,7 +1,6 @@
 import {Component, OnInit} from '@angular/core';
 import {TidalIntegrationService} from "@services/tidal_integration.service";
 import {Router} from "@angular/router";
-import * as tidalAuth from '@tidal-music/auth';
 
 @Component({
   selector: 'app-tidal-callback',
