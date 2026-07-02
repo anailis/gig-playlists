@@ -8,6 +8,7 @@ from aws_lambda_powertools import Logger
 from requests import HTTPError
 
 from jwt import get_requesting_user
+from oauth import get_refresh_token
 
 logger = Logger()
 
@@ -18,26 +19,7 @@ table = dynamodb_client.Table(os.environ["TABLE_NAME"])
 
 def lambda_handler(event: dict, context):
     body = json.loads(event["body"])
-
-    try:
-        response = requests.post(
-            body["refresh_token_uri"],
-            data={
-                "grant_type": "authorization_code",
-                "client_id": body["client_id"],
-                "code": body["code"],
-                "redirect_uri": body["redirect_uri"],
-                "code_verifier": body["code_verifier"],
-            },
-            headers={"Content-Type": "application/x-www-form-urlencoded"},
-        )
-        response.raise_for_status()
-    except HTTPError as e:
-        logger.error(e.response.status_code)
-        logger.error(e.response.text)
-        raise HTTPError
-
-    refresh_token = response.json()["refresh_token"]
+    refresh_token = get_refresh_token(event_body=body)
 
     response = kms_client.encrypt(KeyId=os.environ["KEY_ID"], Plaintext=refresh_token.encode())
     try:
