@@ -1,5 +1,5 @@
-import { Component, Input, signal, OnInit, inject } from '@angular/core';
-import {CommonModule} from "@angular/common";
+import { Component, Input, signal, OnInit, inject, ChangeDetectionStrategy } from '@angular/core';
+
 import {MatListModule} from "@angular/material/list";
 import {MatIconModule} from "@angular/material/icon";
 import {RouterLink, RouterLinkActive} from "@angular/router";
@@ -7,17 +7,16 @@ import {NavItem, NavService} from "@services/nav.service";
 import {AuthService} from "@services/auth.service";
 
 @Component({
-  selector: 'app-navbar',
-  standalone: true,
-  imports: [
-    CommonModule,
+    selector: 'app-navbar',
+    imports: [
     MatListModule,
     MatIconModule,
     RouterLink,
-    RouterLinkActive,
-  ],
-  templateUrl: './navbar.component.html',
-  styleUrl: './navbar.component.css'
+    RouterLinkActive
+],
+    templateUrl: './navbar.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    styleUrl: './navbar.component.css'
 })
 export class NavbarComponent implements OnInit {
   private navService = inject(NavService);

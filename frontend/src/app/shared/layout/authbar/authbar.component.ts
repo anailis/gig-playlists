@@ -1,8 +1,8 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectionStrategy } from '@angular/core';
 import {MatListItem, MatListItemIcon, MatListItemTitle, MatNavList} from "@angular/material/list";
 import {MatIcon} from "@angular/material/icon";
-import {NgForOf, NgIf} from "@angular/common";
-import {environment} from "environments/environment";
+
+import {environment} from "@environments/environment";
 import {AuthService} from "@services/auth.service";
 
 export interface AuthItem {
@@ -12,19 +12,17 @@ export interface AuthItem {
 }
 
 @Component({
-  selector: 'app-authbar',
-  standalone: true,
+    selector: 'app-authbar',
     imports: [
-        MatNavList,
-        MatIcon,
-        MatListItemIcon,
-        MatListItemTitle,
-        MatListItem,
-        NgForOf,
-        NgIf
-    ],
-  templateUrl: './authbar.component.html',
-  styleUrl: './authbar.component.css'
+    MatNavList,
+    MatIcon,
+    MatListItemIcon,
+    MatListItemTitle,
+    MatListItem
+],
+    templateUrl: './authbar.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    styleUrl: './authbar.component.css'
 })
 export class AuthbarComponent implements OnInit {
     private authService = inject(AuthService);

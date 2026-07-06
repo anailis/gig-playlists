@@ -1,12 +1,12 @@
 import {Injectable} from "@angular/core";
-import {environment} from "environments/environment";
+import {environment} from "@environments/environment";
 import {IntegrationService} from "@services/integration.service";
 import {
     calculatePKCECodeChallenge,
     generateRandomCodeVerifier,
     generateRandomState,
 } from "oauth4webapi";
-import {ActivatedRoute, ParamMap} from "@angular/router";
+import {ActivatedRoute} from "@angular/router";
 import {HttpClient} from "@angular/common/http";
 
 @Injectable({
@@ -19,7 +19,6 @@ export class TidalIntegrationService implements IntegrationService {
     private readonly authorizationEndpoint = 'https://login.tidal.com/authorize';
     private readonly tokenEndpoint = 'https://auth.tidal.com/v1/oauth2/token';
     private readonly codeChallengeMethod = 'S256';
-    private readonly integrationType = "TIDAL";
     private STATE_KEY = 'tidal_state';
     private CODE_VERIFIER_KEY = 'tidal_code_verifier';
 

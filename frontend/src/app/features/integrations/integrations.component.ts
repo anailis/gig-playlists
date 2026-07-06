@@ -1,5 +1,5 @@
-import {Component, inject, OnInit} from '@angular/core';
-import {NgForOf, NgIf} from "@angular/common";
+import {Component, inject, OnInit, ChangeDetectionStrategy} from '@angular/core';
+
 import {MatCard, MatCardContent} from "@angular/material/card";
 import {MatButton} from "@angular/material/button";
 import {MatIcon} from "@angular/material/icon";
@@ -11,18 +11,16 @@ import {TidalIntegrationService} from "@services/tidal_integration.service";
 import {SpotifyIntegrationService} from "@services/spotify_integration.service";
 
 @Component({
-  selector: 'app-playlists',
-  standalone: true,
-  imports: [
-    NgForOf,
+    selector: 'app-playlists',
+    imports: [
     MatCard,
     MatButton,
     MatIcon,
-    MatCardContent,
-    NgIf
-  ],
-  templateUrl: './integrations.component.html',
-  styleUrl: './integrations.component.css'
+    MatCardContent
+],
+    templateUrl: './integrations.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    styleUrl: './integrations.component.css'
 })
 export class IntegrationsComponent implements OnInit {
 
@@ -35,25 +33,25 @@ export class IntegrationsComponent implements OnInit {
     [IntegrationType.SPOTIFY]: this.spotifyIntegration,
     [IntegrationType.TIDAL]: this.tidalIntegration,
   }
-  userIntegrations: Set<IntegrationType> = new Set<IntegrationType>();
+  userIntegrations: { name: IntegrationType; enabled: boolean }[] = [];
   userId: string | null = null;
 
   ngOnInit() {
-    // TODO: generify this and fix typing
     this.userId = this.authService.getUserId();
     if (this.userId) {
       this.userService.getUser(this.userId).subscribe(user => {
-        this.userIntegrations = new Set(user.integrations);
+        const userIntegrations = new Set(user.integrations);
+        const integrations = Object.keys(this.allowedIntegrations) as IntegrationType[];
+        this.userIntegrations = integrations.map(integration => ({
+          name: integration,
+          enabled: userIntegrations.has(integration),
+        }));
       })
     }
   }
 
-  statusOfAllowedIntegrations() {
-    const integrations = Object.keys(this.allowedIntegrations) as IntegrationType[];
-    return integrations.map(integration => ({
-      name: integration,
-      enabled: this.userIntegrations.has(integration),
-    }));
+  statusOfAllowedIntegrations(): { name: IntegrationType; enabled: boolean }[] {
+    return this.userIntegrations;
   }
 
   integrateWithThirdParty(integration: IntegrationType) {

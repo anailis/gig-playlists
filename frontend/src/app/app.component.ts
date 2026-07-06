@@ -1,4 +1,4 @@
-import {Component, computed, signal} from '@angular/core';
+import {Component, computed, signal, ChangeDetectionStrategy} from '@angular/core';
 import { RouterModule } from '@angular/router';
 import {MatToolbarModule} from "@angular/material/toolbar";
 import {MatButtonModule} from "@angular/material/button";
@@ -8,10 +8,10 @@ import {NavbarComponent} from "./shared/layout/navbar/navbar.component";
 import {AuthbarComponent} from "./shared/layout/authbar/authbar.component";
 
 @Component({
-  standalone: true,
-  selector: 'app-component',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css'],
+    selector: 'app-component',
+    templateUrl: './app.component.html',
+    styleUrls: ['./app.component.css'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     imports: [
         RouterModule,
         MatToolbarModule,

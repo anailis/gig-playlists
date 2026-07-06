@@ -1,6 +1,6 @@
-import {Component, inject, OnInit} from '@angular/core';
+import {Component, inject, OnInit, ChangeDetectionStrategy} from '@angular/core';
 import {MatToolbar} from "@angular/material/toolbar";
-import {NgForOf} from "@angular/common";
+
 import {EventCardComponent} from "../event-card/event-card.component";
 import {GigService} from "@core/services/gig.service";
 import {AuthService} from "@services/auth.service";
@@ -11,20 +11,19 @@ import {MatButton} from "@angular/material/button";
 import {RouterLink} from "@angular/router";
 
 @Component({
-  selector: 'app-gigs',
-  standalone: true,
+    selector: 'app-gigs',
     imports: [
-        MatToolbar,
-        NgForOf,
-        EventCardComponent,
-        MatIcon,
-        MatButtonToggle,
-        MatButtonToggleGroup,
-        MatButton,
-        RouterLink
-    ],
-  templateUrl: './gig-calendar.component.html',
-  styleUrl: './gig-calendar.component.css'
+    MatToolbar,
+    EventCardComponent,
+    MatIcon,
+    MatButtonToggle,
+    MatButtonToggleGroup,
+    MatButton,
+    RouterLink
+],
+    templateUrl: './gig-calendar.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    styleUrl: './gig-calendar.component.css'
 })
 export class GigCalendar implements OnInit {
   gigService = inject(GigService);

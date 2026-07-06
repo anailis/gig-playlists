@@ -12,12 +12,11 @@ import { GigService } from '@services/gig.service';
 import {AuthService} from "@services/auth.service";
 
 @Component({
-  standalone: true,
-  selector: 'app-gig-form',
-  templateUrl: './gig-form.component.html',
-  imports: [ReactiveFormsModule, MatFormFieldModule, MatInputModule,
-    MatButtonModule, MatDatepickerModule, MatLuxonDateModule],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'app-gig-form',
+    templateUrl: './gig-form.component.html',
+    imports: [ReactiveFormsModule, MatFormFieldModule, MatInputModule,
+        MatButtonModule, MatDatepickerModule, MatLuxonDateModule],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class GigFormComponent {
   gigService = inject(GigService);
