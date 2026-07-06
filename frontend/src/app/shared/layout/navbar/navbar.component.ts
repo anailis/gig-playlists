@@ -1,5 +1,5 @@
 import { Component, Input, signal, OnInit, inject } from '@angular/core';
-import {CommonModule} from "@angular/common";
+
 import {MatListModule} from "@angular/material/list";
 import {MatIconModule} from "@angular/material/icon";
 import {RouterLink, RouterLinkActive} from "@angular/router";
@@ -9,12 +9,11 @@ import {AuthService} from "@services/auth.service";
 @Component({
     selector: 'app-navbar',
     imports: [
-        CommonModule,
-        MatListModule,
-        MatIconModule,
-        RouterLink,
-        RouterLinkActive,
-    ],
+    MatListModule,
+    MatIconModule,
+    RouterLink,
+    RouterLinkActive
+],
     templateUrl: './navbar.component.html',
     styleUrl: './navbar.component.css'
 })

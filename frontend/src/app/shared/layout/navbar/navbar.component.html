@@ -1,16 +1,19 @@
 <div class="sidenav-header">
-    <mat-nav-list>
-        <a mat-list-item
-           *ngFor="let item of navItems"
-           [routerLink]="item.route"
-           routerLinkActive
-           #rla="routerLinkActive"
-           [activated]="rla.isActive"
+  <mat-nav-list>
+    @for (item of navItems; track item) {
+      <a mat-list-item
+        [routerLink]="item.route"
+        routerLinkActive
+        #rla="routerLinkActive"
+        [activated]="rla.isActive"
         >
-            <mat-icon matListItemIcon>{{item.icon}}</mat-icon>
-            <span matListItemTitle *ngIf="!navContentCollapsed()">
-                {{item.label}}
-            </span>
-        </a>
-    </mat-nav-list>
+        <mat-icon matListItemIcon>{{item.icon}}</mat-icon>
+        @if (!navContentCollapsed()) {
+          <span matListItemTitle>
+            {{item.label}}
+          </span>
+        }
+      </a>
+    }
+  </mat-nav-list>
 </div>

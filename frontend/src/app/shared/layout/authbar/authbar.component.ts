@@ -1,7 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import {MatListItem, MatListItemIcon, MatListItemTitle, MatNavList} from "@angular/material/list";
 import {MatIcon} from "@angular/material/icon";
-import {NgForOf, NgIf} from "@angular/common";
+
 import {environment} from "environments/environment";
 import {AuthService} from "@services/auth.service";
 
@@ -14,14 +14,12 @@ export interface AuthItem {
 @Component({
     selector: 'app-authbar',
     imports: [
-        MatNavList,
-        MatIcon,
-        MatListItemIcon,
-        MatListItemTitle,
-        MatListItem,
-        NgForOf,
-        NgIf
-    ],
+    MatNavList,
+    MatIcon,
+    MatListItemIcon,
+    MatListItemTitle,
+    MatListItem
+],
     templateUrl: './authbar.component.html',
     styleUrl: './authbar.component.css'
 })
