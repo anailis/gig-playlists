@@ -12,8 +12,7 @@ export interface AuthItem {
 }
 
 @Component({
-  selector: 'app-authbar',
-  standalone: true,
+    selector: 'app-authbar',
     imports: [
         MatNavList,
         MatIcon,
@@ -23,8 +22,8 @@ export interface AuthItem {
         NgForOf,
         NgIf
     ],
-  templateUrl: './authbar.component.html',
-  styleUrl: './authbar.component.css'
+    templateUrl: './authbar.component.html',
+    styleUrl: './authbar.component.css'
 })
 export class AuthbarComponent implements OnInit {
     private authService = inject(AuthService);

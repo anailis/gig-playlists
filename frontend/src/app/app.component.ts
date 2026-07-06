@@ -8,10 +8,9 @@ import {NavbarComponent} from "./shared/layout/navbar/navbar.component";
 import {AuthbarComponent} from "./shared/layout/authbar/authbar.component";
 
 @Component({
-  standalone: true,
-  selector: 'app-component',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css'],
+    selector: 'app-component',
+    templateUrl: './app.component.html',
+    styleUrls: ['./app.component.css'],
     imports: [
         RouterModule,
         MatToolbarModule,

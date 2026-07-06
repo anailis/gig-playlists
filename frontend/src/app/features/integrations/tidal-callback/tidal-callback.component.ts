@@ -3,11 +3,10 @@ import {TidalIntegrationService} from "@services/tidal_integration.service";
 import {Router} from "@angular/router";
 
 @Component({
-  selector: 'app-tidal-callback',
-  standalone: true,
-  imports: [],
-  templateUrl: './tidal-callback.component.html',
-  styleUrl: './tidal-callback.component.css'
+    selector: 'app-tidal-callback',
+    imports: [],
+    templateUrl: './tidal-callback.component.html',
+    styleUrl: './tidal-callback.component.css'
 })
 export class TidalCallbackComponent implements OnInit {
   constructor(

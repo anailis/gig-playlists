@@ -5,15 +5,14 @@ import {MatCard} from "@angular/material/card";
 import {GigService} from "@services/gig.service";
 
 @Component({
-  selector: 'app-event-card',
-  standalone: true,
-  imports: [
-    MatIcon,
-    MatIconButton,
-    MatCard
-  ],
-  templateUrl: './event-card.component.html',
-  styleUrl: './event-card.component.css'
+    selector: 'app-event-card',
+    imports: [
+        MatIcon,
+        MatIconButton,
+        MatCard
+    ],
+    templateUrl: './event-card.component.html',
+    styleUrl: './event-card.component.css'
 })
 export class EventCardComponent {
   @Input() id!: string | undefined;

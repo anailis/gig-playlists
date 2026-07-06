@@ -11,18 +11,17 @@ import {TidalIntegrationService} from "@services/tidal_integration.service";
 import {SpotifyIntegrationService} from "@services/spotify_integration.service";
 
 @Component({
-  selector: 'app-playlists',
-  standalone: true,
-  imports: [
-    NgForOf,
-    MatCard,
-    MatButton,
-    MatIcon,
-    MatCardContent,
-    NgIf
-  ],
-  templateUrl: './integrations.component.html',
-  styleUrl: './integrations.component.css'
+    selector: 'app-playlists',
+    imports: [
+        NgForOf,
+        MatCard,
+        MatButton,
+        MatIcon,
+        MatCardContent,
+        NgIf
+    ],
+    templateUrl: './integrations.component.html',
+    styleUrl: './integrations.component.css'
 })
 export class IntegrationsComponent implements OnInit {
 

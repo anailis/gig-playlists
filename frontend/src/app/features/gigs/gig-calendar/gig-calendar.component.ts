@@ -11,8 +11,7 @@ import {MatButton} from "@angular/material/button";
 import {RouterLink} from "@angular/router";
 
 @Component({
-  selector: 'app-gigs',
-  standalone: true,
+    selector: 'app-gigs',
     imports: [
         MatToolbar,
         NgForOf,
@@ -23,8 +22,8 @@ import {RouterLink} from "@angular/router";
         MatButton,
         RouterLink
     ],
-  templateUrl: './gig-calendar.component.html',
-  styleUrl: './gig-calendar.component.css'
+    templateUrl: './gig-calendar.component.html',
+    styleUrl: './gig-calendar.component.css'
 })
 export class GigCalendar implements OnInit {
   gigService = inject(GigService);
