@@ -1,4 +1,4 @@
-import {Component, inject, OnInit} from '@angular/core';
+import {Component, inject, OnInit, ChangeDetectionStrategy} from '@angular/core';
 
 import {MatCard, MatCardContent} from "@angular/material/card";
 import {MatButton} from "@angular/material/button";
@@ -19,6 +19,7 @@ import {SpotifyIntegrationService} from "@services/spotify_integration.service";
     MatCardContent
 ],
     templateUrl: './integrations.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
     styleUrl: './integrations.component.css'
 })
 export class IntegrationsComponent implements OnInit {

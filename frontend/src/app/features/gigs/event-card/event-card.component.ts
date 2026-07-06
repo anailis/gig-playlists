@@ -1,4 +1,4 @@
-import {Component, EventEmitter, inject, Input, Output} from '@angular/core';
+import {Component, EventEmitter, inject, Input, Output, ChangeDetectionStrategy} from '@angular/core';
 import {MatIcon} from "@angular/material/icon";
 import {MatIconButton} from "@angular/material/button";
 import {MatCard} from "@angular/material/card";
@@ -12,6 +12,7 @@ import {GigService} from "@services/gig.service";
         MatCard
     ],
     templateUrl: './event-card.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
     styleUrl: './event-card.component.css'
 })
 export class EventCardComponent {

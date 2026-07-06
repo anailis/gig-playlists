@@ -1,4 +1,4 @@
-import {Component, inject, OnInit} from '@angular/core';
+import {Component, inject, OnInit, ChangeDetectionStrategy} from '@angular/core';
 import {MatToolbar} from "@angular/material/toolbar";
 
 import {EventCardComponent} from "../event-card/event-card.component";
@@ -22,6 +22,7 @@ import {RouterLink} from "@angular/router";
     RouterLink
 ],
     templateUrl: './gig-calendar.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
     styleUrl: './gig-calendar.component.css'
 })
 export class GigCalendar implements OnInit {

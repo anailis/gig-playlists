@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnInit, ChangeDetectionStrategy} from '@angular/core';
 import {TidalIntegrationService} from "@services/tidal_integration.service";
 import {Router} from "@angular/router";
 
@@ -6,6 +6,7 @@ import {Router} from "@angular/router";
     selector: 'app-tidal-callback',
     imports: [],
     templateUrl: './tidal-callback.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
     styleUrl: './tidal-callback.component.css'
 })
 export class TidalCallbackComponent implements OnInit {

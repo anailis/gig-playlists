@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectionStrategy } from '@angular/core';
 import {MatListItem, MatListItemIcon, MatListItemTitle, MatNavList} from "@angular/material/list";
 import {MatIcon} from "@angular/material/icon";
 
@@ -21,6 +21,7 @@ export interface AuthItem {
     MatListItem
 ],
     templateUrl: './authbar.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
     styleUrl: './authbar.component.css'
 })
 export class AuthbarComponent implements OnInit {

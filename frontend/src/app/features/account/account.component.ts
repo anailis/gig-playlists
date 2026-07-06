@@ -1,4 +1,4 @@
-import {Component, inject} from '@angular/core';
+import {Component, inject, ChangeDetectionStrategy} from '@angular/core';
 import {UserService} from "@services/user.service";
 import {AuthService} from "@services/auth.service";
 
@@ -6,6 +6,7 @@ import {AuthService} from "@services/auth.service";
     selector: 'app-account',
     imports: [],
     templateUrl: './account.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
     styleUrl: './account.component.css'
 })
 export class AccountComponent {

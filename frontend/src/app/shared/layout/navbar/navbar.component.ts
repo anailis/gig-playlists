@@ -1,4 +1,4 @@
-import { Component, Input, signal, OnInit, inject } from '@angular/core';
+import { Component, Input, signal, OnInit, inject, ChangeDetectionStrategy } from '@angular/core';
 
 import {MatListModule} from "@angular/material/list";
 import {MatIconModule} from "@angular/material/icon";
@@ -15,6 +15,7 @@ import {AuthService} from "@services/auth.service";
     RouterLinkActive
 ],
     templateUrl: './navbar.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
     styleUrl: './navbar.component.css'
 })
 export class NavbarComponent implements OnInit {
