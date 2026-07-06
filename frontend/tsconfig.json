@@ -19,12 +19,11 @@
     "importHelpers": true,
     "target": "ES2022",
     "module": "ES2022",
-    "baseUrl": "src",
     "paths": {
-      "@core/*": ["app/core/*"],
-      "@services/*": ["app/core/services/*"],
-      "@models/*": ["app/shared/models/*"],
-      "@features/*": ["app/features/*"]
+      "@core/*": ["./src/app/core/*"],
+      "@services/*": ["./src/app/core/services/*"],
+      "@models/*": ["./src/app/shared/models/*"],
+      "@features/*": ["./src/app/features/*"]
     }
   },
   "angularCompilerOptions": {
