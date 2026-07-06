@@ -2,7 +2,7 @@ import { Component, OnInit, inject, ChangeDetectionStrategy } from '@angular/cor
 import {MatListItem, MatListItemIcon, MatListItemTitle, MatNavList} from "@angular/material/list";
 import {MatIcon} from "@angular/material/icon";
 
-import {environment} from "environments/environment";
+import {environment} from "@environments/environment";
 import {AuthService} from "@services/auth.service";
 
 export interface AuthItem {
