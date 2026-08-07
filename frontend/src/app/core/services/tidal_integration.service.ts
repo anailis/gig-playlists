@@ -19,6 +19,7 @@ export class TidalIntegrationService implements IntegrationService {
     private readonly authorizationEndpoint = 'https://login.tidal.com/authorize';
     private readonly tokenEndpoint = 'https://auth.tidal.com/v1/oauth2/token';
     private readonly codeChallengeMethod = 'S256';
+    private readonly SCOPE = 'playlists.write';
     private STATE_KEY = 'tidal_state';
     private CODE_VERIFIER_KEY = 'tidal_code_verifier';
 
@@ -33,8 +34,7 @@ export class TidalIntegrationService implements IntegrationService {
         authorizationUrl.searchParams.set('client_id', this.clientId);
         authorizationUrl.searchParams.set('redirect_uri', this.redirectUri);
         authorizationUrl.searchParams.set('response_type', 'code');
-        // TODO: add scopes
-        authorizationUrl.searchParams.set('scope', "");
+        authorizationUrl.searchParams.set('scope', this.SCOPE);
         authorizationUrl.searchParams.set('code_challenge', challenge);
         authorizationUrl.searchParams.set('code_challenge_method', this.codeChallengeMethod);
         authorizationUrl.searchParams.set('state', state);
@@ -96,7 +96,7 @@ export class TidalIntegrationService implements IntegrationService {
             "code": code,
             "code_verifier": verifier,
             "type": "TIDAL",
-            "scope": []
+            "scope": [this.SCOPE]
         };
 
         return this.httpClient.post(
