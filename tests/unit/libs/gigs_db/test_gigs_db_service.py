@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 from unittest.mock import Mock
 
 import pytest
@@ -158,6 +158,7 @@ class TestPostIntegration:
         service = GigsDbService(table=table)
         integration = Integration(
             userId="USER#user456",
+            timestamp="timestamp",
             refreshToken="encrypted_refresh_token",
             type=IntegrationType.SPOTIFY,
             scope=[]
@@ -171,6 +172,7 @@ class TestPostIntegration:
             Item={
                 "id": "INTEGRATION#" + str(integration.id),
                 "userId": "USER#user456",
+                "timestamp": "timestamp",
                 "type": IntegrationType.SPOTIFY,
                 "refreshToken": "encrypted_refresh_token",
                 "scope": [],

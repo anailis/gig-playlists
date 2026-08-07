@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime, timezone
 from enum import StrEnum
 from uuid import UUID, uuid4
 
@@ -23,6 +23,9 @@ class IntegrationType(StrEnum):
 
 class Integration(BaseModel):
     id: UUID = Field(default_factory=uuid4)
+    timestamp: str = Field(
+        default_factory=lambda: datetime.now(timezone.utc).isoformat()
+    )
     userId: str
     type: IntegrationType
     refreshToken: str
