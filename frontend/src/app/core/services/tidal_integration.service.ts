@@ -6,13 +6,11 @@ import {
     generateRandomCodeVerifier,
     generateRandomState,
 } from "oauth4webapi";
-import {ActivatedRoute} from "@angular/router";
-import {HttpClient} from "@angular/common/http";
 
 @Injectable({
     providedIn: 'root'
 })
-export class TidalIntegrationService implements IntegrationService {
+export class TidalIntegrationService extends IntegrationService {
 
     private readonly clientId = environment.tidalClientId;
     private readonly redirectUri = environment.tidalRedirectUrl;
@@ -20,10 +18,8 @@ export class TidalIntegrationService implements IntegrationService {
     private readonly tokenEndpoint = 'https://auth.tidal.com/v1/oauth2/token';
     private readonly codeChallengeMethod = 'S256';
     private readonly SCOPE = 'playlists.write';
-    private STATE_KEY = 'tidal_state';
     private CODE_VERIFIER_KEY = 'tidal_code_verifier';
 
-    constructor(private route: ActivatedRoute, private httpClient: HttpClient) {}
 
     async integrate() {
         const verifier = generateRandomCodeVerifier();
@@ -52,21 +48,6 @@ export class TidalIntegrationService implements IntegrationService {
         window.location.href = authorizationUrl.toString();
     }
 
-    // Called when app redirects back from Tidal
-    async finaliseAuth() {
-        this.route.queryParamMap.subscribe(params => {
-            const code = params.get('code');
-            const state = params.get('state');
-
-            if (!this.verifyState(state)) {
-                console.error('OAuth state mismatch');
-                return;
-            }
-
-            this.exchangeCode(code).subscribe();
-        });
-    }
-
     private getCodeVerifier(): string {
         const verifier = sessionStorage.getItem(this.CODE_VERIFIER_KEY);
 
@@ -77,17 +58,7 @@ export class TidalIntegrationService implements IntegrationService {
         return verifier;
     }
 
-    private verifyState(returnedState: string | null): boolean {
-        const storedState = sessionStorage.getItem(this.STATE_KEY);
-
-        if (!returnedState || !storedState) {
-            return false;
-        }
-
-        return returnedState === storedState;
-    }
-
-    private exchangeCode(code: string | null) {
+    exchangeCode(code: string | null) {
         const verifier = this.getCodeVerifier();
         const payload = {
             "refresh_token_uri": this.tokenEndpoint,
@@ -96,7 +67,7 @@ export class TidalIntegrationService implements IntegrationService {
             "code": code,
             "code_verifier": verifier,
             "type": "TIDAL",
-            "scope": [this.SCOPE]
+            "scope": this.SCOPE
         };
 
         return this.httpClient.post(

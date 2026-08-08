@@ -5,6 +5,7 @@ import {AccountComponent} from "./features/account/account.component";
 import {PlaylistsComponent} from "./features/playlists/playlists.component";
 import {IntegrationsComponent} from "@features/integrations/integrations.component";
 import {TidalCallbackComponent} from "@features/integrations/tidal-callback/tidal-callback.component";
+import {SpotifyCallbackComponent} from "@features/integrations/spotify-callback/spotify-callback.component";
 
 const routeConfig: Routes = [
   {
@@ -35,6 +36,10 @@ const routeConfig: Routes = [
   {
     path: 'tidal-integration-callback',
     component: TidalCallbackComponent,
+  },
+  {
+    path: 'spotify-integration-callback',
+    component: SpotifyCallbackComponent,
   }
 ];
 

@@ -5,7 +5,9 @@ export const environment = {
     authUrl: "dev.auth.giglist.rocks",
     cognitoRedirectUrl: "http://localhost:4200",
     tidalRedirectUrl: "http://localhost:4200/tidal-integration-callback",
+    spotifyRedirectUrl: "https://dev.giglist.rocks/tidal-integration-callback",
     gigsApiUrl: "https://406q0l2co5.execute-api.eu-west-2.amazonaws.com/api/",
     tokenExchangeUrl: "https://a9ep1n3bb0.execute-api.eu-west-2.amazonaws.com/api/refresh-tokens",
-    tidalClientId: "n8Vc7GScKkHP4Yua"
+    tidalClientId: "n8Vc7GScKkHP4Yua",
+    spotifyClientId: "488a14b5280544149cfc0d7ebe1c3845"
 };
