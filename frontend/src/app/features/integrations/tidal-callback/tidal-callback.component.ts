@@ -1,6 +1,7 @@
-import {Component, OnInit, ChangeDetectionStrategy} from '@angular/core';
-import {TidalIntegrationService} from "@services/tidal_integration.service";
+import {Component, OnInit, ChangeDetectionStrategy, Inject} from '@angular/core';
 import {Router} from "@angular/router";
+import {TIDAL_INTEGRATION_SERVICE} from "@features/integrations/integrations.tokens";
+import {IntegrationService} from "@services/integration.service";
 
 @Component({
     selector: 'app-tidal-callback',
@@ -11,7 +12,9 @@ import {Router} from "@angular/router";
 })
 export class TidalCallbackComponent implements OnInit {
   constructor(
-      private tidalIntegrationService: TidalIntegrationService,
+      @Inject(TIDAL_INTEGRATION_SERVICE)
+      private readonly tidalIntegrationService: IntegrationService,
+
       private router: Router
   ) {}
 

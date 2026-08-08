@@ -1,6 +1,7 @@
-import {Component, OnInit, ChangeDetectionStrategy} from '@angular/core';
+import {Component, OnInit, ChangeDetectionStrategy, Inject} from '@angular/core';
 import {Router} from "@angular/router";
-import {SpotifyIntegrationService} from "@services/spotify_integration.service";
+import {SPOTIFY_INTEGRATION_SERVICE} from "@features/integrations/integrations.tokens";
+import {IntegrationService} from "@services/integration.service";
 
 @Component({
     selector: 'app-spotify-callback',
@@ -11,7 +12,9 @@ import {SpotifyIntegrationService} from "@services/spotify_integration.service";
 })
 export class SpotifyCallbackComponent implements OnInit {
   constructor(
-      private spotifyIntegrationService: SpotifyIntegrationService,
+      @Inject(SPOTIFY_INTEGRATION_SERVICE)
+      private readonly spotifyIntegrationService: IntegrationService,
+
       private router: Router
   ) {}
 
