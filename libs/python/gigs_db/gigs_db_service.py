@@ -29,7 +29,7 @@ class Integration(BaseModel):
     userId: str
     type: IntegrationType
     refreshToken: str
-    scope: list
+    scope: str
 
 
 class GigsDbService:

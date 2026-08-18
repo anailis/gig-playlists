@@ -161,7 +161,7 @@ class TestPostIntegration:
             timestamp="timestamp",
             refreshToken="encrypted_refresh_token",
             type=IntegrationType.SPOTIFY,
-            scope=[]
+            scope="playlist-read-private"
         )
         mocker.patch(f"{GigsDbService.__module__}.GigsDbService.get_user_by_id", return_value={"integrations": []})
 
@@ -175,7 +175,7 @@ class TestPostIntegration:
                 "timestamp": "timestamp",
                 "type": IntegrationType.SPOTIFY,
                 "refreshToken": "encrypted_refresh_token",
-                "scope": [],
+                "scope": "playlist-read-private",
             }
         )
         table.update_item.assert_called_once_with(
@@ -207,7 +207,7 @@ class TestPostIntegration:
             userId="USER#user456",
             refreshToken="encrypted_refresh_token",
             type=IntegrationType.SPOTIFY,
-            scope=[]
+            scope="playlist-read-private"
         )
         mocker.patch(
             f"{GigsDbService.__module__}.GigsDbService.get_user_by_id",
@@ -222,7 +222,7 @@ class TestPostIntegration:
             userId="USER#user456",
             refreshToken="encrypted_refresh_token",
             type=IntegrationType.SPOTIFY,
-            scope=[]
+            scope="playlist-read-private"
         )
 
         with pytest.raises(ForbiddenError):
