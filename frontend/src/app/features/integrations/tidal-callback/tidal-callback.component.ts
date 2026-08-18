@@ -1,7 +1,8 @@
-import {Component, OnInit, ChangeDetectionStrategy, Inject} from '@angular/core';
+import {ChangeDetectionStrategy, Component, Inject, OnInit} from '@angular/core';
 import {Router} from "@angular/router";
-import {TIDAL_INTEGRATION_SERVICE} from "@features/integrations/integrations.tokens";
+import {INTEGRATION_SERVICES} from "@features/integrations/integrations.tokens";
 import {IntegrationService} from "@services/integration.service";
+import {IntegrationType} from "@models/user";
 
 @Component({
     selector: 'app-tidal-callback',
@@ -11,12 +12,22 @@ import {IntegrationService} from "@services/integration.service";
     styleUrl: './tidal-callback.component.css'
 })
 export class TidalCallbackComponent implements OnInit {
+  private tidalIntegrationService: IntegrationService;
+
   constructor(
-      @Inject(TIDAL_INTEGRATION_SERVICE)
-      private readonly tidalIntegrationService: IntegrationService,
+      @Inject(INTEGRATION_SERVICES)
+      private readonly integrationServices: IntegrationService[],
 
       private router: Router
-  ) {}
+  ) {
+      const tidalService = this.integrationServices.find(service => service.getAppName() === IntegrationType.TIDAL);
+
+      if (!tidalService) {
+          throw new Error(`No IntegrationService registered for TIDAL}`);
+      }
+
+      this.tidalIntegrationService = tidalService;
+  }
 
   async ngOnInit() {
 

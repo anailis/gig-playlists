@@ -1,7 +1,8 @@
 import {Component, OnInit, ChangeDetectionStrategy, Inject} from '@angular/core';
 import {Router} from "@angular/router";
-import {SPOTIFY_INTEGRATION_SERVICE} from "@features/integrations/integrations.tokens";
+import {INTEGRATION_SERVICES} from "@features/integrations/integrations.tokens";
 import {IntegrationService} from "@services/integration.service";
+import {IntegrationType} from "@models/user";
 
 @Component({
     selector: 'app-spotify-callback',
@@ -11,12 +12,22 @@ import {IntegrationService} from "@services/integration.service";
     styleUrl: './spotify-callback.component.css'
 })
 export class SpotifyCallbackComponent implements OnInit {
+  private spotifyIntegrationService: IntegrationService;
+
   constructor(
-      @Inject(SPOTIFY_INTEGRATION_SERVICE)
-      private readonly spotifyIntegrationService: IntegrationService,
+      @Inject(INTEGRATION_SERVICES)
+      private readonly integrationServices: IntegrationService[],
 
       private router: Router
-  ) {}
+  ) {
+      const spotifyService = this.integrationServices.find(service => service.getAppName() === IntegrationType.SPOTIFY);
+
+      if (!spotifyService) {
+          throw new Error(`No IntegrationService registered for TIDAL}`);
+      }
+
+      this.spotifyIntegrationService = spotifyService;
+  }
 
   async ngOnInit() {
 

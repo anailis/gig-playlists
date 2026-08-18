@@ -1,8 +1,9 @@
 import {OAuthConfig} from "@models/oauthconfig";
 import {environment} from "@environments/environment";
+import {IntegrationType} from "@models/user";
 
 export const spotifyAuthConfig: OAuthConfig = {
-    appName: "SPOTIFY",
+    appName: IntegrationType.SPOTIFY,
     clientId: environment.spotifyClientId,
     redirectUrl: environment.spotifyRedirectUrl,
     authorizationUrl: "https://accounts.spotify.com/authorize",
@@ -11,7 +12,7 @@ export const spotifyAuthConfig: OAuthConfig = {
 };
 
 export const tidalAuthConfig: OAuthConfig = {
-    appName: "TIDAL",
+    appName: IntegrationType.TIDAL,
     clientId: environment.tidalClientId,
     redirectUrl: environment.tidalRedirectUrl,
     authorizationUrl: "https://login.tidal.com/authorize",

@@ -4,6 +4,7 @@ import {inject} from "@angular/core";
 import {environment} from "@environments/environment";
 import {OAuthConfig} from "@models/oauthconfig";
 import {calculatePKCECodeChallenge, generateRandomCodeVerifier, generateRandomState} from "oauth4webapi";
+import {IntegrationType} from "@models/user";
 
 export class IntegrationService {
 
@@ -12,13 +13,19 @@ export class IntegrationService {
     private readonly codeChallengeMethod = 'S256';
     private readonly state_key: string;
     private readonly code_verifier_key: string;
+    private appName: IntegrationType;
 
     constructor(
         private readonly config: OAuthConfig
     ) {
         this.config = config;
+        this.appName = config.appName;
         this.state_key = `${config.appName}_state`;
         this.code_verifier_key = `${config.appName}_code_verifier`;
+    }
+
+    getAppName(): IntegrationType {
+        return this.appName;
     }
 
     async integrate() {

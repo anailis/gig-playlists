@@ -1,5 +1,7 @@
+import {IntegrationType} from "@models/user";
+
 export interface OAuthConfig {
-    appName: string;
+    appName: IntegrationType;
     clientId: string;
     authorizationUrl: string;
     tokenUrl: string;

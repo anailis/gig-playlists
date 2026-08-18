@@ -2,9 +2,9 @@ import {OAuthConfig} from "@models/oauthconfig";
 import {IntegrationService} from "@services/integration.service";
 import {Provider} from "@angular/core";
 import {
-    SPOTIFY_INTEGRATION_SERVICE,
+    INTEGRATION_SERVICES,
     SPOTIFY_OAUTH_CONFIG,
-    TIDAL_INTEGRATION_SERVICE, TIDAL_OAUTH_CONFIG
+    TIDAL_OAUTH_CONFIG
 } from "@features/integrations/integrations.tokens";
 import {spotifyAuthConfig, tidalAuthConfig} from "@features/integrations/integrations.config";
 
@@ -18,13 +18,15 @@ export const OAUTH_PROVIDERS: Provider[] = [
         useValue: tidalAuthConfig
     },
     {
-        provide: SPOTIFY_INTEGRATION_SERVICE,
+        provide: INTEGRATION_SERVICES,
         useFactory: (config: OAuthConfig) => new IntegrationService(config),
         deps: [SPOTIFY_OAUTH_CONFIG],
+        multi: true
     },
     {
-        provide: TIDAL_INTEGRATION_SERVICE,
+        provide: INTEGRATION_SERVICES,
         useFactory: (config: OAuthConfig) => new IntegrationService(config),
         deps: [TIDAL_OAUTH_CONFIG],
+        multi: true
     },
 ];

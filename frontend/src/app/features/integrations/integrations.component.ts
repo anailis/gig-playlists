@@ -1,4 +1,4 @@
-import {Component, inject, OnInit, ChangeDetectionStrategy, Inject} from '@angular/core';
+import {ChangeDetectionStrategy, Component, inject, Inject, OnInit} from '@angular/core';
 
 import {MatCard, MatCardContent} from "@angular/material/card";
 import {MatButton} from "@angular/material/button";
@@ -7,7 +7,7 @@ import {IntegrationType} from "@models/user";
 import {UserService} from "@services/user.service";
 import {AuthService} from "@services/auth.service";
 import {IntegrationService} from "@services/integration.service";
-import {SPOTIFY_INTEGRATION_SERVICE, TIDAL_INTEGRATION_SERVICE} from "@features/integrations/integrations.tokens";
+import {INTEGRATION_SERVICES,} from "@features/integrations/integrations.tokens";
 
 @Component({
     selector: 'app-playlists',
@@ -28,19 +28,15 @@ export class IntegrationsComponent implements OnInit {
 
   userIntegrations: { name: IntegrationType; enabled: boolean }[] = [];
   userId: string | null = null;
-    private readonly allowedIntegrations: Map<IntegrationType, IntegrationService>;
+  private readonly allowedIntegrations: Map<IntegrationType, IntegrationService>;
 
     constructor(
-        @Inject(SPOTIFY_INTEGRATION_SERVICE)
-        private readonly spotifyIntegrationService: IntegrationService,
-
-        @Inject(TIDAL_INTEGRATION_SERVICE)
-        private readonly tidalIntegrationService: IntegrationService
+        @Inject(INTEGRATION_SERVICES)
+        private readonly integrationServices: IntegrationService[],
     ) {
-        this.allowedIntegrations = new Map([
-            [IntegrationType.SPOTIFY, spotifyIntegrationService],
-            [IntegrationType.TIDAL, tidalIntegrationService],
-        ])
+        this.allowedIntegrations = new Map(
+            integrationServices.map(service => [service.getAppName(), service])
+        );
     }
 
   ngOnInit() {
@@ -48,7 +44,7 @@ export class IntegrationsComponent implements OnInit {
     if (this.userId) {
       this.userService.getUser(this.userId).subscribe(user => {
         const userIntegrations = new Set(user.integrations);
-        const integrations = Object.keys(this.allowedIntegrations) as IntegrationType[];
+        const integrations = Array.from(this.allowedIntegrations.keys());
         this.userIntegrations = integrations.map(integration => ({
           name: integration,
           enabled: userIntegrations.has(integration),
