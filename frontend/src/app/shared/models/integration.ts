@@ -1,6 +1,6 @@
 export enum IntegrationType {
-    SPOTIFY = "spotify",
-    TIDAL = "tidal",
+    SPOTIFY = "SPOTIFY",
+    TIDAL = "TIDAL",
 }
 
 export class Integration {

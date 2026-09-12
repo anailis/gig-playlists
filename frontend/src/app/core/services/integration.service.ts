@@ -98,7 +98,7 @@ export class IntegrationService {
             "redirect_uri": this.config.redirectUrl,
             "code": code,
             "code_verifier": verifier,
-            "type": "TIDAL",
+            "type": this.appName,
             "scope": this.config.scope
         };
 

@@ -23,7 +23,7 @@ export class SpotifyCallbackComponent implements OnInit {
       const spotifyService = this.integrationServices.find(service => service.getAppName() === IntegrationType.SPOTIFY);
 
       if (!spotifyService) {
-          throw new Error(`No IntegrationService registered for TIDAL}`);
+          throw new Error(`No IntegrationService registered for SPOTIFY`);
       }
 
       this.spotifyIntegrationService = spotifyService;
