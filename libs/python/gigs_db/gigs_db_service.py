@@ -39,9 +39,10 @@ class GigsDbService:
     def __init__(self, table):
         self.table = table
 
-    def get_user_by_id(self, user_id: str):
+    def get_user_by_id(self, user_id: str, prefix_user_id=True):
+        user_id = self.USER_PREFIX + user_id if prefix_user_id else user_id
         results = self.table.query(
-            KeyConditionExpression=Key("id").eq(self.USER_PREFIX + user_id)
+            KeyConditionExpression=Key("id").eq(user_id)
         )
         if results["Count"] == 0:
             return None
@@ -121,8 +122,10 @@ class GigsDbService:
         )
         return {"message": "Created integration with ID " + str(integration.id)}
 
-    def get_integration_for_user(self, integration_type: IntegrationType, user_id: str) -> Integration:
-        user = self.get_user_by_id(user_id)
+    def get_integration_for_user(self, integration_type: IntegrationType, user_id: str, prefix_user_id=True):
+        user = self.get_user_by_id(user_id, prefix_user_id=prefix_user_id)
+        if user is None:
+            raise ValueError("User with ID " + user_id + " does not exist")
         integration_ids = [
             integration["id"] for integration in user.get("integrations", [])
             if integration["type"] == integration_type

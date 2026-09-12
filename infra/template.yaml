@@ -473,6 +473,12 @@ Resources:
       Description: Updates upcoming playlist in response to gigs DynamoDB table updates
       Environment:
         Variables:
+          SPOTIFY_REDIRECT_URI:
+            Fn::If:
+              - IsProd
+              - "https://app.giglist.rocks/spotify-integration-callback"
+              - !Sub "https://${Environment}.giglist.rocks/spotify-integration-callback"
+          KEY_ID: !GetAtt RefreshTokenKMSKey.KeyId
           REMOVE_LAMBDA_ARN: !GetAtt RemoveGigFromUpcomingPlaylist.Arn
           SCHEDULER_ROLE_ARN: !GetAtt SchedulerRole.Arn
           TABLE_NAME: !Sub "gigs_${Environment}"
@@ -502,6 +508,12 @@ Resources:
                 - ssm:PutParameter
               Resource:
                 - !Sub "arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/spotify/*"
+            - Sid: KMSDecryptPolicy
+              Effect: Allow
+              Action:
+                - kms:Decrypt
+              Resource:
+                - !GetAtt RefreshTokenKMSKey.Arn
             - Sid: EventBridgeSchedulerCreatePolicy
               Effect: Allow
               Action:
@@ -655,6 +667,9 @@ Resources:
     Properties:
       ClientName: !Sub "giglist-user-pool-client-${Environment}"
       UserPoolId: !Ref CognitoUserPool
+      ExplicitAuthFlows:
+        - ALLOW_USER_PASSWORD_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
       CallbackURLs: !Ref CognitoCallbackUrls
       LogoutURLs: !Ref CognitoCallbackUrls
       SupportedIdentityProviders:

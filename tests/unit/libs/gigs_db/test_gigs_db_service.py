@@ -15,12 +15,25 @@ class TestGetUserById:
 
         assert service.get_user_by_id(user_id="123") is None
 
-    def test_user_returned_by_id(self):
+    def test_user_id_prefixed_by_default_and_user_returned_by_id(self):
         table = Mock()
         table.query.return_value = {"Count": 1, "Items": ["user"]}
         service = GigsDbService(table=table)
 
         assert service.get_user_by_id(user_id="123") == "user"
+        table.query.assert_called_once_with(
+            KeyConditionExpression=Key("id").eq("USER#123")
+        )
+
+    def test_user_id_not_prefixed_when_prefix_user_id_false(self):
+        table = Mock()
+        table.query.return_value = {"Count": 1, "Items": ["user"]}
+        service = GigsDbService(table=table)
+
+        assert service.get_user_by_id(user_id="USER#123", prefix_user_id=False) == "user"
+        table.query.assert_called_once_with(
+            KeyConditionExpression=Key("id").eq("USER#123")
+        )
 
 
 class TestGetGigsForUser:
@@ -161,7 +174,7 @@ class TestGetIntegrationForUser:
     def test_integration_returned_for_user(self, mocker):
         table = Mock()
         service = GigsDbService(table=table)
-        mocker.patch(
+        mock_get_user_by_id = mocker.patch(
             f"{GigsDbService.__module__}.GigsDbService.get_user_by_id",
             return_value={
                 "integrations": [
@@ -177,6 +190,7 @@ class TestGetIntegrationForUser:
         table.query.assert_called_once_with(
             KeyConditionExpression=Key("id").eq("INTEGRATION#existing_id")
         )
+        mock_get_user_by_id.assert_called_once_with("user456", prefix_user_id=True)
 
     def test_value_error_thrown_if_no_integration_of_given_type(self, mocker):
         table = Mock()
@@ -226,3 +240,36 @@ class TestGetIntegrationForUser:
 
         with pytest.raises(ValueError, match="Could not find integration INTEGRATION#existing_id"):
             service.get_integration_for_user(IntegrationType.SPOTIFY, user_id="user456")
+
+    def test_value_error_thrown_if_user_not_found(self, mocker):
+        table = Mock()
+        service = GigsDbService(table=table)
+        mocker.patch(
+            f"{GigsDbService.__module__}.GigsDbService.get_user_by_id",
+            return_value=None
+        )
+
+        with pytest.raises(ValueError, match="User with ID user456 does not exist"):
+            service.get_integration_for_user(IntegrationType.SPOTIFY, user_id="user456")
+
+    def test_user_id_not_prefixed_when_prefix_user_id_false(self, mocker):
+        table = Mock()
+        service = GigsDbService(table=table)
+        mock_get_user_by_id = mocker.patch(
+            f"{GigsDbService.__module__}.GigsDbService.get_user_by_id",
+            return_value={
+                "integrations": [
+                    {"id": "INTEGRATION#existing_id", "type": "SPOTIFY"}
+                ]
+            }
+        )
+        table.query.return_value = {"Count": 1, "Items": ["integration"]}
+
+        result = service.get_integration_for_user(IntegrationType.SPOTIFY, user_id="USER#user456", prefix_user_id=False)
+        assert result == "integration"
+        table.query.assert_called_once_with(
+            KeyConditionExpression=Key("id").eq("INTEGRATION#existing_id")
+        )
+        mock_get_user_by_id.assert_called_once_with(
+            "USER#user456", prefix_user_id=False
+        )
