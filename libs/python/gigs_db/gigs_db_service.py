@@ -2,7 +2,6 @@ from datetime import date, datetime, timezone
 from enum import StrEnum
 from uuid import UUID, uuid4
 
-from aws_lambda_powertools.event_handler.exceptions import NotFoundError, ForbiddenError, BadRequestError
 from boto3.dynamodb.conditions import Key
 from pydantic import BaseModel, Field
 
@@ -40,22 +39,16 @@ class GigsDbService:
     def __init__(self, table):
         self.table = table
 
-    def get_user_by_id(self, user_id: str, requesting_user_id: str):
-        if user_id != requesting_user_id:
-            raise ForbiddenError("Forbidden: user cannot access this resource")
-
+    def get_user_by_id(self, user_id: str):
         results = self.table.query(
             KeyConditionExpression=Key("id").eq(self.USER_PREFIX + user_id)
         )
         if results["Count"] == 0:
-            raise NotFoundError
+            return None
         else:
             return results["Items"][0]
 
-    def get_gigs_for_user(self, user_id: str, requesting_user_id: str):
-        if user_id != requesting_user_id:
-            raise ForbiddenError("Forbidden: user cannot access this resource")
-
+    def get_gigs_for_user(self, user_id: str):
         results = self.table.query(
             IndexName="userId-id-index",
             KeyConditionExpression=(
@@ -65,50 +58,41 @@ class GigsDbService:
         )
         return results["Items"]
 
-    def get_gig_by_id(self, gig_id: str, requesting_user_id: str):
+    def get_gig_by_id(self, gig_id: str):
         results = self.table.query(
             KeyConditionExpression=Key("id").eq(self.GIG_PREFIX + gig_id)
         )
         if results["Count"] == 0:
-            raise NotFoundError
+            return None
         else:
-            gig = results["Items"][0]
-            if gig["userId"] != self.USER_PREFIX + requesting_user_id:
-                raise ForbiddenError("Forbidden: user cannot access this resource")
             return results["Items"][0]
 
-    def post_gig(self, gig: Gig, requesting_user_id: str):
-        if gig.userId != self.USER_PREFIX + requesting_user_id:
-            raise ForbiddenError("Forbidden: user cannot create gig for another user")
+    def post_gig(self, gig: Gig):
         item: dict = gig.model_dump()
         item["date"] = gig.date.strftime("%Y-%m-%d")
         item["id"] = self.GIG_PREFIX + str(gig.id)
         self.table.put_item(Item=item)
         return {"message": "Created gig with ID " + str(gig.id)}
 
-    def delete_gig(self, gig_id: str, requesting_user_id: str):
-        full_gig_id = self.GIG_PREFIX + gig_id
-        results = self.table.query(KeyConditionExpression=Key("id").eq(full_gig_id))
-        if results["Count"] == 0:
-            raise NotFoundError
-        else:
-            user_id = results["Items"][0]["userId"]
-            if user_id != self.USER_PREFIX + requesting_user_id:
-                raise ForbiddenError("Forbidden: user cannot delete this resource")
-            self.table.delete_item(Key={"id": full_gig_id, "userId": user_id})
-            return {"message": f"Deleted gig with ID {gig_id}"}
+    def delete_gig(self, gig_id: str, user_id: str):
+        self.table.delete_item(Key={"id": gig_id, "userId": user_id})
+        return {"message": f"Deleted gig with ID {gig_id}"}
 
-    def post_integration(self, integration: Integration, requesting_user_id: str):
-        if not integration.userId.startswith(self.USER_PREFIX):
-            raise BadRequestError("Bad Request: userId must start with 'USER#'")
+    def get_integrations_for_user(self, user_id: str):
+        user = self.get_user_by_id(user_id)
+        integration_ids = [integration["id"] for integration in user.get("integrations", [])]
+
+        results = []
+        for integration_id in integration_ids:
+            results.append(self.table.query(KeyConditionExpression=Key("id").eq(integration_id)))
+        return results
+
+    def post_integration(self, integration: Integration):
         user_id = integration.userId.split("#")[-1]
-        if user_id != requesting_user_id:
-            raise ForbiddenError("Forbidden: user cannot create integration for another user")
-
-        user = self.get_user_by_id(user_id, requesting_user_id)
+        user = self.get_user_by_id(user_id)
         existing_integrations = [exist_int["type"] for exist_int in user.get("integrations", [])]
         if integration.type in existing_integrations:
-            raise ForbiddenError(f"Forbidden: user already has an integration of type {integration.type}")
+            raise ValueError(f"User already has an integration of type {integration.type}")
 
         item: dict = integration.model_dump()
         item["id"] = self.INTEGRATION_PREFIX + str(integration.id)
@@ -136,3 +120,22 @@ class GigsDbService:
             },
         )
         return {"message": "Created integration with ID " + str(integration.id)}
+
+    def get_integration_for_user(self, integration_type: IntegrationType, user_id: str) -> Integration:
+        user = self.get_user_by_id(user_id)
+        integration_ids = [
+            integration["id"] for integration in user.get("integrations", [])
+            if integration["type"] == integration_type
+        ]
+        if len(integration_ids) == 0:
+            raise ValueError("User does not have an integration of type " + integration_type)
+        elif len(integration_ids) > 1:
+            raise ValueError("User has multiple integrations of type " + integration_type)
+
+        results = self.table.query(
+            KeyConditionExpression=Key("id").eq(integration_ids[0])
+        )
+        if results["Count"] == 0:
+            raise ValueError("Could not find integration " + integration_ids[0])
+        else:
+            return results["Items"][0]
