@@ -1,6 +1,5 @@
 import base64
 from enum import StrEnum
-from typing import Iterable
 from urllib.error import HTTPError
 
 import requests
