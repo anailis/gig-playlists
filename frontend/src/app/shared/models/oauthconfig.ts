@@ -1,4 +1,4 @@
-import {IntegrationType} from "@models/user";
+import {IntegrationType} from "@models/integration";
 
 export interface OAuthConfig {
     appName: IntegrationType;

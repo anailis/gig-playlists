@@ -4,7 +4,7 @@ import {inject} from "@angular/core";
 import {environment} from "@environments/environment";
 import {OAuthConfig} from "@models/oauthconfig";
 import {calculatePKCECodeChallenge, generateRandomCodeVerifier, generateRandomState} from "oauth4webapi";
-import {IntegrationType} from "@models/user";
+import {IntegrationType} from "@models/integration";
 
 export class IntegrationService {
 

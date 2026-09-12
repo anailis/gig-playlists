@@ -3,11 +3,11 @@ import {ChangeDetectionStrategy, Component, inject, Inject, OnInit} from '@angul
 import {MatCard, MatCardContent} from "@angular/material/card";
 import {MatButton} from "@angular/material/button";
 import {MatIcon} from "@angular/material/icon";
-import {IntegrationType} from "@models/user";
+import {IntegrationType} from "@models/integration";
 import {UserService} from "@services/user.service";
 import {AuthService} from "@services/auth.service";
 import {IntegrationService} from "@services/integration.service";
-import {INTEGRATION_SERVICES,} from "@features/integrations/integrations.tokens";
+import {INTEGRATION_SERVICES} from "@features/integrations/integrations.tokens";
 
 @Component({
     selector: 'app-playlists',
@@ -43,11 +43,11 @@ export class IntegrationsComponent implements OnInit {
     this.userId = this.authService.getUserId();
     if (this.userId) {
       this.userService.getUser(this.userId).subscribe(user => {
-        const userIntegrations = new Set(user.integrations);
+        const userIntegrations = [...new Set(user.integrations.map(item => item.type))];
         const integrations = Array.from(this.allowedIntegrations.keys());
         this.userIntegrations = integrations.map(integration => ({
           name: integration,
-          enabled: userIntegrations.has(integration),
+          enabled: userIntegrations.includes(integration),
         }));
       })
     }

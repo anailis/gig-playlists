@@ -1,6 +1,6 @@
 import {OAuthConfig} from "@models/oauthconfig";
 import {environment} from "@environments/environment";
-import {IntegrationType} from "@models/user";
+import {IntegrationType} from "@models/integration";
 
 export const spotifyAuthConfig: OAuthConfig = {
     appName: IntegrationType.SPOTIFY,

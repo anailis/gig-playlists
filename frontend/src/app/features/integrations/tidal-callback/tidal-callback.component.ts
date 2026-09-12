@@ -2,7 +2,7 @@ import {ChangeDetectionStrategy, Component, Inject, OnInit} from '@angular/core'
 import {Router} from "@angular/router";
 import {INTEGRATION_SERVICES} from "@features/integrations/integrations.tokens";
 import {IntegrationService} from "@services/integration.service";
-import {IntegrationType} from "@models/user";
+import {IntegrationType} from "@models/integration";
 
 @Component({
     selector: 'app-tidal-callback',
