@@ -1,14 +1,13 @@
-import {Component, inject, OnInit, ChangeDetectionStrategy} from '@angular/core';
+import {ChangeDetectionStrategy, Component, inject, Inject, OnInit} from '@angular/core';
 
 import {MatCard, MatCardContent} from "@angular/material/card";
 import {MatButton} from "@angular/material/button";
 import {MatIcon} from "@angular/material/icon";
-import {IntegrationType} from "@models/user";
+import {IntegrationType} from "@models/integration";
 import {UserService} from "@services/user.service";
 import {AuthService} from "@services/auth.service";
 import {IntegrationService} from "@services/integration.service";
-import {TidalIntegrationService} from "@services/tidal_integration.service";
-import {SpotifyIntegrationService} from "@services/spotify_integration.service";
+import {INTEGRATION_SERVICES} from "@features/integrations/integrations.tokens";
 
 @Component({
     selector: 'app-playlists',
@@ -26,25 +25,29 @@ export class IntegrationsComponent implements OnInit {
 
   userService: UserService = inject(UserService);
   authService: AuthService = inject(AuthService);
-  tidalIntegration: TidalIntegrationService = inject(TidalIntegrationService);
-  spotifyIntegration: IntegrationService = inject(SpotifyIntegrationService);
 
-  allowedIntegrations: Record<IntegrationType, IntegrationService> = {
-    [IntegrationType.SPOTIFY]: this.spotifyIntegration,
-    [IntegrationType.TIDAL]: this.tidalIntegration,
-  }
   userIntegrations: { name: IntegrationType; enabled: boolean }[] = [];
   userId: string | null = null;
+  private readonly allowedIntegrations: Map<IntegrationType, IntegrationService>;
+
+    constructor(
+        @Inject(INTEGRATION_SERVICES)
+        private readonly integrationServices: IntegrationService[],
+    ) {
+        this.allowedIntegrations = new Map(
+            integrationServices.map(service => [service.getAppName(), service])
+        );
+    }
 
   ngOnInit() {
     this.userId = this.authService.getUserId();
     if (this.userId) {
       this.userService.getUser(this.userId).subscribe(user => {
-        const userIntegrations = new Set(user.integrations);
-        const integrations = Object.keys(this.allowedIntegrations) as IntegrationType[];
+        const userIntegrations = [...new Set(user.integrations.map(item => item.type))];
+        const integrations = Array.from(this.allowedIntegrations.keys());
         this.userIntegrations = integrations.map(integration => ({
           name: integration,
-          enabled: userIntegrations.has(integration),
+          enabled: userIntegrations.includes(integration),
         }));
       })
     }
@@ -55,7 +58,13 @@ export class IntegrationsComponent implements OnInit {
   }
 
   integrateWithThirdParty(integration: IntegrationType) {
-     const integrationService = this.allowedIntegrations[integration];
+     const integrationService = this.allowedIntegrations.get(integration);
+
+
+      if (!integrationService) {
+          throw new Error(`Unsupported integration: ${integration}`);
+      }
+
      integrationService.integrate();
   }
 

@@ -1,6 +1,5 @@
 import base64
 from enum import StrEnum
-from typing import Iterable
 from urllib.error import HTTPError
 
 import requests
@@ -16,7 +15,7 @@ def add_integration(
         user_id: str,
         encrypted_refresh_token: bytes,
         jwt: str,
-        scope: Iterable,
+        scope: str,
         integration_type: str
 ):
     if integration_type not in IntegrationType:

@@ -1,8 +1,8 @@
-from datetime import date
+from datetime import date, datetime, timezone
 from enum import StrEnum
 from uuid import UUID, uuid4
 
-from aws_lambda_powertools.event_handler.exceptions import NotFoundError, ForbiddenError
+from aws_lambda_powertools.event_handler.exceptions import NotFoundError, ForbiddenError, BadRequestError
 from boto3.dynamodb.conditions import Key
 from pydantic import BaseModel, Field
 
@@ -23,10 +23,13 @@ class IntegrationType(StrEnum):
 
 class Integration(BaseModel):
     id: UUID = Field(default_factory=uuid4)
+    timestamp: str = Field(
+        default_factory=lambda: datetime.now(timezone.utc).isoformat()
+    )
     userId: str
     type: IntegrationType
     refreshToken: str
-    scope: list
+    scope: str
 
 
 class GigsDbService:
@@ -96,6 +99,8 @@ class GigsDbService:
             return {"message": f"Deleted gig with ID {gig_id}"}
 
     def post_integration(self, integration: Integration, requesting_user_id: str):
+        if not integration.userId.startswith(self.USER_PREFIX):
+            raise BadRequestError("Bad Request: userId must start with 'USER#'")
         user_id = integration.userId.split("#")[-1]
         if user_id != requesting_user_id:
             raise ForbiddenError("Forbidden: user cannot create integration for another user")

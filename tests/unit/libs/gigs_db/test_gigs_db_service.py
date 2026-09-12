@@ -2,7 +2,7 @@ from datetime import date
 from unittest.mock import Mock
 
 import pytest
-from aws_lambda_powertools.event_handler.exceptions import ForbiddenError, NotFoundError
+from aws_lambda_powertools.event_handler.exceptions import ForbiddenError, NotFoundError, BadRequestError
 
 from gigs_db.gigs_db_service import GigsDbService, Gig, Integration, IntegrationType
 
@@ -153,14 +153,28 @@ class TestDeleteGig:
         )
 
 class TestPostIntegration:
+    def test_raises_bad_request_error_if_user_id_has_no_prefix(self):
+        service = GigsDbService(table=Mock())
+        integration = Integration(
+            userId="user456",
+            timestamp="timestamp",
+            refreshToken="encrypted_refresh_token",
+            type=IntegrationType.SPOTIFY,
+            scope="playlist-read-private"
+        )
+
+        with pytest.raises(BadRequestError):
+            service.post_integration(integration, requesting_user_id="user456")
+
     def test_integration_created(self, mocker):
         table = Mock()
         service = GigsDbService(table=table)
         integration = Integration(
             userId="USER#user456",
+            timestamp="timestamp",
             refreshToken="encrypted_refresh_token",
             type=IntegrationType.SPOTIFY,
-            scope=[]
+            scope="playlist-read-private"
         )
         mocker.patch(f"{GigsDbService.__module__}.GigsDbService.get_user_by_id", return_value={"integrations": []})
 
@@ -171,9 +185,10 @@ class TestPostIntegration:
             Item={
                 "id": "INTEGRATION#" + str(integration.id),
                 "userId": "USER#user456",
+                "timestamp": "timestamp",
                 "type": IntegrationType.SPOTIFY,
                 "refreshToken": "encrypted_refresh_token",
-                "scope": [],
+                "scope": "playlist-read-private",
             }
         )
         table.update_item.assert_called_once_with(
@@ -205,7 +220,7 @@ class TestPostIntegration:
             userId="USER#user456",
             refreshToken="encrypted_refresh_token",
             type=IntegrationType.SPOTIFY,
-            scope=[]
+            scope="playlist-read-private"
         )
         mocker.patch(
             f"{GigsDbService.__module__}.GigsDbService.get_user_by_id",
@@ -220,7 +235,7 @@ class TestPostIntegration:
             userId="USER#user456",
             refreshToken="encrypted_refresh_token",
             type=IntegrationType.SPOTIFY,
-            scope=[]
+            scope="playlist-read-private"
         )
 
         with pytest.raises(ForbiddenError):

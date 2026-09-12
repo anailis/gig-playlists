@@ -14,7 +14,7 @@ Parameters:
   GiglistRootCertificateArn:
     Description: "ARN of a ACM certificate for giglist.rocks"
     Type: String
-    Default: arn:aws:acm:us-east-1:891376983144:certificate/3100c7d6-6a01-4773-bfb3-1efbd0958f54
+    Default: arn:aws:acm:us-east-1:891376983144:certificate/9ea93603-b1d8-4340-a6a5-9bdcad217c79
   GiglistAuthCertificateArn:
     Description: "ARN of a ACM certificate for auth.giglist.rocks"
     Type: String

@@ -4,6 +4,7 @@ import { AppComponent } from './app/app.component';
 import { appConfig } from './app/app.config';
 import { Amplify } from "aws-amplify";
 import {environment} from "@environments/environment";
+import {OAUTH_PROVIDERS} from "@features/integrations/integrations.providers";
 
 Amplify.configure({
     Auth: {
@@ -23,4 +24,13 @@ Amplify.configure({
     }
 });
 
-bootstrapApplication(AppComponent, {...appConfig, providers: [provideZoneChangeDetection(), ...appConfig.providers]}).catch((err) => console.error(err));
+bootstrapApplication(
+    AppComponent,
+    {
+        ...appConfig, providers: [
+            provideZoneChangeDetection(),
+            OAUTH_PROVIDERS,
+            ...appConfig.providers
+        ]
+    }).catch((err) => console.error(err)
+);
