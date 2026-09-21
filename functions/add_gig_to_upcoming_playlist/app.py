@@ -52,15 +52,14 @@ def lambda_handler(event: DynamoDBStreamEvent, context: LambdaContext) -> str:
         raise ValueError("Multiple user IDs found in the event")
     user_id = next(iter(user_ids))
 
-    print("user_id", user_id)
     integration = gigs_db_service.get_integration_for_user(IntegrationType.SPOTIFY, user_id, prefix_user_id=False)
     refresh_token = kms_client.decrypt(
         KeyId=os.environ["KEY_ID"],
         CiphertextBlob=base64.b64decode(integration["refreshToken"]),
-    )["Plaintext"]
-    access_token = auth.refresh_access_token(refresh_token)
+    )["Plaintext"].decode("utf-8")
+    response = auth.refresh_access_token(refresh_token)
 
-    spotify = spotipy.Spotify(auth=access_token)
+    spotify = spotipy.Spotify(auth=response["access_token"])
     client = UpcomingPlaylistClient(
         table=table,
         scheduler=scheduler_client,
