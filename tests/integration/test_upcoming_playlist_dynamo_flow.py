@@ -88,8 +88,6 @@ def trigger_remove_gig_lambda(lambda_client, arn, event):
     )
     return payload
 
-
-@pytest.mark.xfail(reason="Currently fails as uses old Spotify auth mechanism")
 def test_add_and_remove_future_gig(
     add_gig_lambda_arn, remove_gig_lambda_arn, lambda_client, scheduler, create_gig_event
 ):
@@ -117,7 +115,7 @@ def test_add_and_remove_future_gig(
     payload = trigger_remove_gig_lambda(
         lambda_client,
         remove_gig_lambda_arn,
-        {"spotifyArtistId": TEST_ARTIST, "playlistId": TEST_PLAYLIST},
+        {"spotifyArtistId": TEST_ARTIST, "playlistId": TEST_PLAYLIST, "userId": TEST_USER},
     )
     assert payload["removed"], "Artist not removed from playlist"
 
@@ -125,7 +123,7 @@ def test_add_and_remove_future_gig(
     payload = trigger_remove_gig_lambda(
         lambda_client,
         remove_gig_lambda_arn,
-        {"spotifyArtistId": TEST_ARTIST, "playlistId": TEST_PLAYLIST},
+        {"spotifyArtistId": TEST_ARTIST, "playlistId": TEST_PLAYLIST, "userId": TEST_USER},
     )
     assert not payload["removed"], "Artist removed from playlist"
 
