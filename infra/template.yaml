@@ -545,8 +545,23 @@ Resources:
       FunctionName: !Sub "remove-gig-from-upcoming-playlist-${Environment}"
       CodeUri: ../functions/remove_gig_from_upcoming_playlist/
       Description: Removes tracks from upcoming playlist in response to scheduled events
+      Environment:
+        Variables:
+          SPOTIFY_REDIRECT_URI:
+            Fn::If:
+              - IsProd
+              - "https://app.giglist.rocks/spotify-integration-callback"
+              - !Sub "https://${Environment}.giglist.rocks/spotify-integration-callback"
+          KEY_ID: !GetAtt RefreshTokenKMSKey.KeyId
+          TABLE_NAME: !Sub "gigs_${Environment}"
       Policies:
         - Statement:
+            - Sid: KMSDecryptPolicy
+              Effect: Allow
+              Action:
+                - kms:Decrypt
+              Resource:
+                - !GetAtt RefreshTokenKMSKey.Arn
             - Sid: DynamoDBReadPolicy
               Effect: Allow
               Action:

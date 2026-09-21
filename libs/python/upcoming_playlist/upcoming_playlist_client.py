@@ -125,7 +125,7 @@ class UpcomingPlaylistClient:
                 "Arn": self.target_arn,
                 "RoleArn": self.role_arn,
                 "Input": json.dumps(
-                    {"spotifyArtistId": gig.spotifyArtistId, "playlistId": playlist_id}
+                    {"spotifyArtistId": gig.spotifyArtistId, "playlistId": playlist_id, "userId": gig.userId}
                 ),
             },
         )
