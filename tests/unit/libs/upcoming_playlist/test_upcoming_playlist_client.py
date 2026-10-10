@@ -90,7 +90,7 @@ def test_gig_is_in_future(table, spotify_client, scheduler, gig):
             "Arn": TARGET_ARN,
             "RoleArn": ROLE_ARN,
             "Input": json.dumps(
-                {"spotifyArtistId": ARTIST_ID, "playlistId": PLAYLIST_ID}
+                {"spotifyArtistId": ARTIST_ID, "playlistId": PLAYLIST_ID, "userId": USER_ID}
             ),
         },
     )
@@ -154,7 +154,7 @@ def test_user_has_multiple_gigs_for_same_artist(table, scheduler, spotify_client
             "Arn": TARGET_ARN,
             "RoleArn": ROLE_ARN,
             "Input": json.dumps(
-                {"spotifyArtistId": ARTIST_ID, "playlistId": PLAYLIST_ID}
+                {"spotifyArtistId": ARTIST_ID, "playlistId": PLAYLIST_ID, "userId": USER_ID}
             ),
         },
     )
@@ -199,7 +199,7 @@ def test_tracks_cannot_be_retrieved(table, scheduler, gig):
             "Arn": TARGET_ARN,
             "RoleArn": ROLE_ARN,
             "Input": json.dumps(
-                {"spotifyArtistId": ARTIST_ID, "playlistId": PLAYLIST_ID}
+                {"spotifyArtistId": ARTIST_ID, "playlistId": PLAYLIST_ID, "userId": USER_ID}
             ),
         },
     )
@@ -221,7 +221,7 @@ def test_schedule_cannot_be_made(table, spotify_client, gig):
     invalid_gig = Gig.model_construct(
         **{
             "id": "GIG#2",
-            "userId": "USER#6789",
+            "userId": USER_ID,
             "date": date(2024, 12, 12),
             "spotifyArtistId": ARTIST_ID,
             "artist": "problem with schedule",
@@ -249,7 +249,7 @@ def test_schedule_cannot_be_made(table, spotify_client, gig):
                     "Arn": TARGET_ARN,
                     "RoleArn": ROLE_ARN,
                     "Input": json.dumps(
-                        {"spotifyArtistId": ARTIST_ID, "playlistId": PLAYLIST_ID}
+                        {"spotifyArtistId": ARTIST_ID, "playlistId": PLAYLIST_ID, "userId": USER_ID}
                     ),
                 },
             ),
@@ -263,16 +263,13 @@ def test_schedule_cannot_be_made(table, spotify_client, gig):
                     "Arn": TARGET_ARN,
                     "RoleArn": ROLE_ARN,
                     "Input": json.dumps(
-                        {"spotifyArtistId": ARTIST_ID, "playlistId": PLAYLIST_ID}
+                        {"spotifyArtistId": ARTIST_ID, "playlistId": PLAYLIST_ID, "userId": USER_ID}
                     ),
                 },
             ),
         ]
     )
 
-    assert len(gigs_by_user) == 2
+    assert len(gigs_by_user) == 1
     assert USER_ID in gigs_by_user.keys()
     assert len(gigs_by_user[USER_ID]) == 1
-    assert ARTIST_ID == gigs_by_user[USER_ID][0]
-    assert "USER#6789" in gigs_by_user.keys()
-    assert len(gigs_by_user["USER#6789"]) == 0
